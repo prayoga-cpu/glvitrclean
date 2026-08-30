@@ -1,14 +1,9 @@
-import { allRoutes } from '@/lib/routes';
+import { routeFor } from '@/lib/routes';
 import { buildMetadata } from '@/lib/seo';
+import { WorkView } from '@/views/FixedViews';
 
-const route = allRoutes().find((r) => r.path === '/realisations')!;
-export const metadata = buildMetadata(route);
+export const metadata = buildMetadata(routeFor('/realisations', 'fr'));
 
-export default function RealisationsPage() {
-  return (
-    <>
-      <h1>Nos réalisations</h1>
-      {/* TODO(claude): gallery. Real photos only, from the client's Drive folder. Placeholder images live in public/assets/placeholder/ and must be visibly marked. Never invent a photo or a location. */}
-    </>
-  );
+export default function Page() {
+  return <WorkView lang="fr" />;
 }

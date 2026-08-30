@@ -4,7 +4,8 @@
  *
  * Greps the exported HTML for tax-credit claims on routes where the claim is
  * illegal, and for a live 50% claim while the SAP declaration number is still
- * unconfirmed.
+ * unconfirmed. Both language editions are checked: a claim is no less
+ * misleading for being made in English on /en/professionnels/.
  *
  * This is not a style check. Displaying an unbacked or inapplicable 50% claim
  * is a pratique commerciale trompeuse under Art. L121-2 of the Code de la
@@ -25,8 +26,8 @@ if (!existsSync(out)) {
   process.exit(1);
 }
 
-/** Routes where the tax credit must never be claimed. */
-const FORBIDDEN_ROUTES = [
+/** Locale-free routes where the tax credit must never be claimed. */
+const FORBIDDEN_BASE = [
   'professionnels',
   'services/facade',
   'services/poubelles',
@@ -36,23 +37,38 @@ const FORBIDDEN_ROUTES = [
 const communes = [...readFileSync(join(root, 'src/data/communes.ts'), 'utf8')
   .matchAll(/^\s{4}slug:\s*'([^']+)'/gm)].map((m) => m[1]);
 for (const c of communes) {
-  FORBIDDEN_ROUTES.push(`zones/${c}/facade`);
-  FORBIDDEN_ROUTES.push(`zones/${c}/poubelles`);
+  FORBIDDEN_BASE.push(`zones/${c}/facade`);
+  FORBIDDEN_BASE.push(`zones/${c}/poubelles`);
 }
+
+/** French lives at the bare path, English under /en. Both are checked. */
+const FORBIDDEN_ROUTES = [
+  ...FORBIDDEN_BASE,
+  ...FORBIDDEN_BASE.map((r) => `en/${r}`),
+];
 
 /**
  * Phrases that assert the customer gets the credit. A negative statement
- * ("n'ouvre pas droit", "aucun crédit") is allowed and in fact required on the
- * facade page, so we match assertions, not the topic.
+ * ("n'ouvre pas droit", "aucun crédit", "no tax credit applies") is allowed and
+ * in fact required on the facade page, so we match assertions, not the topic.
  */
 const CLAIM_PATTERNS = [
+  // French
   /vous b[ée]n[ée]ficiez/i,
   /b[ée]n[ée]ficiez d[eu]/i,
   /50\s?%\s*de\s*(cr[ée]dit|r[ée]duction)/i,
   /cr[ée]dit d['’]imp[ôo]t de 50/i,
   /avance imm[ée]diate/i,
-  /urssaf/i,
   /apr[èe]s cr[ée]dit d['’]imp[ôo]t/i,
+  // English
+  /\b50\s?%\s*(income\s+)?tax\s+credit/i,
+  /tax\s+credit\s+of\s+50/i,
+  /entitl(?:es|ed|ement)\b[^.]{0,60}\btax\s+credit/i,
+  /you\s+(?:benefit|qualify)\b/i,
+  /immediate\s+advance/i,
+  /after\s+the\s+tax\s+credit/i,
+  // Both
+  /urssaf/i,
 ];
 
 /** Strip script tags (RSC flight payload duplicates all page text) and head. */
@@ -88,13 +104,19 @@ for (const route of FORBIDDEN_ROUTES) {
 
 /**
  * While company.sapDeclaration.number is null, no page anywhere may render the
- * live badge. Pending mode is the only allowed state.
+ * live badge — in either language.
  */
 const companySrc = readFileSync(join(root, 'src/data/company.ts'), 'utf8');
 const sapUnverified = /number:\s*null/.test(companySrc);
 
 if (sapUnverified) {
-  const eligible = ['services/vitres', 'services/terrasse', 'services/menage', 'services/volets-portes'];
+  const eligibleBase = [
+    'services/vitres',
+    'services/terrasse',
+    'services/menage',
+    'services/volets-portes',
+  ];
+  const eligible = [...eligibleBase, ...eligibleBase.map((r) => `en/${r}`)];
   for (const route of eligible) {
     const file = join(out, route, 'index.html');
     if (!existsSync(file)) continue;
@@ -115,5 +137,6 @@ if (failed) {
 }
 
 console.log(
-  `check:compliance OK — ${FORBIDDEN_ROUTES.length} routes clear of tax-credit claims.`,
+  `check:compliance OK — ${FORBIDDEN_ROUTES.length} routes clear of tax-credit claims ` +
+    `(${FORBIDDEN_BASE.length} French + ${FORBIDDEN_BASE.length} English).`,
 );

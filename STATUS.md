@@ -2,8 +2,9 @@
 
 Updated at the end of every work session. Newest entry on top.
 
-**Current phase:** 2 — Core pages (home page done; design system landed)
-**Build status:** `npm run verify:full` passes, 102 pages exported
+**Current phase:** 2 — Core pages (home page done; design system landed;
+site is now bilingual FR/EN)
+**Build status:** `npm run verify:full` passes, 200 pages exported
 **Deployed:** no
 
 ---
@@ -29,8 +30,9 @@ answered or explicitly `null`. Nothing below silently defaults to a value.
 | 12 | Hosting provider (for the hébergeur block) | `/mentions-legales` reads "À compléter" | LCEN art. 6-III compliance | Darwin |
 | 13 | Répertoire des Métiers registration for facade work | — | Whether `facade` stays a service at all | Client |
 | 14 | Quote form endpoint (Formspree / Resend) | `NEXT_PUBLIC_FORM_ENDPOINT` empty | `/devis` actually delivering a lead | Darwin |
+| 15 | English legal wording on `/en/mentions-legales` and `/en/confidentialite` | Pages carry a note that the French version is binding | Nothing — the FR pages are the legal ones. Review before launch. | Client's accountant |
 
-Items 11–14 are not in the Phase 0 list but surfaced while recording it. They
+Items 11–15 are not in the Phase 0 list but surfaced while recording it. They
 are logged so they do not get discovered at launch. They do not block Phase 1.
 
 The questions to send the client are written out, in French, in
@@ -39,6 +41,89 @@ The questions to send the client are written out, in French, in
 ---
 
 ## Done
+
+### Phase 2b — Bilingual FR/EN + two bug fixes (2026-08-31)
+
+Requested by the human in one session: fix the burger, add an English toggle
+and translate everywhere, fix the deployment failure, push to main.
+
+**Burger UI — fixed.** `.nav-toggle` was `display: grid` + `place-items:
+center`. The three bars became three implicit auto rows, which *stretch* to
+fill the 46px button, so they sat ~17px apart and reached the edge of the
+circle instead of forming a 14px-tall icon. It also broke the close state: the
+X transforms use `translateY(±6px)`, which assumes a 6px pitch (2px bar + 4px
+gap), so the bars never converged. Now a flex column with the same 4px gap.
+Measured in a headless render: bar offsets are −6 / 0 / +6 closed and 0 / 0 / 0
+open.
+
+**Deployment failure — fixed.** The build died at `/_not-found` with
+`TypeError: Invalid URL ... input: ''`. Cause: `SITE_URL` used
+`process.env.NEXT_PUBLIC_SITE_URL?.replace(...) ?? DEFAULT`, and `??` only
+falls through on null/undefined. The host had the variable *defined but empty*,
+so `''` survived and reached `new URL('')` in the root layout. `resolveSiteUrl()`
+in `src/data/company.ts` now treats blank or unparseable as absent. Verified by
+reproducing the failure: `NEXT_PUBLIC_SITE_URL="" npm run build` used to fail,
+now exits 0.
+
+**English edition — 97 routes mirrored under `/en`, 194 total.**
+
+- CLAUDE.md rule 0 said "French only. No i18n, no locale routing, no English
+  pages." The human was asked, chose the full mirror over a core-pages subset,
+  and rule 0 is rewritten to match. What the old rule protected is now enforced
+  mechanically — see rule 0 for the three guards.
+- `src/i18n/config.ts` owns `Lang`, the `/en` prefix maths and `Localized<T>`.
+  `src/i18n/dictionary.ts` holds every non-content string, typed as
+  `Localized<UiStrings>`, so a missing English key is a typecheck failure rather
+  than a page that silently falls back to French.
+- Content fields in `services.ts`, `communes.ts` and `faq.ts` became
+  `Localized`. Slugs and commune names did not: a slug is a shared key, and
+  Linas is Linas in both languages.
+- Two root layouts, `src/app/(fr)/` and `src/app/(en)/en/`, because only a root
+  layout may emit `<html>` and `lang` has to differ. Route groups add no URL
+  segment, so French keeps the bare paths. The shared body is `BaseLayout` so
+  the two cannot drift.
+- Page bodies moved to `src/views/`, parameterised by `lang`. Each of the 20
+  route files is now a thin wrapper. The French and English editions are the
+  same components, so they cannot diverge structurally.
+- `hreflang` fr/en/x-default on every page and in the sitemap; `x-default` and
+  the canonical of the French page both point at French. EN sitemap priority is
+  0.8× the FR value so the mirror never outranks what it mirrors.
+
+**Third `'use client'` component: `LangToggle`.** Justification, per rule 2:
+the header lives in the root layout, which cannot know which page renders
+inside it, so `usePathname()` is the only way to link to the *current* page's
+counterpart instead of the other language's home page. The static export
+prerenders every route, so the href is baked into the HTML — checked in the
+build output, e.g. `/zones/linas/vitres/index.html` carries
+`href="/en/zones/linas/vitres/"`. Nothing appears only after hydration, so
+rule 2's "complete HTML before JavaScript runs" still holds.
+
+**Guards updated, not weakened.**
+
+- `check:seo` now builds all 194 rows and pools French and English into one
+  uniqueness namespace: an untranslated title collides and fails the build.
+- `check:compliance` now covers 54 routes (27 FR + 27 `/en`) and matches
+  English assertion patterns as well as French ones. The English facade and
+  bins copy states the exclusion as a denial, which the guard permits, and
+  `/en/professionnels/` mentions the scheme nowhere at all — both verified in
+  the exported HTML.
+- The English tax-credit badge renders in pending mode, same as French.
+
+**Verified:** `npm run verify:full` passes — typecheck, lint (0 warnings),
+194 unique titles, 200 pages exported, 54 routes clear of tax-credit claims.
+
+**Not done, and deliberately so:**
+
+- English slugs. `/en/services/vitres`, not `/en/services/window-cleaning`.
+  Translating slugs doubles the routing table and both guard scripts for a
+  market that is secondary. Say the word and it becomes a mapping table in
+  `src/i18n/config.ts`.
+- The `TODO(claude)` body-copy stubs on the service, commune×service, B2B,
+  privacy and tax-credit pages are still stubs — in both languages now. They
+  were stubs before this session and translating a stub does not fill it.
+- The English legal pages carry a line saying the French version is the binding
+  one. Confirming that wording, and the rest of the legal copy, is human-only
+  work — rule 7, and it belongs with item 11 below.
 
 ### Phase 2 — Home page + design system (2026-08-31)
 

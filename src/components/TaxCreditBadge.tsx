@@ -1,11 +1,15 @@
 import { TAX_CREDIT_RATE, sapVerified, company } from '@/data/company';
 import type { Service } from '@/data/services';
+import { strings } from '@/i18n/dictionary';
+import type { Lang } from '@/i18n/config';
 
 /**
- * The single component allowed to display the tax credit.
+ * The single component allowed to display the tax credit, in either language.
  *
  * Three states, no more. Do not add an override prop. Do not add a `force`
- * flag. Do not render the percentage anywhere else in the codebase.
+ * flag. Do not render the percentage anywhere else in the codebase. The English
+ * edition gets NO extra state and no softer wording: `taxCreditEligible` is the
+ * only input that decides visibility, exactly as in French.
  *
  *   hidden   service is not eligible                     -> null
  *   pending  eligible, but no SAP number confirmed        -> explains the scheme
@@ -15,30 +19,28 @@ import type { Service } from '@/data/services';
  */
 export function TaxCreditBadge({
   service,
+  lang,
   basePriceEur,
 }: {
   service: Service;
+  lang: Lang;
   basePriceEur?: number | null;
 }) {
   // State 1: hidden. Facade, bins, and anything B2B.
   if (!service.taxCreditEligible) return null;
 
+  const t = strings(lang).taxCreditBadge;
   const pct = Math.round(TAX_CREDIT_RATE * 100);
 
   // State 2: pending. Describes the scheme without claiming registration.
   if (!sapVerified) {
     return (
       <aside className="tax-credit tax-credit--pending" data-state="pending">
-        <p>
-          Cette prestation entre dans le champ des Services à la Personne, qui
-          ouvre droit à un crédit d&apos;impôt de {pct} % pour les particuliers.
-        </p>
-        <p className="tax-credit__note">
-          {/* Deliberate wording: no "vous bénéficiez de". Nothing is promised
-              until the cooperative's declaration number is confirmed. */}
-          Les conditions et le numéro de déclaration de l&apos;organisme
-          prestataire vous sont communiqués avec le devis.
-        </p>
+        {/* Deliberate wording in both languages: no "vous bénéficiez de", no
+            "you benefit from". Nothing is promised until the cooperative's
+            declaration number is confirmed. */}
+        <p>{t.pending(pct)}</p>
+        <p className="tax-credit__note">{t.pendingNote}</p>
       </aside>
     );
   }
@@ -52,17 +54,16 @@ export function TaxCreditBadge({
   return (
     <aside className="tax-credit tax-credit--live" data-state="live">
       <p>
-        <strong>{pct} % de crédit d&apos;impôt</strong> pour les particuliers.
+        <strong>{t.live(pct)}</strong>
       </p>
       {after !== null && basePriceEur !== null && basePriceEur !== undefined && (
         <p className="tax-credit__maths">
-          {basePriceEur} € <span aria-hidden="true">→</span>{' '}
-          <strong>{after} €</strong> après crédit d&apos;impôt
+          {basePriceEur} € <span aria-hidden="true">→</span> <strong>{after} €</strong>{' '}
+          {t.liveAfter}
         </p>
       )}
       <p className="tax-credit__note">
-        Prestation facturée par {company.sapDeclaration.holder}, déclaré sous le
-        numéro {company.sapDeclaration.number}.
+        {t.liveNote(company.sapDeclaration.holder ?? '', company.sapDeclaration.number ?? '')}
       </p>
     </aside>
   );

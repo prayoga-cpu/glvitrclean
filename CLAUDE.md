@@ -15,8 +15,26 @@ The entire commercial value of this site is: **rank for `[service] [commune]`
 searches, then convert the visitor into a quote request.** Everything else is
 secondary. If a change does not serve ranking or conversion, it is out of scope.
 
-Language of the site: **French only.** No i18n, no locale routing, no
-English pages. Code, comments, and these docs stay in English.
+Languages: **French and English.** French is primary and owns the bare paths
+(`/services/vitres`); English mirrors it under `/en` (`/en/services/vitres`).
+Slugs are never translated — a slug is a shared key, not copy. Every page exists
+in both editions: 97 routes × 2 = 194.
+
+This rule changed on 2026-08-31, at the human's explicit instruction, replacing
+"French only. No i18n, no locale routing, no English pages." What that old rule
+was protecting still holds, and is now enforced mechanically instead:
+
+- The French edition is the commercial one. `[service] [commune]` searches are
+  French, so EN sitemap priorities are stepped down to 0.8× the FR ones and the
+  mirror never competes with the page it mirrors.
+- Every page emits `hreflang` for `fr`, `en` and `x-default`, `x-default`
+  pointing at French. Without that pair the 194 routes read as duplicates.
+- `npm run check:seo` pools French and English into ONE uniqueness namespace, so
+  an untranslated template that leaves an English title identical to its French
+  twin fails the build.
+
+Code, comments, and these docs stay in English. Add a third language only by
+extending `LANGS` in `src/i18n/config.ts` — never by hand-writing a page.
 
 ---
 
@@ -43,12 +61,19 @@ Hard rules:
 - `<TaxCreditBadge />` renders `null` when `taxCreditEligible` is `false`. Never
   add an override prop, a `force` flag, or a page-level exception.
 - `/professionnels` and any B2B copy must never mention the tax credit, the 50%
-  figure, the `avance immédiate`, or URSSAF. Not even to say it does not apply.
-  The one permitted exception is the global navigation link to `/credit-impot`,
-  which sits outside `<main>`. If a B2B-specific nav is ever built, drop it.
-- `npm run check:compliance` greps the exported HTML inside `<main>` on all 27
-  forbidden routes and fails on any claim. Run it after every build. Do not add
-  an allowlist entry — fix the page.
+  figure, the `avance immédiate`, or URSSAF — **in either language**. Not even
+  to say it does not apply. The one permitted exception is the global
+  navigation link to `/credit-impot` (`Crédit d'impôt` / `Tax credit`), which
+  sits outside `<main>`. If a B2B-specific nav is ever built, drop it.
+- `npm run check:compliance` greps the exported HTML inside `<main>` on all 54
+  forbidden routes — the 27 French ones and their 27 `/en` twins — and fails on
+  any claim, matching French *and* English assertion patterns. Run it after
+  every build. Do not add an allowlist entry — fix the page.
+- Eligibility is a property of the service, never of the language. A translation
+  may not soften or strengthen a claim: the English `eligibilityNote` on
+  `facade` and `poubelles` must stay a denial, and the English FAQ answer on
+  `facade-credit` must not drift into a phrase that reads as an offer. See the
+  header comments in `src/data/services.ts` and `src/data/faq.ts`.
 - The 50% figure must never appear as static text in a page component. It comes
   from `TAX_CREDIT_RATE` in `src/data/company.ts` and always renders through
   `<TaxCreditBadge />`, so it can be switched off globally in one edit.
@@ -70,8 +95,14 @@ exposure, not a design preference. See `docs/04-compliance-sap.md`.
   actions, no route handlers, no middleware, no ISR, no `dynamic = 'force-dynamic'`.
 - **Every page must be complete HTML before JavaScript runs.** Content that only
   appears after hydration does not exist to a crawler.
-- `'use client'` is allowed only in `QuoteForm` and `MobileNav`. Adding it
-  anywhere else requires a written justification in `STATUS.md`.
+- `'use client'` is allowed only in `QuoteForm`, `MobileNav` and `LangToggle`.
+  Adding it anywhere else requires a written justification in `STATUS.md`.
+  `LangToggle` was added on 2026-08-31: the header lives in the root layout,
+  which cannot know which page renders inside it, so `usePathname()` is the only
+  way to point the toggle at the current page's counterpart rather than dumping
+  every visitor on the other language's home page. The export prerenders each
+  route, so the correct href is baked into all 194 HTML files — verified in the
+  build output, not assumed.
 - No client-side data fetching for content. All content is imported from
   `src/data/` at build time.
 - No `localStorage`, no `sessionStorage`, no cookies beyond what a consent
@@ -83,16 +114,22 @@ exposure, not a design preference. See `docs/04-compliance-sap.md`.
 ## 3. SEO rules
 
 - **Every route emits a unique `<title>` and `<meta name="description">`.**
-  This is enforced by `npm run check:seo`, which fails the build on any
-  duplicate. Do not weaken or skip that check.
+  Enforced by `npm run check:seo`, which fails the build on any duplicate,
+  pooling both languages. Do not weaken or skip that check.
+- **Every route emits `hreflang` for `fr`, `en` and `x-default`.** Generated by
+  `toMetadata()` in `src/lib/seo.ts` from the route's `basePath`, and emitted
+  per-URL in `sitemap.ts` too. A page without its pair is a duplicate-content
+  bug, not a cosmetic omission.
 - Titles come from `buildMetadata()` in `src/lib/seo.ts`. Do not hand-write a
   `metadata` export on a page that has a generator available.
 - Every page emits JSON-LD via `src/lib/schema.ts`. Minimum: `LocalBusiness` on
   the home page, `Service` + `areaServed` on service and commune pages,
   `FAQPage` where an FAQ block exists, `BreadcrumbList` on anything nested.
 - `sitemap.ts` and `robots.ts` are generated from `src/lib/routes.ts`. If you add
-  a route, add it to `routes.ts` or it will not be in the sitemap.
-- `public/llms.txt` must stay in sync with the service and commune lists.
+  a route, add it to `routes.ts` — as a locale-free `basePath`, which yields
+  both editions at once — or it will not be in the sitemap.
+- `public/llms.txt` must stay in sync with the service and commune lists, and
+  names both editions.
 - Canonical URLs are absolute and use `SITE_URL` from `src/data/company.ts`.
 - No page may be added without a target query. If you cannot name the search it
   is meant to win, do not create the page.

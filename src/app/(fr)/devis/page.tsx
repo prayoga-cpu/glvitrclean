@@ -1,22 +1,9 @@
-import { allRoutes } from '@/lib/routes';
+import { routeFor } from '@/lib/routes';
 import { buildMetadata } from '@/lib/seo';
-import { QuoteForm } from '@/components/QuoteForm';
-import { CallButton, WhatsAppButton } from '@/components/CallButton';
+import { QuoteView } from '@/views/FixedViews';
 
-const route = allRoutes().find((r) => r.path === '/devis')!;
-export const metadata = buildMetadata(route);
+export const metadata = buildMetadata(routeFor('/devis', 'fr'));
 
-export default function DevisPage() {
-  return (
-    <>
-      <h1>Demander un devis gratuit</h1>
-
-      {/* Call first, WhatsApp second, form third. Do not reorder.
-          See docs/05-conversion-architecture.md. */}
-      <CallButton />
-      <WhatsAppButton />
-
-      <QuoteForm />
-    </>
-  );
+export default function Page() {
+  return <QuoteView lang="fr" />;
 }

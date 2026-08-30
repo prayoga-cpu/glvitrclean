@@ -3,16 +3,22 @@
 import { useState } from 'react';
 import { services } from '@/data/services';
 import { communes } from '@/data/communes';
+import { strings } from '@/i18n/dictionary';
+import type { Lang } from '@/i18n/config';
 
 /**
- * One of only two allowed client components. See CLAUDE.md rule 2.
+ * One of only three allowed client components. See CLAUDE.md rule 2.
  *
  * Three required fields above the fold, everything else optional. Static export
  * has no server, so this posts to a third-party endpoint set in .env.
+ *
+ * `lang` is submitted as a hidden field so whoever answers the lead knows which
+ * language to reply in.
  */
-export function QuoteForm() {
+export function QuoteForm({ lang }: { lang: Lang }) {
   const endpoint = process.env.NEXT_PUBLIC_FORM_ENDPOINT ?? '';
   const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const t = strings(lang).form;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -35,35 +41,37 @@ export function QuoteForm() {
   }
 
   if (state === 'sent') {
-    return <p className="form-success">Merci. Nous vous rappelons rapidement.</p>;
+    return <p className="form-success">{t.success}</p>;
   }
 
   return (
     <form onSubmit={handleSubmit} className="quote-form">
-      <label htmlFor="name">Votre nom</label>
+      <input type="hidden" name="lang" value={lang} />
+
+      <label htmlFor="name">{t.name}</label>
       <input id="name" name="name" type="text" required autoComplete="name" />
 
-      <label htmlFor="phone">Votre téléphone</label>
+      <label htmlFor="phone">{t.phone}</label>
       <input id="phone" name="phone" type="tel" required autoComplete="tel" />
 
-      <label htmlFor="service">Ce qu&apos;il faut nettoyer</label>
+      <label htmlFor="service">{t.whatToClean}</label>
       <select id="service" name="service" required defaultValue="">
         <option value="" disabled>
-          Choisir une prestation
+          {t.choosePlaceholder}
         </option>
         {services.map((s) => (
           <option key={s.slug} value={s.slug}>
-            {s.name}
+            {s.name[lang]}
           </option>
         ))}
       </select>
 
       <details className="quote-form__optional">
-        <summary>Précisions (facultatif)</summary>
+        <summary>{t.optional}</summary>
 
-        <label htmlFor="commune">Commune</label>
+        <label htmlFor="commune">{t.commune}</label>
         <select id="commune" name="commune" defaultValue="">
-          <option value="">Choisir</option>
+          <option value="">{t.choose}</option>
           {communes.map((c) => (
             <option key={c.slug} value={c.slug}>
               {c.name}
@@ -72,37 +80,34 @@ export function QuoteForm() {
         </select>
 
         {/* This question filters out jobs a solo operator cannot safely take. */}
-        <label htmlFor="access">Accès</label>
+        <label htmlFor="access">{t.access}</label>
         <select id="access" name="access" defaultValue="">
-          <option value="">Choisir</option>
-          <option value="plain-pied">Plain-pied</option>
-          <option value="etage">Étage</option>
-          <option value="veranda">Véranda ou fenêtre de toit</option>
-          <option value="hauteur">Hauteur difficile</option>
+          <option value="">{t.choose}</option>
+          <option value="plain-pied">{t.accessGround}</option>
+          <option value="etage">{t.accessUpstairs}</option>
+          <option value="veranda">{t.accessVeranda}</option>
+          <option value="hauteur">{t.accessHigh}</option>
         </select>
 
-        <label htmlFor="details">Surface ou nombre de fenêtres</label>
+        <label htmlFor="details">{t.details}</label>
         <textarea id="details" name="details" rows={3} />
 
-        <label htmlFor="email">E-mail</label>
+        <label htmlFor="email">{t.email}</label>
         <input id="email" name="email" type="email" autoComplete="email" />
       </details>
 
       <label className="quote-form__consent">
         <input type="checkbox" name="consent" required />
-        <span>
-          J&apos;accepte que mes informations soient utilisées pour me
-          recontacter au sujet de ma demande.
-        </span>
+        <span>{t.consent}</span>
       </label>
 
       <button type="submit" disabled={state === 'sending'}>
-        {state === 'sending' ? 'Envoi…' : 'Demander un devis gratuit'}
+        {state === 'sending' ? t.sending : t.submit}
       </button>
 
       {state === 'error' && (
         <p className="form-error" role="alert">
-          L&apos;envoi a échoué. Appelez-nous directement.
+          {t.error}
         </p>
       )}
     </form>

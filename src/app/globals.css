@@ -471,6 +471,37 @@ ol {
 }
 
 /* =========================================================================
+   Language toggle
+
+   Shown at every width, next to the burger on small screens. It is the only
+   affordance a visitor has for finding the other edition, so it never hides
+   behind the mobile disclosure.
+   ========================================================================= */
+
+.lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.375rem;
+  height: 2.375rem;
+  padding: 0 0.5625rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-brand-deep);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: var(--tracking-tight);
+  flex: none;
+  transition: border-color var(--transition), color var(--transition);
+}
+
+.lang-toggle:hover {
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+}
+
+/* =========================================================================
    Mobile navigation (the second and last allowed client component)
    ========================================================================= */
 

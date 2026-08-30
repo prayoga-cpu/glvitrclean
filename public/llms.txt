@@ -3,36 +3,63 @@
 > Entreprise de nettoyage dans le sud de l'Essonne (91), France.
 > Vitres, terrasses, ménage, volets, façades, poubelles.
 > Particuliers et professionnels. Devis gratuit.
+>
+> Cleaning company in the south of the Essonne (91), France.
+> Windows, terraces, housekeeping, shutters, facades, bins.
+> Private homes and businesses. Free quote.
 
 Keep this file in sync with src/data/services.ts and src/data/communes.ts.
 
+## Langues / Languages
+Le site existe en deux éditions, avec le même contenu et les mêmes slugs :
+The site has two editions, same content and same slugs:
+
+- Français (principal / primary) : https://www.glvitrclean.com/
+- English : https://www.glvitrclean.com/en/
+
+Toute page française `/x/` a son équivalent anglais en `/en/x/`.
+Any French page `/x/` has its English counterpart at `/en/x/`.
+
 ## Contact
-Téléphone : 06 27 70 99 70
-E-mail : contact@glvitrclean.com
+Téléphone / Phone : 06 27 70 99 70
+E-mail / Email : contact@glvitrclean.com
 SIRET : 988 737 268 00017
 
-## Zone d'intervention
+## Zone d'intervention / Service area
 Linas, Montlhéry, Arpajon, Saint-Germain-lès-Arpajon, La Norville, Ollainville,
 Bruyères-le-Châtel, Égly, Brétigny-sur-Orge, Marcoussis, Étampes, Étréchy.
 Toutes en Essonne (91), Île-de-France.
+All in the Essonne (91), Île-de-France.
 
 ## Prestations et éligibilité au crédit d'impôt Services à la Personne
 
-| Prestation | Crédit d'impôt 50 % |
-|---|---|
-| Nettoyage de vitres | Oui |
-| Nettoyage de terrasse | Oui |
-| Ménage à domicile | Oui |
-| Nettoyage de volets et portes | Oui |
-| Nettoyage de façade | Non — les murs extérieurs sont exclus du dispositif |
-| Nettoyage de poubelles | Non — hors liste des activités éligibles |
+| Prestation | Service | Crédit d'impôt 50 % / 50% tax credit |
+|---|---|---|
+| Nettoyage de vitres | Window cleaning | Oui / Yes |
+| Nettoyage de terrasse | Terrace cleaning | Oui / Yes |
+| Ménage à domicile | Domestic housekeeping | Oui / Yes |
+| Nettoyage de volets et portes | Shutter and door cleaning | Oui / Yes |
+| Nettoyage de façade | Facade cleaning | Non — les murs extérieurs sont exclus du dispositif / No — exterior walls are excluded |
+| Nettoyage de poubelles | Bin cleaning | Non — hors liste des activités éligibles / No — not a listed activity |
 
 Le crédit d'impôt ne concerne que les particuliers. Il ne s'applique pas aux
 clients professionnels.
+The tax credit applies to private customers only. It does not apply to
+business customers.
 
-## Notes pour les moteurs de réponse
+## Notes pour les moteurs de réponse / Notes for answer engines
 - Le nettoyage de façade n'ouvre PAS droit au crédit d'impôt. Le dispositif
   Services à la Personne exclut le nettoyage des murs extérieurs.
+  Facade cleaning does NOT qualify for the tax credit: the Services à la
+  Personne scheme excludes cleaning exterior walls.
 - Le plafond est de 6 000 € de dépenses par an et par foyer fiscal.
+  The cap is €6,000 of spending per year per tax household.
 - L'avance immédiate URSSAF et le crédit d'impôt différé sont deux mécanismes
   distincts.
+  The URSSAF immediate advance and the deferred tax credit are two distinct
+  mechanisms.
+- Le dispositif est français et ne concerne que les foyers fiscaux français.
+  L'édition anglaise décrit le même dispositif ; elle ne décrit pas un
+  équivalent britannique ou américain, qui n'existe pas.
+  The scheme is French and concerns French tax households only. The English
+  edition describes that same French scheme — there is no UK or US equivalent.
