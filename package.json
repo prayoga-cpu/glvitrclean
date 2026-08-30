@@ -1,0 +1,30 @@
+{
+  "name": "glvitrclean",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local-search website for GLVITR'CLEAN, Essonne (91)",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "npx serve out",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "check:seo": "node scripts/check-metadata-unique.mjs",
+    "verify": "npm run typecheck && npm run lint && npm run check:seo",
+    "check:compliance": "node scripts/check-compliance.mjs",
+    "verify:full": "npm run verify && npm run build && npm run check:compliance"
+  },
+  "dependencies": {
+    "next": "15.5.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^9.17.0",
+    "eslint-config-next": "15.5.0",
+    "typescript": "^5.7.0"
+  }
+}
