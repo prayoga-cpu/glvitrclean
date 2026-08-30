@@ -3,8 +3,25 @@
  * Anything shown in the footer, mentions légales, or JSON-LD comes from here.
  */
 
-export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ?? 'https://www.glvitrclean.com';
+const DEFAULT_SITE_URL = 'https://www.glvitrclean.com';
+
+/**
+ * `??` only falls through on null/undefined, so a host that defines
+ * NEXT_PUBLIC_SITE_URL but leaves it blank used to yield '' — which reached
+ * `new URL('')` in layout.tsx and failed the production build with
+ * ERR_INVALID_URL. Blank or unparseable is treated as absent.
+ */
+function resolveSiteUrl(): string {
+  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, '');
+  if (!raw) return DEFAULT_SITE_URL;
+  try {
+    return new URL(raw).toString().replace(/\/$/, '');
+  } catch {
+    return DEFAULT_SITE_URL;
+  }
+}
+
+export const SITE_URL = resolveSiteUrl();
 
 /** Tax credit rate as a fraction. Change here, changes everywhere. */
 export const TAX_CREDIT_RATE = 0.5;
