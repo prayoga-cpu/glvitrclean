@@ -481,8 +481,16 @@ ol {
   background: var(--color-brand);
   border: none;
   cursor: pointer;
-  display: grid;
-  place-items: center;
+  /*
+    Flex column, not grid. `display: grid` + `place-items: center` created three
+    implicit auto rows which stretched to fill the 46px button, so the bars sat
+    ~17px apart instead of 4px and reached the edge of the circle. It also broke
+    the X below, whose translateY(6px) assumes a 6px pitch (2px bar + 4px gap).
+  */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 0.25rem;
   padding: 0;
   flex: none;
