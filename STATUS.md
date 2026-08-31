@@ -32,7 +32,7 @@ answered or explicitly `null`. Nothing below silently defaults to a value.
 | 13 | Répertoire des Métiers registration for facade work | — | Whether `facade` stays a service at all | Client |
 | 14 | Quote form endpoint (Formspree / Resend) | `NEXT_PUBLIC_FORM_ENDPOINT` empty | `/devis` actually delivering a lead | Darwin |
 | 15 | English legal wording on `/en/mentions-legales` and `/en/confidentialite` | Pages carry a note that the French version is binding | Nothing — the FR pages are the legal ones. Review before launch. | Client's accountant |
-| 16 | New logo file + how to use it | Not in the repo; `src/components/Logo.tsx` still draws the prototype mark | Any logo change | Darwin |
+| 16 | **New logo FILE.** Usage is decided: full lockup, drop the separate wordmark (see below). Only the asset is missing. | Not in the repo; `src/components/Logo.tsx` still draws the prototype mark | Any logo change | Darwin |
 | 17 | Next.js 15 reaches EOL 2026-10-21 | `next@15.5.24` pinned in `package.json` | The next CVE gate will have no 15.x patch to move to | Darwin |
 
 Items 11–17 are not in the Phase 0 list but surfaced while recording it. They
@@ -89,8 +89,25 @@ unique titles, 200 pages exported, 54 routes clear.
 
 **Not done: the logo.** The human supplied a new lockup (peach circle, blue G,
 yellow L, serif "VITR'CLEAN") as a chat image. I cannot write an image I was
-shown — the file has to land in the repo. It is also not a drop-in swap; see
-"Blocked on human" item 16.
+only shown — the file has to land in the repo. Blocked on human item 16.
+
+Usage IS decided, so this is ready to implement the moment the asset appears.
+Darwin chose **full lockup, drop the separate wordmark**:
+
+- Drop `.brand__word` ("GLVITR'CLEAN") from the header and footer; the lockup
+  carries the name itself. `Brand()` in `src/components/SiteChrome.tsx` renders
+  both today.
+- The header bar grows: the wordmark inside the lockup has to stay legible, so
+  the brand block can no longer be a 34px mark. `.site-header__bar` padding and
+  `.brand__mark` sizing both need revisiting, and the 46px burger and the
+  `lang-toggle` pill were sized against the current bar height.
+- Two things to settle when the file lands, both consequences of this choice
+  rather than objections to it: the peach circle is not in the palette and sits
+  on the cream `--color-bg` and on the blue footer, where the current mark
+  inverts via `<Logo inverse />`; and `src/app/icon.svg` plus
+  `public/assets/brand/logo-mark{,-inverse}.svg` still carry the prototype mark.
+- Prefer SVG. The current mark is inline SVG, which costs no request and cannot
+  404; a PNG would be the site's only blocking brand asset.
 
 ### Phase 2d — Mobile nav + inner-page spacing (2026-08-31)
 
