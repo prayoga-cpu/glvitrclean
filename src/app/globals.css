@@ -1421,7 +1421,9 @@ ol {
   }
 }
 
-/* Keeps the sticky bar from covering the footer's last line. */
+/* No-JS fallback only: keeps the sticky bar off the footer's last line when
+   ScrollChrome never runs. With JS the bar hides entirely while the footer is
+   on screen, so this padding is simply unused. */
 @media (max-width: 47.99rem) {
   .site-footer {
     padding-bottom: 5.5rem;
@@ -1727,7 +1729,11 @@ ol {
    ========================================================================= */
 
 :root[data-scroll='up'] .call-button--sticky,
-:root[data-scroll='top'] .call-button--sticky {
+:root[data-scroll='top'] .call-button--sticky,
+/* The footer carries its own full-size call CTA, and the fixed bar was sitting
+   on top of the footer heading. Hide it for as long as the footer is on
+   screen. `data-footer` is set by ScrollChrome's IntersectionObserver. */
+:root[data-footer='visible'] .call-button--sticky {
   transform: translateY(100%);
 }
 

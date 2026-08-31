@@ -45,6 +45,33 @@ The questions to send the client are written out, in French, in
 
 ## Done
 
+### Phase 2f — Sticky call bar no longer covers the footer (2026-08-31)
+
+Reported from a mobile screenshot: the fixed call bar sat on top of the
+footer's "Parlons de vos surfaces" heading.
+
+The footer already carries its own full-size call CTA, so the sticky bar has
+nothing to add once the footer is on screen. `ScrollChrome` now also runs an
+IntersectionObserver on `.site-footer` and sets `<html data-footer="visible">`;
+CSS hides the bar while that is set. No new client component — the observer
+lives in the one that already existed.
+
+`.site-footer { padding-bottom: 5.5rem }` stays, downgraded to the no-JS
+fallback and commented as such.
+
+Verification, stated honestly: the CSS is proven — a static page with
+`data-footer="visible"` baked in and no JS at all hides the bar, and the
+control without it reproduces the overlap. The observer itself could NOT be
+exercised here: IntersectionObserver callbacks fire during the rendering step,
+and headless Chrome under `--virtual-time-budget` never runs it (measured: 0
+callbacks). The usage is textbook, but it is worth one look on a real phone.
+
+Same limitation already bit the scroll work in phase 2e — headless does not
+dispatch scroll events from a programmatic `scrollTo` either. Anything
+direction- or viewport-driven in this repo has to be verified in two halves:
+CSS by baking the attribute into a JS-free page, and logic by dispatching
+events by hand.
+
 ### Phase 2e — Scroll-aware chrome + mobile CTA (2026-08-31)
 
 **Mobile "Free quote" button had lost its horizontal padding.** `.mobile-nav a`

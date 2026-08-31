@@ -64,9 +64,38 @@ export function ScrollChrome() {
     apply();
     window.addEventListener('scroll', apply, { passive: true });
 
+    /*
+      The sticky call bar is fixed to the bottom of the viewport, so once the
+      footer scrolls into view it sits on top of the footer's own content — it
+      was covering the "Parlons de vos surfaces" heading. The footer already
+      carries a full-size call CTA of its own, so the sticky bar has nothing
+      left to offer there: hide it for as long as any part of the footer is on
+      screen.
+
+      `.site-footer { padding-bottom }` in the stylesheet stays as the no-JS
+      fallback; this is the fix for everyone else.
+    */
+    const footer = document.querySelector('.site-footer');
+    let observer: IntersectionObserver | undefined;
+
+    if (footer && typeof IntersectionObserver !== 'undefined') {
+      observer = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          if (!entry) return;
+          if (entry.isIntersecting) root.dataset.footer = 'visible';
+          else delete root.dataset.footer;
+        },
+        { threshold: 0 },
+      );
+      observer.observe(footer);
+    }
+
     return () => {
       window.removeEventListener('scroll', apply);
+      observer?.disconnect();
       delete root.dataset.scroll;
+      delete root.dataset.footer;
     };
   }, []);
 
