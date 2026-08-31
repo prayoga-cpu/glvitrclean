@@ -1,21 +1,39 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { company } from '@/data/company';
 import { services } from '@/data/services';
 import { MobileNav } from '@/components/MobileNav';
 import { LangToggle } from '@/components/LangToggle';
-import { Logo } from '@/components/Logo';
 import { strings } from '@/i18n/dictionary';
 import { href, type Lang } from '@/i18n/config';
 
-/** Wordmark. The apostrophe is the accent colour, per the supplied logo. */
-function Brand({ inverse = false }: { inverse?: boolean }) {
+/**
+ * The client's own logo, downloaded from the live site at glvitrclean.com.
+ *
+ * It is the full lockup — circle mark AND the "VITR'CLEAN" wordmark are both
+ * inside the artwork — so there is deliberately no separate text wordmark next
+ * to it any more. Rendering both would print the name twice.
+ *
+ * The source PNG has an opaque white background covering 72% of the canvas,
+ * which would have shown as a white square on the cream page and the blue
+ * footer. `public/assets/brand/logo.png` is the same artwork with that outer
+ * white flood-filled to transparent and cropped to the mark; `logo.webp` is the
+ * 512px-tall web copy. `logo-original.png` keeps the untouched 1024px download
+ * for print and the Google Business Profile.
+ *
+ * There is no `inverse` variant: it is a raster, not the old two-tone SVG. The
+ * peach circle carries enough contrast to sit on the blue footer as-is.
+ */
+function Brand({ size = 'header' }: { size?: 'header' | 'footer' }) {
   return (
-    <span className="brand">
-      <Logo inverse={inverse} />
-      <span className="brand__word">
-        GLVITR<em>’</em>CLEAN
-      </span>
-    </span>
+    <Image
+      src="/assets/brand/logo.webp"
+      alt={company.displayName}
+      width={441}
+      height={512}
+      className={`brand__lockup brand__lockup--${size}`}
+      priority={size === 'header'}
+    />
   );
 }
 
@@ -94,7 +112,7 @@ export function SiteFooter({ lang }: { lang: Lang }) {
 
         <div className="site-footer__cols">
           <div className="site-footer__about">
-            <Brand inverse />
+            <Brand size="footer" />
             <p>{t.footer.about}</p>
           </div>
 

@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34 34" role="img" aria-label="GLVITR'CLEAN">
-  <title>GLVITR'CLEAN</title>
-  <defs><clipPath id="glv-c"><circle cx="17" cy="17" r="17"/></clipPath></defs>
-  <g clip-path="url(#glv-c)">
-    <rect width="34" height="34" fill="#FFFFFF"/>
-    <polygon points="-4.48,0.00 14.52,0.00 3.48,34.00 -15.52,34.00" fill="#F7C53F"/>
-    <polygon points="20.52,0.00 25.52,0.00 14.48,34.00 9.48,34.00" fill="#1B3A9C" fill-opacity="1"/>
-  </g>
-</svg>

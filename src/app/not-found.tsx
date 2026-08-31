@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import './globals.css';
-import { Logo } from '@/components/Logo';
+import Image from 'next/image';
 import { company } from '@/data/company';
 import { strings } from '@/i18n/dictionary';
 import { href } from '@/i18n/config';
@@ -44,12 +44,13 @@ export default function NotFound() {
   return (
     <main className="container not-found">
       <Link href="/" aria-label={`${company.displayName} — ${fr.common.homeLabel}`}>
-        <span className="brand">
-          <Logo />
-          <span className="brand__word">
-            GLVITR<em>’</em>CLEAN
-          </span>
-        </span>
+        <Image
+          src="/assets/brand/logo.webp"
+          alt={company.displayName}
+          width={441}
+          height={512}
+          className="brand__lockup brand__lockup--header"
+        />
       </Link>
 
       <div lang="fr">

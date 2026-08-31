@@ -32,7 +32,7 @@ answered or explicitly `null`. Nothing below silently defaults to a value.
 | 13 | Répertoire des Métiers registration for facade work | — | Whether `facade` stays a service at all | Client |
 | 14 | Quote form endpoint (Formspree / Resend) | `NEXT_PUBLIC_FORM_ENDPOINT` empty | `/devis` actually delivering a lead | Darwin |
 | 15 | English legal wording on `/en/mentions-legales` and `/en/confidentialite` | Pages carry a note that the French version is binding | Nothing — the FR pages are the legal ones. Review before launch. | Client's accountant |
-| 16 | **New logo FILE.** Usage is decided: full lockup, drop the separate wordmark (see below). Only the asset is missing. | Not in the repo; `src/components/Logo.tsx` still draws the prototype mark | Any logo change | Darwin |
+| ~~16~~ | ~~New logo file~~ — **resolved 2026-08-31.** Downloaded from the client's live site at glvitrclean.com and landed in `public/assets/brand/`. | — | — | — |
 | 17 | Next.js 15 reaches EOL 2026-10-21 | `next@15.5.24` pinned in `package.json` | The next CVE gate will have no 15.x patch to move to | Darwin |
 
 Items 11–17 are not in the Phase 0 list but surfaced while recording it. They
@@ -44,6 +44,54 @@ The questions to send the client are written out, in French, in
 ---
 
 ## Done
+
+### Phase 2g — Real logo landed, downloaded from the client's live site (2026-08-31)
+
+Item 16 is closed. The asset could not be produced from a chat attachment, but
+it was already published on the client's existing site at glvitrclean.com, so I
+took it from there.
+
+What was actually on that page: it is an IONOS "MyWebsite NOW" site with exactly
+**two** images, both the same artwork — the nav logo (7 srcset sizes) and the
+favicon (4 sizes) — plus three inline base64 SVG UI icons belonging to the site
+builder, not to the brand. There is no photography on it at all. So "all images
+on the page" is the logo, and nothing was left behind.
+
+Files now in `public/assets/brand/`:
+
+| file | what it is |
+|---|---|
+| `logo-original.png` | 1024x1024, byte-for-byte as published. Archival — print, Google Business Profile. |
+| `logo.png` | 596x691, outer white removed, cropped to the artwork. Working source. |
+| `logo.webp` | 441x512, 17 KB. What the site actually loads. |
+
+The download had an **opaque white background covering 72% of the canvas** —
+every one of its 127 palette entries was alpha 255, despite a tRNS chunk being
+present. Dropped in as-is it would have been a white square on the cream page
+and on the blue footer. Fixed by flood-filling the white *from the edges only*,
+so the 2,804 white pixels enclosed inside the mark (the sliver in the G) are
+preserved rather than punched out. Checked against cream, blue, white and a
+transparency checkerboard: no fringing.
+
+`src/app/icon.svg` (prototype mark) replaced by `src/app/icon.png`, 512x512
+square transparent. `src/components/Logo.tsx` and
+`public/assets/brand/logo-mark{,-inverse}.svg` deleted — the prototype mark they
+drew is superseded, and leaving a second logo implementation around invites
+drift.
+
+Per the earlier decision the separate `GLVITR'CLEAN` text wordmark is gone from
+header, footer and 404: the lockup contains "VITR'CLEAN" itself, so rendering
+both printed the name twice. `.brand`, `.brand__mark` and `.brand__word` are
+gone with it; `.brand__lockup` sizes the image (4rem header, 6rem footer,
+3.25rem under 30rem).
+
+**One thing worth a second look.** The lockup is portrait and detailed, and the
+wordmark inside it does not survive header scale — at 64px tall "VITR'CLEAN"
+renders as a smudge, and the mark reads smaller and muddier than the old
+mark-plus-text pairing did. That is inherent to using a full lockup as a header
+logo, not a bug in the implementation. Switching to mark-only (crop the circle,
+restore the text wordmark) is a contained change if Darwin wants it — the
+artwork is already in the repo either way.
 
 ### Phase 2f — Sticky call bar no longer covers the footer (2026-08-31)
 

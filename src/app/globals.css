@@ -449,35 +449,34 @@ ol {
   gap: clamp(0.75rem, 2.5vw, 1.5rem);
 }
 
-.brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6875rem;
-  flex: none;
-}
+/*
+  The client's logo is a full lockup — the "VITR'CLEAN" wordmark lives inside
+  the artwork — so there is no separate text wordmark beside it any more, and
+  the old .brand / .brand__mark / .brand__word rules are gone with it.
 
-.brand__mark {
-  width: 2.125rem;
-  height: 2.125rem;
-  flex: none;
+  It is portrait (441x512), so height drives the size and width follows. The
+  header bar is taller than it was for exactly this reason: the wordmark is part
+  of the image, and shrinking the image to the old 34px mark height rendered it
+  as an unreadable smudge.
+*/
+.brand__lockup {
   display: block;
+  width: auto;
+  flex: none;
 }
 
-.brand__word {
-  font-size: var(--text-xl);
-  font-weight: 700;
-  letter-spacing: var(--tracking-tight);
-  color: var(--color-brand-deep);
-  white-space: nowrap;
+.brand__lockup--header {
+  height: 4rem;
 }
 
-.brand__word em {
-  font-style: normal;
-  color: var(--color-accent);
+.brand__lockup--footer {
+  height: 6rem;
 }
 
-.site-footer .brand__word {
-  color: var(--color-on-brand);
+@media (max-width: 30rem) {
+  .brand__lockup--header {
+    height: 3.25rem;
+  }
 }
 
 .site-nav {
