@@ -1444,3 +1444,38 @@ ol {
     animation: none;
   }
 }
+
+/* =========================================================================
+   404
+
+   The global not-found renders its own document shell (see
+   src/app/not-found.tsx), so it gets a little standalone layout here rather
+   than inheriting the header/footer chrome.
+   ========================================================================= */
+
+.not-found {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding-top: clamp(2rem, 8vw, 5rem);
+  padding-bottom: clamp(2rem, 8vw, 5rem);
+}
+
+.not-found h1 {
+  margin: 0.5rem 0 0;
+}
+
+.not-found__rule {
+  width: 100%;
+  max-width: 22rem;
+  border: 0;
+  border-top: 1px solid var(--color-border);
+  margin: 1rem 0;
+}
+
+.not-found__call {
+  margin-top: 0.75rem;
+}

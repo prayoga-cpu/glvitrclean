@@ -5,7 +5,7 @@ Updated at the end of every work session. Newest entry on top.
 **Current phase:** 2 — Core pages (home page done; design system landed;
 site is now bilingual FR/EN)
 **Build status:** `npm run verify:full` passes, 200 pages exported
-**Deployed:** no
+**Deployed:** no — three failed Vercel attempts, both causes now fixed (see below)
 
 ---
 
@@ -41,6 +41,82 @@ The questions to send the client are written out, in French, in
 ---
 
 ## Done
+
+### Phase 2c — Unblock the Vercel deploy (2026-08-31)
+
+Three production deploys had failed. Diagnosed with the Vercel CLI
+(`vercel inspect --logs`), which showed the two causes were *different*.
+
+**Cause 1 (already fixed in phase 2b): `Invalid URL`.** Confirmed dead. The
+latest build log shows `Build Completed in /vercel/output [44s]` with all 194
+routes generated on the builder. The blank-env fix worked.
+
+**Cause 2 (this entry): Vercel's post-build security gate.**
+
+    Build Completed in /vercel/output [44s]
+    Deploying outputs...
+    Vulnerable version of Next.js detected, please update immediately.
+
+The build *succeeds* and is then rejected at deploy time. next@15.5.0 carries
+GHSA-9qr9-h5gf-34mp — RCE in the React flight protocol, CVSS 10.0 — patched on
+the 15.5.x line in 15.5.7.
+
+Version choice, measured against OSV rather than guessed:
+
+| version            | vulns | critical |
+|--------------------|-------|----------|
+| 15.5.0 (was)       | 26    | 1        |
+| 15.5.7             | 28    | 0 (13 high) |
+| **15.5.24** (now)  | **0** | 0        |
+| 16.0.7             | 33    | 0 (14 high) |
+| 16.3.3 (latest)    | 0     | 0        |
+
+Took **15.5.24** — the `backport` dist-tag — not 16.3.3. Both are clean, but
+15.5.24 is a patch bump inside the same minor, so it carries no major-version
+migration risk for the two root layouts, the route groups, or the 194-route
+static export. 16.x stays available if a reason to move appears.
+
+`eslint-config-next` bumped to 15.5.24 to match.
+
+Verified output-neutral, which is the point: the visible markup of all 194
+routes is **byte-identical** before and after the upgrade (scripts stripped, so
+build-id / chunk-hash / RSC module-id churn is excluded). sitemap.xml is
+identical once `lastmod` is normalised; robots.txt is identical byte for byte.
+
+`npm audit` still lists `next` as *moderate*, which is misleading: its `via` is
+`["postcss"]`, i.e. inherited from a transitive dep, not a Next.js advisory.
+Next.js itself has zero. Remaining transitive findings, neither reachable here:
+
+- `postcss <=8.5.22` — build-time only, processes our own CSS, bundled by Next.
+- `sharp <0.35.0` — image optimisation, which `images.unoptimized: true`
+  disables and a static export never runs.
+
+**Bug found and fixed while verifying: the 404 was not the bilingual page.**
+
+Phase 2b claimed the export emitted a bilingual 404. It did not. That was
+asserted from the source file without checking the artifact — `out/404.html`
+was Next's bare built-in error page: no chrome, no stylesheet, no French.
+
+Cause: phase 2b put `not-found.tsx` inside the `(fr)/` route group. A
+group-scoped not-found only serves `notFound()` calls *within* that group; the
+global 404 must live at `src/app/not-found.tsx`. Moved there.
+
+Sitting above both route groups it has no root layout, so Next injects its own
+`<html><head><body>` shell. The first attempt rendered its own `<html>` too and
+produced *nested* html/body — invalid markup browsers silently discard. It now
+returns a fragment. Consequence, accepted deliberately: that page cannot set a
+document `lang`. That is right here and nowhere else — one 404.html serves
+unmatched paths in both editions, so there is no single correct document
+language; each block carries its own `lang` instead.
+
+Verified in the artifact, not the source: one `<html>`, one `<body>`,
+`<main class="container not-found">`, both languages, both home links, styled.
+
+**Verified:** `npm run verify:full` passes — typecheck, lint (0 warnings), 194
+unique titles, 200 pages exported, 54 routes clear of tax-credit claims.
+
+**Still blocked on human:** nothing new. The deploy itself is item 4/12
+territory — this only makes the build *able* to deploy.
 
 ### Phase 2b — Bilingual FR/EN + two bug fixes (2026-08-31)
 
