@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { faqForPage } from '@/data/faq';
 import { faqSchema } from '@/lib/schema';
 import { JsonLd } from '@/components/JsonLd';
@@ -8,14 +7,14 @@ import { CallButton, WhatsAppButton } from '@/components/CallButton';
 import { services, b2bServices } from '@/data/services';
 import { sapVerified, company, TAX_CREDIT_ANNUAL_CAP } from '@/data/company';
 import { strings } from '@/i18n/dictionary';
-import { href, type Lang } from '@/i18n/config';
+import type { Lang } from '@/i18n/config';
 
 export function TaxCreditView({ lang }: { lang: Lang }) {
   const t = strings(lang);
   const entries = faqForPage('credit-impot');
 
   return (
-    <>
+    <div className="page">
       <JsonLd data={faqSchema(entries, lang)} />
 
       <h1>{t.taxCreditPage.h1}</h1>
@@ -29,25 +28,29 @@ export function TaxCreditView({ lang }: { lang: Lang }) {
       <section>
         <h2>{t.taxCreditPage.tableHeading}</h2>
         {/* This table is the trust play. Every competitor stays vague about
-            the exclusions. Stating them plainly wins the snippet. */}
-        <table>
-          <thead>
-            <tr>
-              <th>{t.taxCreditPage.colService}</th>
-              <th>{t.taxCreditPage.colEligible}</th>
-              <th>{t.taxCreditPage.colWhy}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {services.map((s) => (
-              <tr key={s.slug}>
-                <td>{s.name[lang]}</td>
-                <td>{s.taxCreditEligible ? t.taxCreditPage.yes : t.taxCreditPage.no}</td>
-                <td>{s.eligibilityNote[lang]}</td>
+            the exclusions. Stating them plainly wins the snippet.
+            The wrapper lets it scroll itself on a phone instead of forcing the
+            whole page sideways. */}
+        <div className="table-wrap">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>{t.taxCreditPage.colService}</th>
+                <th>{t.taxCreditPage.colEligible}</th>
+                <th>{t.taxCreditPage.colWhy}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {services.map((s) => (
+                <tr key={s.slug}>
+                  <td>{s.name[lang]}</td>
+                  <td>{s.taxCreditEligible ? t.taxCreditPage.yes : t.taxCreditPage.no}</td>
+                  <td>{s.eligibilityNote[lang]}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <p>{t.taxCreditPage.cap(String(TAX_CREDIT_ANNUAL_CAP))}</p>
@@ -66,7 +69,7 @@ export function TaxCreditView({ lang }: { lang: Lang }) {
       )}
 
       <Faq entries={entries} lang={lang} />
-    </>
+    </div>
   );
 }
 
@@ -83,7 +86,7 @@ export function BusinessView({ lang }: { lang: Lang }) {
   const t = strings(lang);
 
   return (
-    <>
+    <div className="page">
       <h1>{t.b2b.h1}</h1>
 
       {/* TODO(claude): B2B copy. Vitrines, bureaux, façades, conteneurs.
@@ -92,7 +95,7 @@ export function BusinessView({ lang }: { lang: Lang }) {
 
       <section>
         <h2>{t.b2b.interventions}</h2>
-        <ul>
+        <ul className="service-notes">
           {b2bServices.map((s) => (
             <li key={s.slug}>
               <strong>{s.name[lang]}</strong>
@@ -103,7 +106,7 @@ export function BusinessView({ lang }: { lang: Lang }) {
       </section>
 
       <CallButton lang={lang} />
-    </>
+    </div>
   );
 }
 
@@ -111,27 +114,31 @@ export function QuoteView({ lang }: { lang: Lang }) {
   const t = strings(lang);
 
   return (
-    <>
+    <div className="page">
       <h1>{t.quote.h1}</h1>
 
       {/* Call first, WhatsApp second, form third. Do not reorder.
-          See docs/05-conversion-architecture.md. */}
-      <CallButton lang={lang} />
-      <WhatsAppButton lang={lang} />
+          See docs/05-conversion-architecture.md. The two buttons need a flex
+          row of their own — as bare siblings they sat flush against each
+          other and against the form card below. */}
+      <div className="actions">
+        <CallButton lang={lang} />
+        <WhatsAppButton lang={lang} />
+      </div>
 
       <QuoteForm lang={lang} />
-    </>
+    </div>
   );
 }
 
 export function WorkView({ lang }: { lang: Lang }) {
   return (
-    <>
+    <div className="page">
       <h1>{strings(lang).work.h1}</h1>
       {/* TODO(claude): gallery. Real photos only, from the client's Drive folder.
           Placeholder images live in public/assets/placeholder/ and must be
           visibly marked. Never invent a photo or a location. */}
-    </>
+    </div>
   );
 }
 
@@ -152,7 +159,7 @@ export function LegalNoticeView({ lang }: { lang: Lang }) {
   const t = strings(lang);
 
   return (
-    <>
+    <div className="page">
       <h1>{t.legal.noticeH1}</h1>
       <CourtesyNote lang={lang} />
 
@@ -179,7 +186,7 @@ export function LegalNoticeView({ lang }: { lang: Lang }) {
 
       <h2>{t.legal.insurance}</h2>
       <p>{t.legal.toComplete}</p>
-    </>
+    </div>
   );
 }
 
@@ -187,25 +194,12 @@ export function PrivacyView({ lang }: { lang: Lang }) {
   const t = strings(lang);
 
   return (
-    <>
+    <div className="page">
       <h1>{t.legal.privacyH1}</h1>
       <CourtesyNote lang={lang} />
       {/* TODO(claude): RGPD notice for the quote form only. What is collected,
           why, how long it is kept, and how to request deletion. There is no
           analytics script in v1, so there is nothing else to declare. */}
-    </>
-  );
-}
-
-export function NotFoundView({ lang }: { lang: Lang }) {
-  const t = strings(lang);
-
-  return (
-    <>
-      <h1>{t.notFound.h1}</h1>
-      <p>
-        {t.notFound.body} <Link href={href('/', lang)}>{t.notFound.backHome}</Link>
-      </p>
-    </>
+    </div>
   );
 }

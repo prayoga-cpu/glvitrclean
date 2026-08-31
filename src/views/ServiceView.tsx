@@ -16,7 +16,7 @@ export function ServiceView({ service, lang }: { service: Service; lang: Lang })
   const name = service.name[lang];
 
   return (
-    <>
+    <div className="page">
       <JsonLd data={serviceSchema(service, lang)} />
       <JsonLd data={faqSchema(entries, lang)} />
       <JsonLd
@@ -51,7 +51,7 @@ export function ServiceView({ service, lang }: { service: Service; lang: Lang })
 
       <section>
         <h2>{t.service.inYourCommune(name)}</h2>
-        <ul>
+        <ul className="link-grid">
           {communes.map((c) => (
             <li key={c.slug}>
               <Link href={href(`/zones/${c.slug}/${service.slug}`, lang)}>
@@ -63,6 +63,6 @@ export function ServiceView({ service, lang }: { service: Service; lang: Lang })
       </section>
 
       <Faq entries={entries} lang={lang} />
-    </>
+    </div>
   );
 }

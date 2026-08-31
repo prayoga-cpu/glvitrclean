@@ -13,7 +13,7 @@ export function CommuneView({ commune, lang }: { commune: Commune; lang: Lang })
   const c = commune;
 
   return (
-    <>
+    <div className="page">
       <JsonLd
         data={breadcrumbSchema(
           [
@@ -35,7 +35,7 @@ export function CommuneView({ commune, lang }: { commune: Commune; lang: Lang })
 
       <section>
         <h2>{t.commune.ourServicesIn(c.name)}</h2>
-        <ul>
+        <ul className="link-grid">
           {services.map((s) => (
             <li key={s.slug}>
               <Link href={href(`/zones/${c.slug}/${s.slug}`, lang)}>
@@ -48,7 +48,7 @@ export function CommuneView({ commune, lang }: { commune: Commune; lang: Lang })
 
       <section>
         <h2>{t.commune.neighbouring}</h2>
-        <ul>
+        <ul className="link-grid">
           {communes
             .filter((x) => x.slug !== c.slug)
             .slice(0, 6)
@@ -59,6 +59,6 @@ export function CommuneView({ commune, lang }: { commune: Commune; lang: Lang })
             ))}
         </ul>
       </section>
-    </>
+    </div>
   );
 }

@@ -21,7 +21,7 @@ export function CommuneServiceView({
   const name = s.name[lang];
 
   return (
-    <>
+    <div className="page">
       <JsonLd data={serviceSchema(s, lang, c)} />
       <JsonLd
         data={breadcrumbSchema(
@@ -46,12 +46,12 @@ export function CommuneServiceView({
       {/* TODO(claude): two short paragraphs specific to this pair. Reuse the
           commune's localAngle as the hook, not as the whole body. */}
 
-      <nav aria-label={t.communeService.relatedLabel}>
+      <nav className="related-links" aria-label={t.communeService.relatedLabel}>
         <Link href={href(`/services/${s.slug}`, lang)}>
           {t.communeService.serviceInRegion(name)}
         </Link>
         <Link href={href(`/zones/${c.slug}`, lang)}>{t.communeService.allServicesIn(c.name)}</Link>
       </nav>
-    </>
+    </div>
   );
 }

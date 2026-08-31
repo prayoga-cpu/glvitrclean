@@ -5,7 +5,8 @@ Updated at the end of every work session. Newest entry on top.
 **Current phase:** 2 — Core pages (home page done; design system landed;
 site is now bilingual FR/EN)
 **Build status:** `npm run verify:full` passes, 200 pages exported
-**Deployed:** no — three failed Vercel attempts, both causes now fixed (see below)
+**Deployed:** yes — production deploy Ready. Not publicly reachable yet: Vercel
+Deployment Protection is on (every URL 302s to SSO) and no domain is attached.
 
 ---
 
@@ -41,6 +42,63 @@ The questions to send the client are written out, in French, in
 ---
 
 ## Done
+
+### Phase 2d — Mobile nav + inner-page spacing (2026-08-31)
+
+Both reported by the human from screenshots. Both turned out to be structural,
+not cosmetic, and both predate the bilingual work.
+
+**Mobile navigation was rendering off-screen.** `<nav class="mobile-nav">` is a
+DOM sibling of the burger inside `.site-header__actions`, which is
+`display: flex` — a ROW. Left in normal flow the open panel became a row item
+and was pushed past the right edge of the viewport: the menu appeared as a
+clipped column of half-words ("Domesti… houseke…", "Bin cleanin…") with the CTA
+cut in half. Reproduced in a headless render at 390px before touching anything;
+the repro was pixel-identical to the reported screenshot.
+
+Fixed in CSS alone, no header restructure: the panel is now
+`position: absolute; top: 100%; left: 0; right: 0`, hanging off `.site-header`
+(sticky, so it is a valid containing block). Added `max-height: calc(100dvh -
+100%)` with `overflow-y: auto` and `overscroll-behavior: contain` so a
+twelve-item menu scrolls on a short screen instead of running off the bottom,
+plus a shadow token and a slightly tighter row rhythm that still clears 44px.
+
+**`.page` was defined but applied to nothing.** The class — and the comment
+explaining that inner pages use it while the home page opts out — shipped in
+the original design system, but no view ever wrapped its body in it. Every
+inner page therefore had zero vertical padding and its `<h1>` jammed against
+the sticky header. All nine non-home views now wrap in `<div class="page">`.
+
+Everything else fixed in the same pass was markup that had never been styled:
+
+- `.page > section` / `section + *` rhythm — the next h2, paragraph or button
+  used to sit directly on the previous block's last line.
+- **Related links ran together.** CommuneServiceView's nav rendered
+  "…across the EssonneEverything we do in Linas" — two inline anchors, no gap.
+  Now a flex row with a rule above it.
+- **FAQ was unstyled.** `.faq__item h3` had styling, but `Faq.tsx` renders
+  `<dt>`/`<dd>`, so the rule matched nothing and every answer kept the
+  browser's default 40px `<dd>` indent. Now styled on `dt`/`dd`.
+- **Tax-credit table had no styling at all** — no cell padding, no rules,
+  centred headers. Now `.data-table` inside a `.table-wrap` that scrolls itself
+  on a phone rather than forcing the whole page sideways.
+- Service/commune link lists were a cramped bare `<ul>`; they now use
+  `.link-grid`, sharing the home page's card treatment. Cards stretch to equal
+  height within a row (`height: 100%` on the anchor — the `<li>` stretched, the
+  `<a>` did not).
+- B2B service list → `.service-notes` cards.
+- `/devis`: the form stretched the full 1320px container, giving 1200px-wide
+  text inputs. Capped at 44rem. The call/WhatsApp pair now sits in an
+  `.actions` row instead of two flush siblings.
+- Body copy on inner pages capped at `--measure`.
+
+Removed `NotFoundView` from `src/views/FixedViews.tsx`: dead since the global
+404 became self-contained in `src/app/not-found.tsx`, and a second unused
+implementation would only drift.
+
+**Verified:** `npm run verify:full` passes — typecheck, lint (0 warnings), 194
+unique titles, 200 pages exported, 54 routes clear of tax-credit claims. Home
+page re-checked for regression: it opts out of `.page` and is unchanged.
 
 ### Phase 2c — Unblock the Vercel deploy (2026-08-31)
 

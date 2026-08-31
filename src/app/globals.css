@@ -132,6 +132,9 @@
   --radius-pill: 999px;
   --transition: 200ms ease-in-out;
 
+  /* Only two elevated surfaces exist: the sticky call bar and the mobile menu. */
+  --shadow-dropdown: 0 18px 28px -20px rgba(16, 24, 40, 0.45);
+
   --container-max: 82.5rem; /* 1320px, the prototype's outer measure */
   --container-narrow: 80rem; /* 1280px, used inside sections */
   --measure: 34rem;
@@ -210,9 +213,43 @@ ol {
 }
 
 /* Pages other than the home page render inside <main class="container">.
-   The home page opts out so its sections can go full-bleed. */
+   The home page opts out so its sections can go full-bleed.
+
+   This class existed from the start but nothing applied it, so every inner page
+   shipped with zero vertical padding and its <h1> jammed against the sticky
+   header. Every non-home view now wraps its body in <div class="page">. */
 .page {
   padding: var(--section-y) 0;
+}
+
+/* Vertical rhythm between the blocks of an inner page. Without this the h2 of
+   the next section sat directly on the previous block's last line, and the
+   paragraph or button AFTER a section had no air at all. */
+.page > section,
+.page > section + * {
+  margin-top: clamp(2.25rem, 5.5vw, 3.5rem);
+}
+
+.page > h1 {
+  margin-bottom: var(--space-2);
+}
+
+.page > h1 + p {
+  font-size: var(--text-lg);
+  line-height: var(--leading-relaxed);
+  color: var(--color-text-muted);
+}
+
+/* Body copy is capped for readability — full-width prose across a 1320px
+   container is unreadable. Cards, grids and tables are exempt. */
+.page > p,
+.page > section > p {
+  max-width: var(--measure);
+}
+
+.page section > h2 {
+  font-size: var(--text-3xl);
+  margin-bottom: var(--space-2);
 }
 
 .section {
@@ -554,10 +591,32 @@ ol {
   transform: translateY(-6px) rotate(-45deg);
 }
 
+/*
+  The panel is a DOM sibling of the burger, inside .site-header__actions —
+  which is a flex ROW. Left in normal flow it became a row item and was pushed
+  off the right edge of the viewport: the whole menu rendered as a clipped
+  column of half-words ("Domesti… houseke…"). Taking it out of flow fixes that
+  without restructuring the header.
+
+  The containing block is .site-header, which is position: sticky and therefore
+  counts as positioned. Do not make .site-header__bar or .site-header__actions
+  position: relative or the panel will re-anchor to the wrong box.
+*/
 .mobile-nav {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  /* 100% here resolves against .site-header's height, so this is
+     "viewport minus the header bar" — the menu scrolls instead of running off
+     the bottom on a short screen. */
+  max-height: calc(100dvh - 100%);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   border-top: 1px solid var(--color-border);
   background: var(--color-bg);
-  padding: 0.875rem var(--gutter) 1.375rem;
+  box-shadow: var(--shadow-dropdown);
+  padding: 0.5rem var(--gutter) 1.25rem;
   display: flex;
   flex-direction: column;
 }
@@ -566,12 +625,17 @@ ol {
   font-size: var(--text-lg);
   font-weight: 600;
   color: var(--color-brand-deep);
-  padding: 0.875rem 0;
+  /* 0.8125rem + line-height keeps every row past the 44px tap target. */
+  padding: 0.8125rem 0;
   border-bottom: 1px solid var(--color-border);
 }
 
+.mobile-nav a:last-of-type {
+  border-bottom: none;
+}
+
 .mobile-nav .btn {
-  margin-top: 0.625rem;
+  margin-top: 0.875rem;
   justify-content: space-between;
   border-bottom: none;
   color: var(--color-brand-contrast);
@@ -992,14 +1056,22 @@ ol {
    Commune links
    ========================================================================= */
 
-.commune-grid {
+/* `.link-grid` is the same card treatment for the service/commune link lists
+   on inner pages, which shipped as a bare cramped <ul>. Shared selectors so the
+   two cannot drift apart. */
+.commune-grid,
+.link-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(12.5rem, 1fr));
   gap: 0.75rem;
 }
 
-.commune-grid a {
+.commune-grid a,
+.link-grid a {
   display: block;
+  /* The grid stretches each <li> to the tallest in its row; without this the
+     <a> only filled its own text height and the cards came out ragged. */
+  height: 100%;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -1010,7 +1082,8 @@ ol {
   transition: border-color var(--transition), color var(--transition);
 }
 
-.commune-grid a:hover {
+.commune-grid a:hover,
+.link-grid a:hover {
   border-color: var(--color-brand);
   color: var(--color-brand);
 }
@@ -1218,11 +1291,23 @@ ol {
   padding: var(--space-2) 0;
 }
 
+/* Faq.tsx renders <dt>/<dd>. The old rule targeted h3, matched nothing, and
+   left the answers on the browser's default 40px <dd> indent. */
+.faq__item dt,
 .faq__item h3 {
   font-size: var(--text-xl);
   font-weight: 600;
-  letter-spacing: 0;
+  line-height: var(--leading-heading);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text);
   margin-bottom: var(--space-1);
+}
+
+.faq__item dd {
+  margin: 0;
+  max-width: var(--measure);
+  line-height: var(--leading-relaxed);
+  color: var(--color-text-muted);
 }
 
 .eligibility-note,
@@ -1478,4 +1563,132 @@ ol {
 
 .not-found__call {
   margin-top: 0.75rem;
+}
+
+/* =========================================================================
+   Inner page components
+
+   Everything below styles markup that previously shipped unstyled: the
+   related-links nav ran its two anchors together with no separator, the tax
+   credit table had no cell padding or rules, and the B2B list was a bare <ul>.
+   ========================================================================= */
+
+/* CommuneServiceView's footer nav. The two links used to render as
+   "…across the EssonneEverything we do in Linas" — inline anchors, no gap. */
+.related-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  margin-top: clamp(2.25rem, 5.5vw, 3.5rem);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+.related-links a {
+  font-weight: 600;
+}
+
+/* Wrapper so a wide table scrolls itself instead of forcing the page sideways
+   on a phone. */
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-base);
+  text-align: left;
+  min-width: 40rem;
+}
+
+.data-table th,
+.data-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.data-table th {
+  font-weight: 600;
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border-strong);
+  white-space: nowrap;
+}
+
+.data-table td {
+  color: var(--color-text-muted);
+  line-height: var(--leading-relaxed);
+}
+
+.data-table td:first-child {
+  color: var(--color-text);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* The Yes/No eligibility column. Never colour-only: the word carries the
+   meaning, the tint is decoration. See CLAUDE.md rule 1. */
+.data-table td:nth-child(2) {
+  font-weight: 600;
+  color: var(--color-brand-deep);
+  white-space: nowrap;
+}
+
+/* BusinessView's list of what a commercial customer can book. */
+.service-notes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--space-3);
+}
+
+.service-notes li {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+}
+
+.service-notes strong {
+  display: block;
+  font-size: var(--text-lg);
+  color: var(--color-brand-deep);
+  margin-bottom: var(--space-1);
+}
+
+.service-notes p {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: var(--leading-relaxed);
+}
+
+/* On /devis the form is the whole page, so it must not stretch to the full
+   1320px container — a 1200px-wide text input is unusable. */
+.page .quote-form {
+  max-width: 44rem;
+}
+
+/* The call / WhatsApp pair above the form. */
+.page > .actions {
+  margin-bottom: var(--space-3);
+}
+
+/* Legal pages stack bare h2 sections directly under .page. Scoped to direct
+   children so it does not stack on top of `.page > section`'s own margin. */
+.page > h2 {
+  margin-top: var(--space-4);
+}
+
+.page > h1 + .legal-note {
+  margin-top: calc(-1 * var(--space-1));
+}
+
+.legal-note {
+  font-size: var(--text-sm);
+  color: var(--color-text-faint);
+  border-left: 3px solid var(--color-border-strong);
+  padding-left: var(--space-2);
+  max-width: var(--measure);
 }
