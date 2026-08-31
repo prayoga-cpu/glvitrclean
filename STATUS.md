@@ -32,8 +32,10 @@ answered or explicitly `null`. Nothing below silently defaults to a value.
 | 13 | Répertoire des Métiers registration for facade work | — | Whether `facade` stays a service at all | Client |
 | 14 | Quote form endpoint (Formspree / Resend) | `NEXT_PUBLIC_FORM_ENDPOINT` empty | `/devis` actually delivering a lead | Darwin |
 | 15 | English legal wording on `/en/mentions-legales` and `/en/confidentialite` | Pages carry a note that the French version is binding | Nothing — the FR pages are the legal ones. Review before launch. | Client's accountant |
+| 16 | New logo file + how to use it | Not in the repo; `src/components/Logo.tsx` still draws the prototype mark | Any logo change | Darwin |
+| 17 | Next.js 15 reaches EOL 2026-10-21 | `next@15.5.24` pinned in `package.json` | The next CVE gate will have no 15.x patch to move to | Darwin |
 
-Items 11–15 are not in the Phase 0 list but surfaced while recording it. They
+Items 11–17 are not in the Phase 0 list but surfaced while recording it. They
 are logged so they do not get discovered at launch. They do not block Phase 1.
 
 The questions to send the client are written out, in French, in
@@ -42,6 +44,53 @@ The questions to send the client are written out, in French, in
 ---
 
 ## Done
+
+### Phase 2e — Scroll-aware chrome + mobile CTA (2026-08-31)
+
+**Mobile "Free quote" button had lost its horizontal padding.** `.mobile-nav a`
+is `(0,1,1)` and beats `.btn` at `(0,1,0)`, so its `padding: 0.8125rem 0`
+overrode the pill's `padding: … 1.5rem`. The label sat flush against the left
+edge and the arrow against the right. `.mobile-nav .btn` now restates its own
+padding.
+
+**Header hides going down the page, sticky call bar hides coming back up.**
+`src/components/ScrollChrome.tsx` renders nothing and writes the scroll
+direction to `<html data-scroll="top|down|up">`; `globals.css` does the hiding.
+The two bars are never on screen together, and at rest near the top the header
+is shown while the call bar stays down (the number is already in the header
+there).
+
+Fourth `'use client'` component, justified per rule 2: scroll-driven CSS can
+react to scroll POSITION but not DIRECTION, so there is no CSS-only route. With
+JS off the attribute never appears and both bars stay visible — exactly the
+previous behaviour — so nothing content-bearing depends on it.
+
+Two things found while verifying, both worth recording:
+
+- The first implementation used the standard
+  `if (ticking) return; ticking = true; requestAnimationFrame(...)` throttle.
+  That wedges permanently the moment a frame is never served — background tab,
+  headless render, throttled mobile browser — because `ticking` is only reset
+  inside the callback that never ran. Caught it in the harness: after the first
+  scroll the bars froze and even synthetic scroll events did nothing. Now the
+  handler runs raw (one position read; a `dataset` write only on change).
+- Headless Chrome never dispatches the scroll events queued by a programmatic
+  `scrollTo`, because they fire during the rendering step it does not run — and
+  taking a screenshot forces a paint, which flushes them and flips the state
+  under you. Verified in two halves instead: the state machine by dispatching
+  scroll events by hand (`top → down → up → down → top`, all correct), and the
+  CSS by baking `data-scroll` into static pages with no JS at all.
+
+The open mobile menu pins the header (`<html data-nav="open">`): the panel is
+absolutely positioned inside the header and would otherwise slide off with it.
+
+**Verified:** `npm run verify:full` passes — typecheck, lint (0 warnings), 194
+unique titles, 200 pages exported, 54 routes clear.
+
+**Not done: the logo.** The human supplied a new lockup (peach circle, blue G,
+yellow L, serif "VITR'CLEAN") as a chat image. I cannot write an image I was
+shown — the file has to land in the repo. It is also not a drop-in swap; see
+"Blocked on human" item 16.
 
 ### Phase 2d — Mobile nav + inner-page spacing (2026-08-31)
 

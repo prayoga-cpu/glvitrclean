@@ -2,6 +2,7 @@ import { SITE_URL } from '@/data/company';
 import { CallButton } from '@/components/CallButton';
 import { JsonLd } from '@/components/JsonLd';
 import { SiteHeader, SiteFooter } from '@/components/SiteChrome';
+import { ScrollChrome } from '@/components/ScrollChrome';
 import { localBusinessSchema } from '@/lib/schema';
 import { HTML_LANG, type Lang } from '@/i18n/config';
 import type { Metadata } from 'next';
@@ -30,6 +31,10 @@ export function BaseLayout({ lang, children }: { lang: Lang; children: React.Rea
         <SiteFooter lang={lang} />
 
         <CallButton lang={lang} sticky />
+
+        {/* Renders nothing; toggles <html data-scroll> so CSS can hide the
+            header on the way down and the call bar on the way back up. */}
+        <ScrollChrome />
       </body>
     </html>
   );

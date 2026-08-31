@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { services } from '@/data/services';
 import { company } from '@/data/company';
@@ -18,6 +18,21 @@ export function MobileNav({ lang }: { lang: Lang }) {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
   const t = strings(lang);
+
+  /*
+    The panel is absolutely positioned inside .site-header, so when ScrollChrome
+    hides the header on scroll-down the open menu would slide off with it.
+    Flag the open state on <html> and globals.css pins the header while it is
+    set. Also stops the page behind the menu from scrolling.
+  */
+  useEffect(() => {
+    const root = document.documentElement;
+    if (!open) return;
+    root.dataset.nav = 'open';
+    return () => {
+      delete root.dataset.nav;
+    };
+  }, [open]);
 
   return (
     <>

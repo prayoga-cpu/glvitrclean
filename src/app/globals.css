@@ -418,6 +418,25 @@ ol {
   top: 0;
   z-index: 50;
   background: var(--color-bg);
+  transition: transform var(--transition);
+}
+
+/* --- scroll-direction chrome ---------------------------------------------
+   <html data-scroll> is written by src/components/ScrollChrome.tsx. With JS
+   off the attribute never appears and both bars stay visible, which is the
+   behaviour this site had before — so nothing here is load-bearing content.
+
+   Going DOWN the page hides the header to give the content the full screen;
+   coming back UP restores it and hides the sticky call bar, so the two bars
+   are never both eating the viewport. */
+:root[data-scroll='down'] .site-header {
+  transform: translateY(-100%);
+}
+
+/* Never hide the header while the mobile menu is open — the panel is absolutely
+   positioned inside it and would slide off with it. */
+:root[data-nav='open'] .site-header {
+  transform: none;
 }
 
 .site-header__bar {
@@ -636,6 +655,11 @@ ol {
 
 .mobile-nav .btn {
   margin-top: 0.875rem;
+  /* `.mobile-nav a` above is (0,1,1) and beats `.btn` at (0,1,0), so it was
+     overriding the button's `padding: … 1.5rem` with `0.8125rem 0`. The label
+     sat flush against the left edge of the pill and the arrow against the
+     right. Restore the pill's own padding explicitly. */
+  padding: 0.5rem 0.5rem 0.5rem 1.5rem;
   justify-content: space-between;
   border-bottom: none;
   color: var(--color-brand-contrast);
@@ -1383,6 +1407,7 @@ ol {
   inset-inline: 0;
   bottom: 0;
   z-index: 60;
+  transition: transform var(--transition);
   display: flex;
   justify-content: center;
   border-radius: 0;
@@ -1691,4 +1716,25 @@ ol {
   border-left: 3px solid var(--color-border-strong);
   padding-left: var(--space-2);
   max-width: var(--measure);
+}
+
+/* =========================================================================
+   Scroll-direction chrome (continued)
+
+   The sticky call bar is the mirror of the header: it belongs to the reading
+   direction that hides the header, so the two are never on screen together.
+   `top` keeps it down at rest — the number is already in the header there.
+   ========================================================================= */
+
+:root[data-scroll='up'] .call-button--sticky,
+:root[data-scroll='top'] .call-button--sticky {
+  transform: translateY(100%);
+}
+
+/* Honour a reduced-motion preference: still hide, just do not slide. */
+@media (prefers-reduced-motion: reduce) {
+  .site-header,
+  .call-button--sticky {
+    transition: none;
+  }
 }

@@ -95,8 +95,15 @@ exposure, not a design preference. See `docs/04-compliance-sap.md`.
   actions, no route handlers, no middleware, no ISR, no `dynamic = 'force-dynamic'`.
 - **Every page must be complete HTML before JavaScript runs.** Content that only
   appears after hydration does not exist to a crawler.
-- `'use client'` is allowed only in `QuoteForm`, `MobileNav` and `LangToggle`.
-  Adding it anywhere else requires a written justification in `STATUS.md`.
+- `'use client'` is allowed only in `QuoteForm`, `MobileNav`, `LangToggle` and
+  `ScrollChrome`. Adding it anywhere else requires a written justification in
+  `STATUS.md`.
+  `ScrollChrome` was added on 2026-08-31: it renders nothing and only writes the
+  scroll DIRECTION to `<html data-scroll>`, which CSS uses to hide the header on
+  the way down and the sticky call bar on the way back up. Scroll-driven CSS can
+  react to scroll position but not to direction, so there is no CSS-only route.
+  With JS off the attribute never appears and both bars stay visible — the
+  pre-existing behaviour — so no content depends on it.
   `LangToggle` was added on 2026-08-31: the header lives in the root layout,
   which cannot know which page renders inside it, so `usePathname()` is the only
   way to point the toggle at the current page's counterpart rather than dumping
