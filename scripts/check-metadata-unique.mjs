@@ -18,6 +18,13 @@
  * in CI before `next build`. That means the title templates below are a second
  * copy of the ones in src/lib/seo.ts: if you change one, change the other, and
  * the route-count assertion will catch you if you forget.
+ *
+ * This is the FAST guard, not the authoritative one. It knows only about
+ * titles, and only about the titles it has been told. The authoritative check
+ * is scripts/check-exported-metadata.mjs (`npm run check:metadata`), which runs
+ * after the build and reads the artifact that actually ships — titles,
+ * descriptions and H1s, on whatever routes exist. If the two ever disagree,
+ * the exported one is right.
  */
 
 import { readFileSync } from 'node:fs';
@@ -67,6 +74,15 @@ if (communeSlugs.length !== communeNames.length || communeSlugs.length !== commu
 }
 
 const BRAND = "GLVITR'CLEAN";
+/**
+ * Read from src/data/company.ts rather than typed in: the /credit-impot titles
+ * derive the figure from TAX_CREDIT_RATE (CLAUDE.md rule 1), so hard-coding
+ * "50" here would silently disagree the day the rate changes.
+ */
+const TAX_CREDIT_PCT = Math.round(
+  Number(read('src/data/company.ts').match(/TAX_CREDIT_RATE\s*=\s*([\d.]+)/)[1]) * 100,
+);
+
 const rows = [];
 
 /* ---------------------------------------------------------------- French -- */
@@ -74,7 +90,9 @@ const rows = [];
 rows.push({ path: '/', title: `Nettoyage vitres et terrasse en Essonne (91) | ${BRAND}` });
 
 const fixedFr = {
-  '/credit-impot': `Crédit d'impôt 50 % sur le nettoyage à domicile | ${BRAND}`,
+  '/services': `Nos prestations de nettoyage en Essonne (91) | ${BRAND}`,
+  '/zones': `Zones d'intervention en Essonne (91) | ${BRAND}`,
+  '/credit-impot': `Crédit d'impôt ${TAX_CREDIT_PCT} % sur le nettoyage à domicile | ${BRAND}`,
   '/professionnels': `Nettoyage pour professionnels en Essonne (91) | ${BRAND}`,
   '/devis': `Devis gratuit de nettoyage en Essonne | ${BRAND}`,
   '/realisations': `Nos réalisations de nettoyage en Essonne | ${BRAND}`,
@@ -105,7 +123,9 @@ communeSlugs.forEach((cSlug, ci) => {
 rows.push({ path: '/en', title: `Window and terrace cleaning in the Essonne (91) | ${BRAND}` });
 
 const fixedEn = {
-  '/en/credit-impot': `50% tax credit on home cleaning in France | ${BRAND}`,
+  '/en/services': `Our cleaning services in the Essonne (91) | ${BRAND}`,
+  '/en/zones': `Where we work in the Essonne (91) | ${BRAND}`,
+  '/en/credit-impot': `${TAX_CREDIT_PCT}% tax credit on home cleaning in France | ${BRAND}`,
   '/en/professionnels': `Commercial cleaning in the Essonne (91) | ${BRAND}`,
   '/en/devis': `Free cleaning quote in the Essonne | ${BRAND}`,
   '/en/realisations': `Our cleaning work in the Essonne | ${BRAND}`,

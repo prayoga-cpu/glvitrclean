@@ -12,7 +12,8 @@
     "check:seo": "node scripts/check-metadata-unique.mjs",
     "verify": "npm run typecheck && npm run lint && npm run check:seo",
     "check:compliance": "node scripts/check-compliance.mjs",
-    "verify:full": "npm run verify && npm run build && npm run check:compliance"
+    "check:metadata": "node scripts/check-exported-metadata.mjs",
+    "verify:full": "npm run verify && npm run build && npm run check:compliance && npm run check:metadata"
   },
   "dependencies": {
     "next": "15.5.24",
