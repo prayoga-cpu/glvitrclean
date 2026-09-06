@@ -1,0 +1,45 @@
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "^glvitrclean\\.com$"
+        }
+      ],
+      "destination": "https://www.glvitrclean.com/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/services-1",
+      "destination": "/services/",
+      "statusCode": 301
+    },
+    {
+      "source": "/services-1/",
+      "destination": "/services/",
+      "statusCode": 301
+    },
+    {
+      "source": "/avantages",
+      "destination": "/credit-impot/",
+      "statusCode": 301
+    },
+    {
+      "source": "/avantages/",
+      "destination": "/credit-impot/",
+      "statusCode": 301
+    },
+    {
+      "source": "/contact",
+      "destination": "/devis/",
+      "statusCode": 301
+    },
+    {
+      "source": "/contact/",
+      "destination": "/devis/",
+      "statusCode": 301
+    }
+  ]
+}
