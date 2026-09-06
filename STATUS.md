@@ -2,18 +2,76 @@
 
 Updated at the end of every work session. Newest entry on top.
 
-**Current phase:** 2 — Core pages (home page done; design system landed;
-site is now bilingual FR/EN)
-**Build status:** `npm run verify:full` passes, 200 pages exported
+**Current phase:** phases 0–4 DONE, phase 6 done on the code side.
+**Everything still open is waiting on a human** — see "What we need from you".
+**Build status:** `npm run verify:full` passes. 198 routes, 204 files exported.
+Lighthouse mobile: performance 97–99, accessibility 100, best practices 100,
+SEO 100 on every route type measured.
 **Deployed:** yes — production deploy Ready. Not publicly reachable yet: Vercel
 Deployment Protection is on (every URL 302s to SSO) and no domain is attached.
 
 ---
 
-## Blocked on human
+## What we need from you
 
-Every Phase 0 question now has a declared home in the codebase and is either
-answered or explicitly `null`. Nothing below silently defaults to a value.
+**There is no remaining code-side task on any roadmap phase.** Every unticked
+box in `ROADMAP.md` is waiting on one of the items below.
+
+Ordered by what it costs to leave undone. Nothing here silently defaults to a
+value: every one is either explicitly `null` in the data or renders as a
+visible gap on the page.
+
+### Do these first — they block going live
+
+| # | What we need | Why it matters | Ask |
+|---|---|---|---|
+| 4 | **Registrar / DNS access for `glvitrclean.com`** | The whole cutover. `vercel.json` holds the 301 map but nothing can point at it. If the login is lost, recovery takes weeks — start now even though it is the last phase. | Who is the domain registered with, and do you still have the login? |
+| 14 | **Quote form endpoint** (Formspree, Resend or similar) | `/devis` currently cannot deliver a lead. The form posts to `NEXT_PUBLIC_FORM_ENDPOINT`, which is empty, so it errors. Every other conversion path (phone, WhatsApp) works. | Darwin's call — pick a provider and set the env var. |
+| 19 | **Which form provider you chose** | The privacy policy has to name who receives the data (RGPD Art. 13). Until then `/confidentialite` says the provider "will be named here before the form goes live", which is true but cannot ship indefinitely. | Falls out of item 14. |
+| 18 | **How long we keep a quote request that goes nowhere** | Same page, same article. 12 months is a defensible default if you have no preference. | "Une demande restée sans suite, on la garde combien de temps ?" |
+| 11 | **RC Pro insurer and policy number** | `/mentions-legales` reads "À compléter". Required by LCEN art. 6-III. | "Quel assureur, et quel numéro de contrat ?" |
+| 12 | **Hosting provider for the hébergeur block** | Same page, same law. It is Vercel unless you move. | Darwin's call. |
+| 6 | **Photo archive** | The most visible gap on the site. Every image is stock, marked "photo d'illustration" on screen. `/realisations` is a written page with no gallery because inventing one would break rule 4. Blocks all of phase 5. | "Le dossier Drive avec vos photos de chantier — on peut y accéder, et on a votre accord pour les publier ? Le plus utile : des paires avant / après du même endroit, avec le nom de la commune." |
+
+### These change what the site is allowed to say
+
+| # | What we need | Why it matters | Ask |
+|---|---|---|---|
+| 1 | **Cooperative name + SAP declaration number** | The tax-credit badge stays in pending mode until `company.sapDeclaration.number` is real. Pending mode describes the scheme without claiming you are registered under it. Displaying an unbacked 50% claim is a *pratique commerciale trompeuse* under Art. L121-2. | "Quelle est la coopérative qui émet vos factures, et quel est son numéro de déclaration SAP ?" |
+| 2 | **Who issues the invoice and the attestation fiscale, and whether URSSAF avance immédiate is available** | Decides the legal wording on `/credit-impot`. `prestataire` and `mandataire` are not interchangeable — they change who the customer's contract is with. | "Qui émet la facture au client final ? Qui envoie l'attestation fiscale annuelle ? L'avance immédiate URSSAF est-elle disponible via la coopérative ?" |
+| 13 | **Répertoire des Métiers registration for facade work** | If you are not registered, the facade service comes off the site entirely. | "Êtes-vous inscrit au Répertoire des Métiers pour le nettoyage de façade ?" |
+| 10 | **Prices, or price ranges, you are willing to publish** | `services[].pricing.fromEur` is `null` everywhere, so no page shows a number. The pages describe the *basis* (forfait, au m², horaire, sur devis, par bac) but never a figure. Per `docs/00`, the credit arithmetic — €90 becomes €45 — is the strongest argument this business has, and it cannot be shown without a number. | "Quels prix, ou quelles fourchettes, acceptez-vous de publier ?" |
+| 3 | **Final service area** — Essonne only, or Essonne + 77 + 94 | Drives 168 of the 198 routes. The build provisionally assumes Essonne only (`company.serviceArea.confirmed: false`). The most expensive answer to get wrong. | "Jusqu'où vous déplacez-vous vraiment ? Et dans la liste des douze communes, en manque-t-il, ou y en a-t-il où vous n'iriez pas ?" |
+
+### Small, but they unlock real things
+
+| # | What we need | Why it matters | Ask |
+|---|---|---|---|
+| 7 | **Facebook and Instagram URLs** | `company.social` is `[]`, so the footer shows no social links and `sameAs` is absent from the LocalBusiness schema. `sameAs` is how Google ties this site to the same business as those profiles — an empty array costs real local ranking signal. | "Les adresses exactes de vos pages Facebook et Instagram." |
+| 8 | **Any existing Google Business Profile** | A forgotten duplicate competing with a new one is worse than no profile. Find it before creating another. Blocks phase 7. | "Avez-vous déjà une fiche Google, même ancienne ou jamais utilisée ? Avec quelle adresse e-mail ?" |
+| 20 | **Per-commune job notes** — one or two real sentences per town | The 72 commune×service pages differentiate on H1, `localAngle`, postal code, schema, links and two of four body paragraphs. That is the honest limit of what the current data supports. Genuinely town-specific copy needs facts only you have. | "Pour chaque commune : un détail concret. Le type de maisons, un chantier marquant, une contrainte d'accès qui revient." |
+| 21 | **Sanity-check a few operational statements** | Written from `src/data/`, but worth ten minutes of your eyes before launch: that a damaged roller shutter is cleaned but not repaired; that bin cleaning happens where the bin is stored and you ask the customer to put it out empty; that a facade job always needs a site visit first. | Read `/services/volets-portes/`, `/services/poubelles/` and `/services/facade/` and tell us what is wrong. |
+| 15 | **English legal wording** | The FR pages are the binding ones and the EN pages say so. Worth an accountant's eye before launch, not before. | Client's accountant. |
+| 17 | **Next.js 15 reaches EOL 2026-10-21** | `next@15.5.24` is pinned. After EOL the next CVE has no 15.x patch to move to. | Darwin — plan the 16 bump. |
+
+### Verified as done, kept for the record
+
+| # | Item | Resolved |
+|---|---|---|
+| 5 | Logo file | 2026-08-31 — taken from the client's live site |
+| 9 | Design tokens | 2026-08-31 — landed from the supplied prototype |
+| 16 | New logo file | 2026-08-31 |
+
+The client-facing questions are written out in French, one per field, in
+`docs/10-discovery-questionnaire.md`.
+
+---
+
+## Old blocked table (superseded 2026-09-06)
+
+Kept because the "Recorded as" column names the exact field each answer fills.
+Every Phase 0 question has a declared home in the codebase and is either
+answered or explicitly `null`.
 
 | # | Item | Recorded as | Blocks | Owner |
 |---|---|---|---|---|
@@ -44,6 +102,72 @@ The questions to send the client are written out, in French, in
 ---
 
 ## Done
+
+### Phases 1–4 closed, phase 6 built (2026-09-06)
+
+A 12-agent audit of every open roadmap phase produced 72 findings; 58 survived
+adversarial verification. All 56 code-side ones are fixed. What mattered most:
+
+**Two legal defects, both fixed and both proven fixed.**
+
+1. `scripts/check-compliance.mjs` could not see a French tax-credit claim. React
+   escapes apostrophes, so the export carries `cr&#x27;dit d&#x27;impôt` and two
+   of the French regexes had been matching nothing since they were written —
+   the guard protected only the English edition, i.e. only the non-commercial
+   language. It now decodes entities before matching, and adds a second layer:
+   any sentence on a forbidden route that raises the topic without a denial in
+   the *same* sentence fails the build. Verified by injecting four claims that
+   the old guard let through, including a French paraphrase that never says
+   "50", and confirming an innocent sentence still passes.
+
+2. The 50% figure was static text in four places — both `/credit-impot` titles
+   and both H1s — which CLAUDE.md rule 1 forbids outright. All four now derive
+   from `TAX_CREDIT_PCT`, as do six occurrences in `faq.ts` via a `{pct}`
+   placeholder resolved in both render paths. Changing the rate is one edit
+   again.
+
+**A missing legal page.** `/confidentialite` was an H1 and a TODO while `/devis`
+collects seven personal fields. It now carries a full RGPD Art. 13 notice in
+both languages. Two facts in it are the client's — items 18 and 19 — and rather
+than invent a retention period the page says the answer will appear before the
+form goes live, which is true and is not a claim.
+
+**A conversion bug worth money.** The footer's call button rendered near-white
+on gold, contrast 1.41:1. `.site-footer a` (0,1,1) was outranking `.btn--accent`
+(0,1,0) and repainting the label. It is the primary action in the footer of all
+198 routes.
+
+**Unbacked claims removed.** "Réponse sous 24 h" (nothing backs it, and a solo
+operator on a roof cannot honour it) and "sûrs pour les enfants et les animaux"
+(a product-safety claim with no data sheet behind it). The reviewing agents
+caught six more invented specifics in freshly written copy — a scheduling
+promise to copropriétés, a both-faces scope for shutters, a claim that any bin
+size can be handled — and reverted each to what `src/data/` actually supports.
+
+**Stub pages filled.** `/professionnels` and `/realisations` were headings with
+TODOs. The six service pages had two sentences each; they now have four
+paragraphs per language in `services[].bodyCopy`. Four of six services had no
+FAQ at all, so the FAQ block and its `FAQPage` schema rendered nothing.
+
+**Structure.** No commune hub linked to any service hub, so the internal-link
+chain ran one way only. "Communes voisines" was `slice(0, 6)` — array order, not
+geography — which left five of twelve hubs with no inbound sibling link;
+`nearestCommunes()` now uses haversine over the `geo` field that was already
+there and previously unread. `/services` and `/zones` hubs were built because
+phase 6's own redirect map names `/services/` as a target and it did not exist.
+
+**Measured, not assumed.** Lighthouse 12, mobile, simulated throttling: 97–99
+performance, 100 accessibility, 100 best practices, 100 SEO across home,
+service, commune×service, `/credit-impot`, both hubs, `/professionnels` and
+`/confidentialite`. Accessibility went 96 → 100 by fixing three palette tokens
+that failed WCAG AA and underlining one in-prose link.
+
+**New guard.** `npm run check:metadata` reads the exported artifact and fails on
+duplicate titles, descriptions or H1s, on a missing or multiple H1, and on any
+description over 160 characters. 48 were over. It caught them; the templates
+now compose clauses and drop the trailing ones rather than truncating.
+
+Full detail in the session entry at the bottom of this file.
 
 ### Phase 2g — Real logo landed, downloaded from the client's live site (2026-08-31)
 
@@ -437,6 +561,12 @@ and the commune list, both of which are data-driven and cheap to re-run.
 
 | Date | Decision | Reason |
 |---|---|---|
+| 2026-09-06 | Built `/services` and `/zones` hub pages rather than redirecting the old `/services-1/` to a fragment | ROADMAP phase 6 names `/services/` as the 301 target and it did not exist, so the redirect was going to land an indexed old URL on a 404 or on `/#services`. The hubs also answer the un-localised head terms ("entreprise de nettoyage Essonne") that no single service or commune page targets, which satisfies rule 3's "no page without a target query". |
+| 2026-09-06 | Commune×service pages render two of the four service paragraphs, not all four | Rendering all four would make each of the 72 pages a near-copy of its `/services/{slug}` parent across twelve towns — the same thin-content failure, moved. The method and quoting paragraphs are what a visitor arriving on a local query still needs; the commune's `localAngle` is what differentiates the page. The real fix needs per-commune facts: item 20. |
+| 2026-09-06 | One sitewide OG image per language, not one per route | 198 generated cards would add roughly 13 MB to the repository to say almost the same thing on every page. Rendered from the real brand assets with headless Chrome, so no dependency and no build-time image pipeline. |
+| 2026-09-06 | Dropped `lastModified` from the sitemap entirely | It was `new Date()` at build time, stamping all 198 URLs with the same fresh timestamp on every deploy, including deploys that changed nothing. A crawler learns to ignore a lastmod that always says "just now"; an absent one is treated better than a distrusted one. |
+| 2026-09-06 | Kept `check-metadata-unique.mjs` alongside the new `check-exported-metadata.mjs` | The old one duplicates title templates by hand, which is fragile, but it runs before the build and gives fast failure on a clean checkout where `out/` does not exist. It is now documented as the fast guard and the exported one as authoritative, and its copy of the tax rate is parsed from `company.ts` so the two cannot drift. |
+| 2026-09-06 | Lighthouse measured against a gzip + immutable-cache server, not `python -m http.server` | The same build scores 80 on a bare static server and 98 with the headers Vercel actually sends. Measuring without them would have sent us optimising the test harness: "enable text compression" alone was worth 1.9 s. |
 | 2026-08-31 | Prototype's "50 % de crédit d'impôt" hero card removed rather than restyled | CLAUDE.md rule 1 forbids the figure as static text, and while `sapDeclaration.number` is null it would be an unbacked claim — the exact L121-2 exposure `docs/04` is written to avoid. The rate now appears only where `<TaxCreditBadge />` renders it, on eligible service pages, which is also where `docs/05` puts the arithmetic block. The home page names the scheme without a number and links to `/credit-impot`. |
 | 2026-08-31 | Did not extend `<TaxCreditBadge />` with a no-service "general" mode | It would have let the home page show the rate with sensible wording, but it also opens exactly the hole rule 1 closes: a badge that renders without an eligibility check could be dropped onto a façade page. That is a change to the legally sensitive component and is Darwin's call, not a side effect of a design import. |
 | 2026-08-31 | Prototype's FR/EN toggle dropped | CLAUDE.md rule 0: French only, no i18n. Locale routing is named there as the failure that left a previous project indexed in one language only. |
@@ -531,3 +661,35 @@ Next:
   `<TaxCreditBadge />` does the 50 % subtraction that `docs/00` calls the
   business's strongest argument.
 - Decide the `next` version pin (see 2026-08-31 in the decisions log).
+
+---
+
+### 2026-09-06 — Phases 1–4 closed, phase 6 built
+
+Done:
+- Audited every open roadmap phase with 12 agents (6 dimensions, each
+  adversarially verified). 72 findings, 58 confirmed, 14 killed as
+  unreproducible, already-done, already-in-STATUS, or rule-violating.
+- Fixed all 56 code-side findings. Highlights in the "Done" section above.
+- `ROADMAP.md`: phases 1, 2, 3 and 4 ticked with evidence; phase 6 ticked on the
+  code side; phase 7 marked entirely human. "English version" removed from the
+  out-of-scope list — it shipped on 2026-08-31.
+- `README.md` corrected: it still said "French only" and described the design
+  system as unimplemented.
+- New: `scripts/check-exported-metadata.mjs`, `src/components/ConversionBlock.tsx`,
+  `src/views/{ServicesHubView,ZonesHubView}`, `vercel.json`,
+  `public/assets/og/og-{fr,en}.png`.
+- `npm run verify:full` passes: typecheck, lint (zero warnings), 198 unique
+  titles, 204 files exported, 54 routes clear of tax-credit claims, 198 pages
+  with unique titles/descriptions/H1s all within 160 characters.
+
+Blocked:
+- Everything still open. See "What we need from you" at the top. Items 18–21
+  are new this session.
+
+Next:
+- Nothing on the code side. The next move is a human one: answer the items
+  above, starting with registrar access (4) and the form endpoint (14).
+- `vercel.json` has never been exercised. The first deploy after it lands should
+  be checked with `curl -sI https://www.glvitrclean.com/contact/` and friends
+  before the DNS cutover, not after.

@@ -44,7 +44,7 @@ Two families, both variable, both self-hosted from `public/assets/fonts/`.
 | `--font-display` | Newsreader italic 400–500 | the accent phrase inside a heading, nothing else |
 | `--font-mono` | system mono stack | eyebrow labels, list indices, the placeholder note |
 
-Only the **latin** subset ships. The site is French-only (CLAUDE.md rule 0) and
+Only the **latin** subset ships.
 `U+0000-00FF` plus `U+0152-0153` covers French completely, including `œ`. The
 prototype's `latin-ext` and `vietnamese` faces were dropped: 107 KB of font
 instead of 355 KB. Newsreader ships in italic only — its roman never appears in
