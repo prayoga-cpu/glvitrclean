@@ -26,19 +26,38 @@ if (!existsSync(out)) {
   process.exit(1);
 }
 
+/**
+ * Eligibility is declared once, on `taxCreditEligible` in services.ts
+ * (CLAUDE.md rule 1). Derive both lists from it rather than restating them:
+ * flipping a service in the data must move it between the two guards
+ * automatically, or the guard silently stops covering it.
+ */
+const servicesSrc = readFileSync(join(root, 'src/data/services.ts'), 'utf8');
+const SERVICE_ELIGIBILITY = new Map();
+for (const m of servicesSrc.matchAll(/^\s{4}slug:\s*'([^']+)',/gm)) {
+  const rest = servicesSrc.slice(m.index);
+  const flag = rest.match(/taxCreditEligible:\s*(true|false)/);
+  if (flag) SERVICE_ELIGIBILITY.set(m[1], flag[1] === 'true');
+}
+if (SERVICE_ELIGIBILITY.size === 0) {
+  console.error('check:compliance — could not parse taxCreditEligible from services.ts.');
+  process.exit(1);
+}
+
+const ineligibleSlugs = [...SERVICE_ELIGIBILITY].filter(([, e]) => !e).map(([s]) => s);
+const eligibleSlugs = [...SERVICE_ELIGIBILITY].filter(([, e]) => e).map(([s]) => s);
+
 /** Locale-free routes where the tax credit must never be claimed. */
 const FORBIDDEN_BASE = [
   'professionnels',
-  'services/facade',
-  'services/poubelles',
+  ...ineligibleSlugs.map((s) => `services/${s}`),
 ];
 
 /** Plus every commune crossing of a non-eligible service. */
 const communes = [...readFileSync(join(root, 'src/data/communes.ts'), 'utf8')
   .matchAll(/^\s{4}slug:\s*'([^']+)'/gm)].map((m) => m[1]);
 for (const c of communes) {
-  FORBIDDEN_BASE.push(`zones/${c}/facade`);
-  FORBIDDEN_BASE.push(`zones/${c}/poubelles`);
+  for (const s of ineligibleSlugs) FORBIDDEN_BASE.push(`zones/${c}/${s}`);
 }
 
 /** French lives at the bare path, English under /en. Both are checked. */
@@ -71,15 +90,67 @@ const CLAIM_PATTERNS = [
   /urssaf/i,
 ];
 
-/** Strip script tags (RSC flight payload duplicates all page text) and head. */
-function mainText(html) {
-  const noScript = html.replace(/<script[\s\S]*?<\/script>/gi, ' ');
-  const m = noScript.match(/<main[^>]*>([\s\S]*?)<\/main>/i);
-  const region = m ? m[1] : noScript;
-  return region.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+/**
+ * React escapes apostrophes, so the exported HTML carries `cr&#x27;dit` rather
+ * than `crédit d'impôt`. Without this decode the French patterns below match
+ * nothing at all and the guard silently protects only the English edition —
+ * i.e. only the non-commercial language. Decode BEFORE stripping tags.
+ */
+function decodeEntities(str) {
+  return str
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(parseInt(d, 10)))
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&quot;/gi, '"')
+    .replace(/&apos;/gi, "'")
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&amp;/gi, '&');
 }
 
+/**
+ * The visible region only. Rule 1 pins the guard to <main> on purpose: the one
+ * permitted tax-credit reference is the global nav link to /credit-impot, and
+ * that sits outside <main>.
+ */
+function mainRegion(html) {
+  const noScript = html.replace(/<script[\s\S]*?<\/script>/gi, ' ');
+  const m = noScript.match(/<main[^>]*>([\s\S]*?)<\/main>/i);
+  return m ? m[1] : noScript;
+}
+
+function mainText(html) {
+  return decodeEntities(mainRegion(html).replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Split <main> into sentence-sized segments, so a denial cannot be credited to
+ * a claim three paragraphs away. Block boundaries become hard breaks first,
+ * then each block splits on sentence punctuation.
+ */
+function mainSegments(html) {
+  const withBreaks = mainRegion(html).replace(
+    /<\/(?:p|li|h[1-6]|dt|dd|td|tr|a|section|aside|div|button|figcaption)\s*>/gi,
+    '\u0000',
+  );
+  return decodeEntities(withBreaks.replace(/<[^>]+>/g, ' '))
+    .split('\u0000')
+    .flatMap((block) => block.split(/(?<=[.!?])\s+/))
+    .map((t) => t.replace(/\s+/g, ' ').trim())
+    .filter(Boolean);
+}
+
+/**
+ * Layer 2. CLAIM_PATTERNS above enumerate known assertions; this catches the
+ * ones nobody thought to enumerate. Any segment that raises the topic at all
+ * must carry a denial in the SAME segment, or it fails.
+ */
+const TOPIC = /cr[ée]dit d['’\u2019]?imp[ôo]t|tax\s+credit|services\s+[àa]\s+la\s+personne|\b50\s?%/i;
+const DENIAL =
+  /n['’\u2019]ouvre\s+pas|aucun|exclus?\b|exclut|exclue|ne\s+figure\s+pas|ne\s+s['’\u2019]applique\s+pas|sans\s+cr[ée]dit|se\s+trompe|vous\s+trompe|\bno\b|\bnot\b|\bexclud|\bneither\b|\bnever\b|mistaken|mislead/i;
+
 let failed = false;
+let checkedSegments = 0;
 
 for (const route of FORBIDDEN_ROUTES) {
   const file = join(out, route, 'index.html');
@@ -88,7 +159,10 @@ for (const route of FORBIDDEN_ROUTES) {
     failed = true;
     continue;
   }
-  const text = mainText(readFileSync(file, 'utf8'));
+  const html = readFileSync(file, 'utf8');
+  const text = mainText(html);
+
+  // Layer 1 — enumerated assertions.
   for (const pattern of CLAIM_PATTERNS) {
     const hit = text.match(pattern);
     if (hit) {
@@ -100,6 +174,21 @@ for (const route of FORBIDDEN_ROUTES) {
       failed = true;
     }
   }
+
+  // Layer 2 — topic raised without a denial beside it.
+  const segments = mainSegments(html);
+  checkedSegments += segments.length;
+  for (const segment of segments) {
+    if (segment.endsWith('?')) continue; // an FAQ question may name the topic
+    if (!TOPIC.test(segment)) continue;
+    if (DENIAL.test(segment)) continue;
+    console.error(
+      `check:compliance — UNDENIED TAX-CREDIT MENTION on /${route}/\n` +
+        `  segment: ${segment}\n` +
+        '  On a forbidden route the topic may only appear as an explicit denial.',
+    );
+    failed = true;
+  }
 }
 
 /**
@@ -110,12 +199,7 @@ const companySrc = readFileSync(join(root, 'src/data/company.ts'), 'utf8');
 const sapUnverified = /number:\s*null/.test(companySrc);
 
 if (sapUnverified) {
-  const eligibleBase = [
-    'services/vitres',
-    'services/terrasse',
-    'services/menage',
-    'services/volets-portes',
-  ];
+  const eligibleBase = eligibleSlugs.map((s) => `services/${s}`);
   const eligible = [...eligibleBase, ...eligibleBase.map((r) => `en/${r}`)];
   for (const route of eligible) {
     const file = join(out, route, 'index.html');
