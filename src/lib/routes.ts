@@ -23,6 +23,13 @@ export interface RouteDescriptor {
 }
 
 const FIXED_PATHS = [
+  // Hub pages. They exist for two reasons: they are the honest 301 target for
+  // the old site's /services-1/ (ROADMAP phase 6, which names /services/), and
+  // they answer the un-localised head terms — "entreprise de nettoyage
+  // Essonne", "zones d'intervention" — that no single service or commune page
+  // targets. CLAUDE.md rule 3: a page needs a query, and these have one.
+  '/services',
+  '/zones',
   '/credit-impot',
   '/professionnels',
   '/devis',
@@ -43,7 +50,12 @@ function baseRoutes(): BaseRoute[] {
     routes.push({
       basePath: p,
       kind: 'fixed',
-      priority: p === '/credit-impot' || p === '/devis' ? 0.9 : 0.5,
+      priority:
+        p === '/credit-impot' || p === '/devis'
+          ? 0.9
+          : p === '/services' || p === '/zones'
+            ? 0.7
+            : 0.5,
       changeFrequency: 'monthly',
     });
   }

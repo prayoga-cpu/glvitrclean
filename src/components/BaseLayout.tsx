@@ -22,7 +22,26 @@ export function BaseLayout({ lang, children }: { lang: Lang; children: React.Rea
   return (
     <html lang={HTML_LANG[lang]}>
       <body>
-        <JsonLd data={localBusinessSchema(lang)} />
+        {/* Both faces are used above the fold — Schibsted for the H1, Newsreader
+            for its italic accent. Without a preload the browser only discovers
+            them after the stylesheet parses, which pushes the largest text on
+            the page into a second paint. React 19 hoists these into <head>. */}
+        <link
+          rel="preload"
+          as="font"
+          type="font/woff2"
+          href="/assets/fonts/schibsted-grotesk-latin.woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          as="font"
+          type="font/woff2"
+          href="/assets/fonts/newsreader-italic-latin.woff2"
+          crossOrigin="anonymous"
+        />
+
+        <JsonLd data={localBusinessSchema()} />
 
         <SiteHeader lang={lang} />
 

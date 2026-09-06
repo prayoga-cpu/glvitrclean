@@ -53,6 +53,11 @@ export default function NotFound() {
         />
       </Link>
 
+      {/* Next reads a `metadata` export from layout.tsx and page.tsx only,
+          never from not-found.tsx, so the title is rendered directly. React 19
+          hoists it into <head>. Without it out/404.html shipped untitled. */}
+      <title>{`${fr.notFound.h1} · ${en.notFound.h1} | ${company.displayName}`}</title>
+
       <div lang="fr">
         <h1>{fr.notFound.h1}</h1>
         <p>
@@ -62,12 +67,18 @@ export default function NotFound() {
 
       <hr className="not-found__rule" />
 
-      <p lang="en">
-        <strong>{en.notFound.h1}.</strong> {en.notFound.body}{' '}
-        <Link href={href('/', 'en')} hrefLang="en">
-          {en.notFound.backHome}
-        </Link>
-      </p>
+      {/* Same shape as the French block above: on a bilingual site the two
+          editions are equals, and a 404 is not indexed, so a second h1 is
+          harmless. */}
+      <div lang="en">
+        <h1>{en.notFound.h1}</h1>
+        <p>
+          {en.notFound.body}{' '}
+          <Link href={href('/', 'en')} hrefLang="en">
+            {en.notFound.backHome}
+          </Link>
+        </p>
+      </div>
 
       <p className="not-found__call">
         <a href={`tel:${company.phone}`} className="btn btn--primary" data-action="call">

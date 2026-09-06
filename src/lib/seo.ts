@@ -1,11 +1,32 @@
 import type { Metadata } from 'next';
-import { SITE_URL, company } from '@/data/company';
+import { SITE_URL, company, TAX_CREDIT_PCT } from '@/data/company';
 import { getService } from '@/data/services';
 import { getCommune } from '@/data/communes';
 import type { RouteDescriptor } from '@/lib/routes';
-import { DEFAULT_LANG, OG_LOCALE, localePath, type Lang } from '@/i18n/config';
+import {
+  DEFAULT_LANG,
+  OG_LOCALE,
+  localePath,
+  otherLang,
+  type Lang,
+} from '@/i18n/config';
 
 const BRAND = "GLVITR'CLEAN";
+
+/**
+ * Social preview card, one per edition. 1200x630, the size every scraper
+ * expects. Rendered from the real brand assets rather than pulled from a
+ * generator, so it stays consistent with the site and needs no dependency and
+ * no build-time image pipeline (CLAUDE.md rules 5 and 6).
+ *
+ * Sitewide rather than per-route: 194 generated cards would add ~13 MB to the
+ * repository to say almost the same thing on every page.
+ */
+const OG_IMAGE: Record<Lang, string> = {
+  fr: '/assets/og/og-fr.png',
+  en: '/assets/og/og-en.png',
+};
+const OG_IMAGE_SIZE = { width: 1200, height: 630 };
 
 export interface SeoFields {
   title: string;
@@ -64,11 +85,17 @@ export function seoFor(route: RouteDescriptor): SeoFields {
         ...(lang === 'fr'
           ? {
               title: `${s.name.fr} en Essonne (91) | ${BRAND}`,
-              description: `${s.summary.fr} Intervention dans le sud de l'Essonne, devis gratuit.`,
+              description: compose(
+                firstSentence(s.summary.fr),
+                "Intervention dans le sud de l'Essonne, devis gratuit.",
+              ),
             }
           : {
               title: `${s.name.en} in the Essonne (91) | ${BRAND}`,
-              description: `${s.summary.en} Covering the south of the Essonne, free quote.`,
+              description: compose(
+                firstSentence(s.summary.en),
+                'Covering the south of the Essonne, free quote.',
+              ),
             }),
       };
     }
@@ -81,11 +108,19 @@ export function seoFor(route: RouteDescriptor): SeoFields {
         ...(lang === 'fr'
           ? {
               title: `Nettoyage à ${c.name} (91) | ${BRAND}`,
-              description: `Entreprise de nettoyage à ${c.name}. Vitres, terrasses, volets, ménage et façades. Devis gratuit, réponse rapide.`,
+              description: compose(
+                `Entreprise de nettoyage à ${c.name}.`,
+                firstSentence(c.localAngle.fr),
+                'Devis gratuit.',
+              ),
             }
           : {
               title: `Cleaning in ${c.name} (91) | ${BRAND}`,
-              description: `Cleaning company covering ${c.name}. Windows, terraces, shutters, housekeeping and facades. Free quote, fast reply.`,
+              description: compose(
+                `Cleaning company covering ${c.name}.`,
+                firstSentence(c.localAngle.en),
+                'Free quote.',
+              ),
             }),
       };
     }
@@ -102,12 +137,21 @@ export function seoFor(route: RouteDescriptor): SeoFields {
         ...(lang === 'fr'
           ? {
               title: `${s.name.fr} à ${c.name} (91)`,
-              // Description varies by BOTH service and commune, so no two collide.
-              description: `${s.name.fr} à ${c.name} et alentours. ${s.summary.fr.split('.')[0]}. Devis gratuit au ${company.phoneDisplay}.`,
+              // First clause varies by BOTH service and commune, so no two
+              // collide even when the tail clauses are dropped for length.
+              description: compose(
+                `${s.name.fr} à ${c.name} et alentours.`,
+                firstSentence(s.summary.fr),
+                `Devis gratuit au ${company.phoneDisplay}.`,
+              ),
             }
           : {
               title: `${s.name.en} in ${c.name} (91)`,
-              description: `${s.name.en} in ${c.name} and the surrounding area. ${s.summary.en.split('.')[0]}. Free quote on ${company.phoneDisplay}.`,
+              description: compose(
+                `${s.name.en} in ${c.name} and the surrounding area.`,
+                firstSentence(s.summary.en),
+                `Free quote on ${company.phoneDisplay}.`,
+              ),
             }),
       };
     }
@@ -119,10 +163,56 @@ export function seoFor(route: RouteDescriptor): SeoFields {
 
 type TitleAndDescription = Pick<SeoFields, 'title' | 'description'>;
 
+/**
+ * Google truncates a snippet around 160 characters. 48 of the 194 descriptions
+ * were running past it, which meant the closing call to action — the part that
+ * earns the click — was the part being cut.
+ */
+const DESCRIPTION_MAX = 160;
+
+/** First sentence of a summary, punctuation included. */
+function firstSentence(text: string): string {
+  const m = text.match(/^[^.!?]*[.!?]/);
+  return (m ? m[0] : text).trim();
+}
+
+/**
+ * Joins clauses in priority order and stops before the cap.
+ *
+ * The first clause is always kept — it carries the service and commune names
+ * that make each of the 194 descriptions unique, so dropping it would collapse
+ * pages together and fail `check:metadata`. Later clauses are decoration and
+ * are dropped whole rather than cut mid-word.
+ */
+function compose(...clauses: string[]): string {
+  const parts = clauses.filter(Boolean);
+  let out = parts[0] ?? '';
+  if (out.length > DESCRIPTION_MAX) {
+    out = out.slice(0, out.lastIndexOf(' ', DESCRIPTION_MAX - 1)).replace(/[,;:]$/, '') + '…';
+  }
+  for (const clause of parts.slice(1)) {
+    const next = `${out} ${clause}`;
+    if (next.length > DESCRIPTION_MAX) break;
+    out = next;
+  }
+  return out;
+}
+
 function fixedSeo(basePath: string, lang: Lang): TitleAndDescription {
   const fr: Record<string, TitleAndDescription> = {
+    '/services': {
+      title: `Nos prestations de nettoyage en Essonne (91) | ${BRAND}`,
+      description:
+        "Vitres, terrasses, ménage, volets, façades et poubelles, chez les particuliers comme chez les professionnels du sud de l'Essonne. Devis gratuit.",
+    },
+    '/zones': {
+      title: `Zones d'intervention en Essonne (91) | ${BRAND}`,
+      description:
+        "Les communes du sud de l'Essonne où nous intervenons, sur le corridor N20 et RER C. Devis gratuit et sans engagement.",
+    },
     '/credit-impot': {
-      title: `Crédit d'impôt 50 % sur le nettoyage à domicile | ${BRAND}`,
+      // The figure is read from TAX_CREDIT_RATE, never typed. CLAUDE.md rule 1.
+      title: `Crédit d'impôt ${TAX_CREDIT_PCT} % sur le nettoyage à domicile | ${BRAND}`,
       description:
         "Comment fonctionne le crédit d'impôt Services à la Personne, quelles prestations de nettoyage y ouvrent droit, et lesquelles en sont exclues.",
     },
@@ -138,7 +228,9 @@ function fixedSeo(basePath: string, lang: Lang): TitleAndDescription {
     '/realisations': {
       title: `Nos réalisations de nettoyage en Essonne | ${BRAND}`,
       description:
-        'Photos avant et après de chantiers réalisés dans le sud de l’Essonne : vitres, terrasses, façades et volets.',
+        // No before/after photos exist yet — STATUS item 6. Do not describe
+        // imagery the page does not carry. CLAUDE.md rule 4.
+        "Ce que comprend chaque prestation de nettoyage dans le sud de l'Essonne : vitres, terrasses, façades, volets et ménage.",
     },
     '/mentions-legales': {
       title: `Mentions légales | ${BRAND}`,
@@ -151,8 +243,18 @@ function fixedSeo(basePath: string, lang: Lang): TitleAndDescription {
   };
 
   const en: Record<string, TitleAndDescription> = {
+    '/services': {
+      title: `Our cleaning services in the Essonne (91) | ${BRAND}`,
+      description:
+        'Windows, terraces, housekeeping, shutters, facades and bins, for private homes and businesses across the south of the Essonne. Free quote.',
+    },
+    '/zones': {
+      title: `Where we work in the Essonne (91) | ${BRAND}`,
+      description:
+        'The towns we cover in the south of the Essonne, along the N20 and RER C corridor. Free quote, no obligation.',
+    },
     '/credit-impot': {
-      title: `50% tax credit on home cleaning in France | ${BRAND}`,
+      title: `${TAX_CREDIT_PCT}% tax credit on home cleaning in France | ${BRAND}`,
       description:
         'How the French Services à la Personne tax credit works, which cleaning services qualify for it, and which are excluded.',
     },
@@ -168,7 +270,8 @@ function fixedSeo(basePath: string, lang: Lang): TitleAndDescription {
     '/realisations': {
       title: `Our cleaning work in the Essonne | ${BRAND}`,
       description:
-        'Before and after photos of jobs completed across the south of the Essonne: windows, terraces, facades and shutters.',
+        // See the French note above: no photos exist yet. CLAUDE.md rule 4.
+        'What each cleaning job covers across the south of the Essonne: windows, terraces, facades, shutters and housekeeping.',
     },
     '/mentions-legales': {
       title: `Legal notice | ${BRAND}`,
@@ -207,7 +310,25 @@ export function toMetadata(fields: SeoFields): Metadata {
       url: fields.canonical,
       siteName: BRAND,
       locale: OG_LOCALE[fields.lang],
+      // Tells Facebook and friends the other edition exists.
+      alternateLocale: OG_LOCALE[otherLang(fields.lang)],
       type: 'website',
+      images: [
+        {
+          url: OG_IMAGE[fields.lang],
+          ...OG_IMAGE_SIZE,
+          alt: BRAND,
+        },
+      ],
+    },
+    // Without an explicit block Next back-fills twitter:* from openGraph and
+    // leaves twitter:card as 'summary', which renders a thumbnail instead of
+    // the wide card the 1200x630 image is drawn for.
+    twitter: {
+      card: 'summary_large_image',
+      title: fields.title,
+      description: fields.description,
+      images: [OG_IMAGE[fields.lang]],
     },
     robots: { index: true, follow: true },
   };

@@ -6,7 +6,7 @@ import { serviceSchema, faqSchema, breadcrumbSchema } from '@/lib/schema';
 import { TaxCreditBadge } from '@/components/TaxCreditBadge';
 import { JsonLd } from '@/components/JsonLd';
 import { Faq } from '@/components/Faq';
-import { CallButton } from '@/components/CallButton';
+import { ConversionBlock } from '@/components/ConversionBlock';
 import { strings } from '@/i18n/dictionary';
 import { href, type Lang } from '@/i18n/config';
 
@@ -43,11 +43,14 @@ export function ServiceView({ service, lang }: { service: Service; lang: Lang })
         <p className="eligibility-note">{service.eligibilityNote[lang]}</p>
       )}
 
-      <CallButton lang={lang} />
+      <ConversionBlock lang={lang} />
 
-      {/* TODO(claude): body copy. What is included, how it is done, what the
-          customer should prepare. Written for a homeowner, not a buyer.
-          Both languages, added to the dictionary, not inlined here. */}
+      {/* All four paragraphs, in order. The last one carries the quoting basis
+          (forfait, au m², horaire, sur devis, par bac) and the free-quote line,
+          so a view that rendered only the first few would silently drop it. */}
+      {service.bodyCopy[lang].map((para) => (
+        <p key={para}>{para}</p>
+      ))}
 
       <section>
         <h2>{t.service.inYourCommune(name)}</h2>

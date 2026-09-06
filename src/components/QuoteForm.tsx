@@ -1,10 +1,11 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { services } from '@/data/services';
 import { communes } from '@/data/communes';
 import { strings } from '@/i18n/dictionary';
-import type { Lang } from '@/i18n/config';
+import { href, type Lang } from '@/i18n/config';
 
 /**
  * One of only three allowed client components. See CLAUDE.md rule 2.
@@ -98,7 +99,11 @@ export function QuoteForm({ lang }: { lang: Lang }) {
 
       <label className="quote-form__consent">
         <input type="checkbox" name="consent" required />
-        <span>{t.consent}</span>
+        <span>
+          {t.consentBefore}
+          <Link href={href('/confidentialite', lang)}>{t.consentLinkLabel}</Link>
+          {t.consentAfter}
+        </span>
       </label>
 
       <button type="submit" disabled={state === 'sending'}>

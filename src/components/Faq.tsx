@@ -1,4 +1,4 @@
-import type { FaqEntry } from '@/data/faq';
+import { resolveFaqText, type FaqEntry } from '@/data/faq';
 import { strings } from '@/i18n/dictionary';
 import type { Lang } from '@/i18n/config';
 
@@ -23,8 +23,8 @@ export function Faq({
       <dl>
         {entries.map((e) => (
           <div key={e.id} className="faq__item">
-            <dt>{e.question[lang]}</dt>
-            <dd>{e.answer[lang]}</dd>
+            <dt>{resolveFaqText(e.question[lang])}</dt>
+            <dd>{resolveFaqText(e.answer[lang])}</dd>
           </div>
         ))}
       </dl>

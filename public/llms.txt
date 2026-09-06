@@ -20,6 +20,16 @@ The site has two editions, same content and same slugs:
 Toute page française `/x/` a son équivalent anglais en `/en/x/`.
 Any French page `/x/` has its English counterpart at `/en/x/`.
 
+## Pages principales / Key pages
+- /services/ — toutes les prestations / all services
+- /zones/ — toutes les communes desservies / all towns covered
+- /credit-impot/ — le dispositif Services à la Personne expliqué / the French
+  tax-credit scheme explained
+- /professionnels/ — offre B2B / commercial offer
+- /devis/ — demande de devis gratuit / free quote request
+Chaque page existe aussi en anglais sous /en/.
+Each page also exists in English under /en/.
+
 ## Contact
 Téléphone / Phone : 06 27 70 99 70
 E-mail / Email : contact@glvitrclean.com

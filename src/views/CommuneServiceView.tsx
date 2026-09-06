@@ -4,7 +4,7 @@ import type { Service } from '@/data/services';
 import { serviceSchema, breadcrumbSchema } from '@/lib/schema';
 import { TaxCreditBadge } from '@/components/TaxCreditBadge';
 import { JsonLd } from '@/components/JsonLd';
-import { CallButton } from '@/components/CallButton';
+import { ConversionBlock } from '@/components/ConversionBlock';
 import { strings } from '@/i18n/dictionary';
 import { href, type Lang } from '@/i18n/config';
 
@@ -41,10 +41,22 @@ export function CommuneServiceView({
       <TaxCreditBadge service={s} lang={lang} basePriceEur={s.pricing.fromEur} />
       {!s.taxCreditEligible && <p className="eligibility-note">{s.eligibilityNote[lang]}</p>}
 
-      <CallButton lang={lang} />
+      <ConversionBlock lang={lang} />
 
-      {/* TODO(claude): two short paragraphs specific to this pair. Reuse the
-          commune's localAngle as the hook, not as the whole body. */}
+      {/* Deliberately NOT the full bodyCopy: rendering all four paragraphs here
+          would make this page a near-copy of /services/{slug} on all twelve
+          crossings. The method and quoting paragraphs are the two a visitor
+          who arrived on a local query still needs; the commune's localAngle
+          above is what actually differentiates the page.
+
+          This is the honest limit of what src/data/ can differentiate. Copy
+          genuinely specific to a service IN a commune needs facts only the
+          client has — logged as a blocked item in STATUS.md. */}
+      {[s.bodyCopy[lang][1], s.bodyCopy[lang][3]]
+        .filter(Boolean)
+        .map((para) => (
+          <p key={para}>{para}</p>
+        ))}
 
       <nav className="related-links" aria-label={t.communeService.relatedLabel}>
         <Link href={href(`/services/${s.slug}`, lang)}>

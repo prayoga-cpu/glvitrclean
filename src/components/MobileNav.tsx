@@ -49,8 +49,15 @@ export function MobileNav({ lang }: { lang: Lang }) {
         <span className="nav-toggle__bar" />
       </button>
 
-      {open && (
-        <nav id="mobile-nav" className="mobile-nav" aria-label={t.nav.mobileLabel}>
+      {/* Always in the DOM, visibility toggled with `hidden`. When it was
+          conditionally rendered the panel was absent from all 200 exported
+          pages and the button's aria-controls pointed at nothing. */}
+      <nav
+        id="mobile-nav"
+        className="mobile-nav"
+        aria-label={t.nav.mobileLabel}
+        hidden={!open}
+      >
           <Link href={href('/', lang)} onClick={close}>
             {t.nav.home}
           </Link>
@@ -78,7 +85,6 @@ export function MobileNav({ lang }: { lang: Lang }) {
             </span>
           </Link>
         </nav>
-      )}
     </>
   );
 }

@@ -26,6 +26,15 @@ export const SITE_URL = resolveSiteUrl();
 /** Tax credit rate as a fraction. Change here, changes everywhere. */
 export const TAX_CREDIT_RATE = 0.5;
 
+/**
+ * The rate as a whole-number percentage, for copy.
+ *
+ * CLAUDE.md rule 1: the figure must never be typed as static text anywhere.
+ * Titles, H1s and badge copy all read it from here, so changing
+ * TAX_CREDIT_RATE above changes every one of them in a single edit.
+ */
+export const TAX_CREDIT_PCT = Math.round(TAX_CREDIT_RATE * 100);
+
 /** Annual household cap on SAP spending eligible for the credit, in EUR. */
 export const TAX_CREDIT_ANNUAL_CAP = 6000;
 
@@ -47,6 +56,12 @@ export interface SapDeclaration {
 
 export const company = {
   legalName: "GLVITR'CLEAN",
+  /**
+   * The one person who does the work. docs/05's trust stack asks for a named
+   * human rather than "notre équipe", so the name appears in copy on several
+   * pages — it belongs here, not retyped into four dictionary strings.
+   */
+  operator: 'Thibaut',
   displayName: "GLVITR'CLEAN",
   tagline: 'Une entreprise à votre écoute, votre satisfaction notre priorité',
 

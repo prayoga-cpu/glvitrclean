@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import type { Commune } from '@/data/communes';
-import { communes } from '@/data/communes';
+import { nearestCommunes } from '@/data/communes';
 import { services } from '@/data/services';
-import { breadcrumbSchema } from '@/lib/schema';
+import { breadcrumbSchema, serviceSchema } from '@/lib/schema';
 import { JsonLd } from '@/components/JsonLd';
-import { CallButton } from '@/components/CallButton';
+import { ConversionBlock } from '@/components/ConversionBlock';
 import { strings } from '@/i18n/dictionary';
 import { href, type Lang } from '@/i18n/config';
 
@@ -24,6 +24,12 @@ export function CommuneView({ commune, lang }: { commune: Commune; lang: Lang })
         )}
       />
 
+      {/* Rule 3: Service + areaServed on commune pages too. One node per
+          service actually offered here, each scoped to this commune. */}
+      {services.map((s) => (
+        <JsonLd key={s.slug} data={serviceSchema(s, lang, c)} />
+      ))}
+
       <h1>{t.commune.h1(c.name, c.postalCode)}</h1>
 
       {/* Mandatory, and translated per commune rather than templated. This is
@@ -31,7 +37,7 @@ export function CommuneView({ commune, lang }: { commune: Commune; lang: Lang })
           each other — in either language. See CLAUDE.md rule 4. */}
       <p className="local-angle">{c.localAngle[lang]}</p>
 
-      <CallButton lang={lang} />
+      <ConversionBlock lang={lang} />
 
       <section>
         <h2>{t.commune.ourServicesIn(c.name)}</h2>
@@ -46,17 +52,30 @@ export function CommuneView({ commune, lang }: { commune: Commune; lang: Lang })
         </ul>
       </section>
 
+      {/* Closes the internal-link loop. Without this the chain ran one way
+          only: nothing under /zones/ pointed back up to a service hub.
+          ROADMAP phase 3, "and back". */}
+      <section>
+        <h2>{t.commune.allServiceHubs}</h2>
+        <ul className="link-grid">
+          {services.map((s) => (
+            <li key={s.slug}>
+              <Link href={href(`/services/${s.slug}`, lang)}>
+                {t.communeService.serviceInRegion(s.name[lang])}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       <section>
         <h2>{t.commune.neighbouring}</h2>
         <ul className="link-grid">
-          {communes
-            .filter((x) => x.slug !== c.slug)
-            .slice(0, 6)
-            .map((x) => (
-              <li key={x.slug}>
-                <Link href={href(`/zones/${x.slug}`, lang)}>{x.name}</Link>
-              </li>
-            ))}
+          {nearestCommunes(c).map((x) => (
+            <li key={x.slug}>
+              <Link href={href(`/zones/${x.slug}`, lang)}>{x.name}</Link>
+            </li>
+          ))}
         </ul>
       </section>
     </div>

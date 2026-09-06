@@ -21,7 +21,11 @@ import { strings } from '@/i18n/dictionary';
  * `?? fallbackBase` below degrades to the other language's home page rather
  * than to a dead link — verify with:
  *
- *   grep -o 'hreflang="en"[^>]*' out/zones/linas/vitres/index.html
+ *   grep -io 'hreflang="en" href="[^"]*"' out/zones/linas/vitres/index.html
+
+ * Case-insensitive on purpose: the export writes the JSX spelling `hrefLang`
+ * verbatim, which is valid because HTML attribute names are case-insensitive,
+ * but a case-sensitive grep for `hreflang=` finds nothing and reads as a bug.
  */
 export function LangToggle({ lang }: { lang: Lang }) {
   const pathname = usePathname();

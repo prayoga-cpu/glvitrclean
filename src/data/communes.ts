@@ -149,3 +149,33 @@ export const communeSlugs = communes.map((c) => c.slug);
 export function getCommune(slug: string): Commune | undefined {
   return communes.find((c) => c.slug === slug);
 }
+
+/**
+ * The `n` communes physically closest to `c`.
+ *
+ * The "communes voisines" block used to be `communes.slice(0, 6)`, which is
+ * array order, not geography: it linked Étampes to Linas (24 km) while five
+ * of the twelve hubs received no inbound sibling link at all. Distance is
+ * haversine over the `geo` field each commune already carries.
+ *
+ * Ties break on slug so the static export stays byte-identical between builds.
+ */
+export function nearestCommunes(c: Commune, n = 6): Commune[] {
+  const R = 6371;
+  const rad = (d: number) => (d * Math.PI) / 180;
+  const km = (a: Commune, b: Commune) => {
+    const dLat = rad(b.geo.lat - a.geo.lat);
+    const dLng = rad(b.geo.lng - a.geo.lng);
+    const h =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(rad(a.geo.lat)) * Math.cos(rad(b.geo.lat)) * Math.sin(dLng / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(h));
+  };
+
+  return communes
+    .filter((x) => x.slug !== c.slug)
+    .map((x) => ({ commune: x, d: km(c, x) }))
+    .sort((a, b) => a.d - b.d || a.commune.slug.localeCompare(b.commune.slug))
+    .slice(0, n)
+    .map((x) => x.commune);
+}

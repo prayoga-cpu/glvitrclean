@@ -71,6 +71,11 @@ export function HomeView({ lang }: { lang: Lang }) {
             <Image src="/assets/placeholder/hero-03.webp" alt="" width={760} height={947} />
             <Image src="/assets/placeholder/hero-04.webp" alt="" width={900} height={665} />
           </div>
+
+          {/* These four are stock, like every other image on the site. Rule 4
+              requires the marking wherever they appear, not only in the two
+              places further down the page. */}
+          <p className="placeholder-note">{t.common.illustrativePhotos}</p>
         </div>
 
         {/*

@@ -9,8 +9,9 @@
      - Components reference tokens only. Never hard-code a colour in a .tsx.
      - No UI kit, no icon library, no font package. Fonts are self-hosted
        woff2 in public/assets/fonts/, extracted from the prototype.
-     - Only the `latin` subset ships. The site is French-only (CLAUDE.md
-       rule 0) and U+0000-00FF + U+0152-0153 covers French completely.
+     - Only the `latin` subset ships. U+0000-00FF plus U+0152-0153 covers
+       French and English completely, including the ligature oe, so no
+       further subset is needed for either edition.
    ========================================================================= */
 
 /* --- fonts ---------------------------------------------------------------
@@ -54,7 +55,9 @@
 
   --color-text: #101828;
   --color-text-muted: #5a6072;
-  --color-text-faint: #8a8f9e;
+  /* 4.67:1 on --color-bg, 5.17:1 on --color-surface. Was #8a8f9e, which
+     measured 2.91 and 3.23 and failed WCAG AA everywhere it was used. */
+  --color-text-faint: #696d78;
 
   --color-brand: #1b3a9c;
   --color-brand-deep: #12276b;
@@ -69,13 +72,17 @@
   --color-on-brand: #ffffff;
   --color-on-brand-muted: rgba(255, 255, 255, 0.72);
   --color-on-brand-soft: rgba(255, 255, 255, 0.82);
-  --color-on-brand-faint: rgba(255, 255, 255, 0.45);
+  /* 4.58:1 over --color-brand. 0.45 measured 3.27 and failed AA. */
+  --color-on-brand-faint: rgba(255, 255, 255, 0.6);
   --color-on-brand-rule: rgba(255, 255, 255, 0.18);
   --color-on-brand-hairline: rgba(255, 255, 255, 0.16);
   --color-on-brand-panel: rgba(255, 255, 255, 0.07);
   --color-on-brand-panel-border: rgba(255, 255, 255, 0.14);
 
   --color-focus: #1b3a9c;
+
+  /* Large decorative numerals on --color-surface. 3.03:1. */
+  --color-step-ghost: #969490;
 
   /* --- typography -------------------------------------------------------- */
   --font-body: 'Schibsted Grotesk', -apple-system, BlinkMacSystemFont,
@@ -639,6 +646,13 @@ ol {
   flex-direction: column;
 }
 
+/* The panel is always in the DOM now and hidden via the `hidden` attribute.
+   `display: flex` above outranks the UA's [hidden] { display: none }, so it
+   has to be restated here or the menu renders permanently open. */
+.mobile-nav[hidden] {
+  display: none;
+}
+
 .mobile-nav a {
   font-size: var(--text-lg);
   font-weight: 600;
@@ -853,6 +867,12 @@ ol {
   margin-top: var(--space-2);
 }
 
+/* The shared call / WhatsApp / quote set. Needs breathing room from the prose
+   it follows, and must not sit flush against a following section. */
+.conversion-block {
+  margin: var(--space-4) 0;
+}
+
 .contact-media {
   display: block;
   width: 100%;
@@ -1000,7 +1020,9 @@ ol {
 .card__number {
   font-size: 2.5rem;
   font-weight: 500;
-  color: var(--color-border);
+  /* Ghost numeral, but it still carries the step order, so it has to clear the
+     3:1 large-text bar. --color-border measured 1.31 on white. */
+  color: var(--color-step-ghost);
   letter-spacing: var(--tracking-heading);
 }
 
@@ -1217,6 +1239,15 @@ ol {
   color: var(--color-text-muted);
 }
 
+/* The link sits inside muted body text, where brand blue is only 1.57:1
+   against its surroundings. Colour alone cannot carry it (WCAG 1.4.1), so it
+   is underlined. */
+.quote-form__consent a {
+  color: var(--color-brand);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .quote-form__consent input {
   width: 1.0625rem;
   height: 1.0625rem;
@@ -1309,6 +1340,20 @@ ol {
    FAQ, service and commune page bits
    ========================================================================= */
 
+/* Prose lists in legal copy. The global reset removes ul markers, which is
+   right for nav and card grids and wrong for a sentence-level list. */
+.plain-list {
+  list-style: disc;
+  padding-left: 1.25rem;
+  margin: 0 0 var(--space-2);
+  max-width: var(--measure);
+}
+
+.plain-list li {
+  margin-bottom: 0.375rem;
+  color: var(--color-text-muted);
+}
+
 .faq__item {
   border-bottom: 1px solid var(--color-border);
   padding: var(--space-2) 0;
@@ -1360,6 +1405,14 @@ ol {
 
 .panel .placeholder-note {
   color: var(--color-on-brand-faint);
+}
+
+/* The gallery is pushed down past the panel's bottom edge, so a note directly
+   after it would land on the cream page behind. Pull it back inside. */
+.hero__panel .placeholder-note {
+  position: relative;
+  top: clamp(2.375rem, 7vw, 6.75rem);
+  margin-top: var(--space-2);
 }
 
 /* =========================================================================
@@ -1444,11 +1497,14 @@ ol {
   margin: 0 auto;
 }
 
-.site-footer a {
+/* Plain footer links only. Without :not(.btn) this rule outranks .btn--accent
+   (0,1,1 vs 0,1,0) and repaints the footer's call button's label in
+   --color-on-brand-muted — near-white on gold, measured 1.41:1. */
+.site-footer a:not(.btn) {
   color: var(--color-on-brand-muted);
 }
 
-.site-footer a:hover {
+.site-footer a:not(.btn):hover {
   color: var(--color-on-brand);
 }
 

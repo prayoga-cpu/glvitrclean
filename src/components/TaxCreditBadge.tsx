@@ -1,4 +1,4 @@
-import { TAX_CREDIT_RATE, sapVerified, company } from '@/data/company';
+import { TAX_CREDIT_RATE, TAX_CREDIT_PCT, sapVerified, company } from '@/data/company';
 import type { Service } from '@/data/services';
 import { strings } from '@/i18n/dictionary';
 import type { Lang } from '@/i18n/config';
@@ -30,7 +30,7 @@ export function TaxCreditBadge({
   if (!service.taxCreditEligible) return null;
 
   const t = strings(lang).taxCreditBadge;
-  const pct = Math.round(TAX_CREDIT_RATE * 100);
+  const pct = TAX_CREDIT_PCT;
 
   // State 2: pending. Describes the scheme without claiming registration.
   if (!sapVerified) {
