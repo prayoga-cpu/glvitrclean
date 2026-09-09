@@ -131,8 +131,11 @@ difference is the test server, not the site.
 - [ ] Real photos processed to WebP, sized, alt text per commune — BLOCKED,
       STATUS item 6
 - [ ] Before/after pairs on `/realisations` — BLOCKED, STATUS item 6
-- [x] Logo and favicon set — `src/components/Logo.tsx`, `public/assets/brand/`,
-      `src/app/icon.svg`, derived from the supplied prototype 2026-08-31
+- [x] Logo and favicon set — client's brand kit landed 2026-09-09.
+      `src/data/brand.ts` declares every path; `public/assets/brand/`,
+      `public/assets/icons/`, `public/favicon.ico`, `src/app/manifest.ts`.
+      Supersedes the CSS-drawn prototype mark and the peach raster that
+      followed it. See `docs/09-design-system.md`, "Logo".
 - [x] Design system implemented (human supplies tokens first) — 2026-08-31
 
 **Done when:** zero placeholder images remain and `globals.css` no longer shows

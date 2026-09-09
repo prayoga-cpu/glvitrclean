@@ -457,32 +457,35 @@ ol {
 }
 
 /*
-  The client's logo is a full lockup — the "VITR'CLEAN" wordmark lives inside
-  the artwork — so there is no separate text wordmark beside it any more, and
-  the old .brand / .brand__mark / .brand__word rules are gone with it.
+  The brand lockup is a full lockup — mark, wordmark and baseline are all inside
+  the artwork — so there is no separate text wordmark beside it, and the old
+  .brand / .brand__mark / .brand__word rules are gone with it.
 
-  It is portrait (441x512), so height drives the size and width follows. The
-  header bar is taller than it was for exactly this reason: the wordmark is part
-  of the image, and shrinking the image to the old 34px mark height rendered it
-  as an unreadable smudge.
+  It is landscape (527x160) on its own #12276B plate, so height drives the size
+  and width follows at 3.29:1. The radius makes the plate read as a deliberate
+  badge rather than a stray rectangle; it matches the CTA button beside it in
+  the header, and on the blue footer the plate reads as a slightly deeper card.
+  See docs/09-design-system.md, "Logo", for why the artwork carries its own
+  ground instead of being knocked out to transparency.
 */
 .brand__lockup {
   display: block;
   width: auto;
   flex: none;
+  border-radius: var(--radius-md);
 }
 
 .brand__lockup--header {
-  height: 4rem;
+  height: 3.5rem;
 }
 
 .brand__lockup--footer {
-  height: 6rem;
+  height: 4.5rem;
 }
 
 @media (max-width: 30rem) {
   .brand__lockup--header {
-    height: 3.25rem;
+    height: 2.75rem;
   }
 }
 

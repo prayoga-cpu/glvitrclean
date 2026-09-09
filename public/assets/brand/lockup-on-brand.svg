@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 220" width="900" height="220">
+<defs><clipPath id="disc"><circle cx="108.50" cy="110.00" r="57.44"/></clipPath></defs>
+<rect width="900" height="220" fill="#1B3A9C"/>
+<circle cx="108.50" cy="110.00" r="73.00" fill="none" stroke="#F7C53F" stroke-width="8.01"/>
+<circle cx="108.50" cy="110.00" r="57.44" fill="#12276B"/>
+<g clip-path="url(#disc)"><g transform="matrix(1,0,-0.2867,1,51.06,52.56)">
+<rect x="-20.68" y="-13.79" width="33.32" height="142.46" fill="#F7C53F"/>
+<rect x="18.38" y="-13.79" width="12.64" height="142.46" fill="#ffffff" opacity="0.42"/>
+</g></g>
+<circle cx="155.09" cy="57.41" r="18.25" fill="#1B3A9C"/>
+<circle cx="155.09" cy="57.41" r="14.24" fill="#F7C53F"/>
+<text x="112.52" y="114.02" fill="#ffffff" font-family="Newsreader, Georgia, serif" font-weight="600" font-size="52.85" text-anchor="middle" dominant-baseline="central">GL</text>
+<text x="216.30" y="119.24" font-family="Newsreader, Georgia, serif" font-weight="400" font-size="66.00" fill="#ffffff">GLVITR<tspan fill="#F7C53F">’</tspan>CLEAN</text>
+<line x1="216.30" y1="145.49" x2="317.71" y2="145.49" stroke="rgba(255,255,255,0.35)" stroke-width="1.32"/>
+<line x1="603.73" y1="145.49" x2="705.14" y2="145.49" stroke="rgba(255,255,255,0.35)" stroke-width="1.32"/>
+<text x="329.81" y="153.34" font-family="Schibsted Grotesk, Helvetica, Arial, sans-serif" font-weight="700" font-size="23.10" letter-spacing="5.28" fill="#F7C53F">NETTOYAGE PRO</text>
+</svg>

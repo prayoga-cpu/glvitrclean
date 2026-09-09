@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { company } from '@/data/company';
+import { brand } from '@/data/brand';
 import { services } from '@/data/services';
 import { MobileNav } from '@/components/MobileNav';
 import { LangToggle } from '@/components/LangToggle';
@@ -8,29 +9,33 @@ import { strings } from '@/i18n/dictionary';
 import { href, type Lang } from '@/i18n/config';
 
 /**
- * The client's own logo, downloaded from the live site at glvitrclean.com.
+ * The brand lockup: circle mark, "GLVITR'CLEAN" wordmark and the NETTOYAGE PRO
+ * baseline, all inside one piece of artwork. There is deliberately no separate
+ * text wordmark beside it — rendering both would print the name twice.
  *
- * It is the full lockup — circle mark AND the "VITR'CLEAN" wordmark are both
- * inside the artwork — so there is deliberately no separate text wordmark next
- * to it any more. Rendering both would print the name twice.
+ * It ships as a raster on its own deep-blue plate, and both of those are
+ * deliberate:
  *
- * The source PNG has an opaque white background covering 72% of the canvas,
- * which would have shown as a white square on the cream page and the blue
- * footer. `public/assets/brand/logo.png` is the same artwork with that outer
- * white flood-filled to transparent and cropped to the mark; `logo.webp` is the
- * 512px-tall web copy. `logo-original.png` keeps the untouched 1024px download
- * for print and the Google Business Profile.
+ *  - Raster, because the supplied vector lockups carry live <text> set in
+ *    Newsreader and Schibsted Grotesk. An SVG loaded through <img> is its own
+ *    document and cannot reach this page's @font-face, so no visitor would ever
+ *    see the brand faces — and the rules flanking NETTOYAGE PRO sit at fixed x
+ *    coordinates measured for Newsreader, so a wider fallback serif collides
+ *    with them. The vectors are kept in public/assets/brand/ for print, where
+ *    the fonts are available.
+ *  - Plated, because the wordmark is white. On the cream header it needs its
+ *    own ground; on the blue footer the plate reads as a slightly deeper card.
+ *    One asset, both places, no second variant to keep in sync.
  *
- * There is no `inverse` variant: it is a raster, not the old two-tone SVG. The
- * peach circle carries enough contrast to sit on the blue footer as-is.
+ * See docs/09-design-system.md, "Logo".
  */
 function Brand({ size = 'header' }: { size?: 'header' | 'footer' }) {
   return (
     <Image
-      src="/assets/brand/logo.webp"
+      src={brand.lockup.src}
       alt={company.displayName}
-      width={441}
-      height={512}
+      width={brand.lockup.width}
+      height={brand.lockup.height}
       className={`brand__lockup brand__lockup--${size}`}
       priority={size === 'header'}
     />

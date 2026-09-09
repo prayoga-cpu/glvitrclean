@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<defs>
+<clipPath id="disc"><circle cx="256.00" cy="256.00" r="190.98"/></clipPath>
+<mask id="gap"><rect width="512" height="512" fill="#fff"/>
+<circle cx="410.88" cy="81.15" r="73.98" fill="#000"/></mask>
+</defs>
+<circle cx="256.00" cy="256.00" r="242.69" fill="none" stroke="#F7C53F" stroke-width="26.62" mask="url(#gap)"/>
+<circle cx="256.00" cy="256.00" r="190.98" fill="#1B3A9C"/>
+<g clip-path="url(#disc)"><g transform="matrix(1,0,-0.2867,1,65.02,65.02)">
+<rect x="-68.75" y="-45.83" width="110.77" height="473.62" fill="#F7C53F"/>
+<rect x="61.11" y="-45.83" width="42.01" height="473.62" fill="#ffffff" opacity="0.42"/>
+</g></g>
+<circle cx="410.88" cy="81.15" r="47.36" fill="#F7C53F"/>
+<text x="269.37" y="269.37" fill="#ffffff" font-family="Newsreader, Georgia, serif" font-weight="600" font-size="175.70" text-anchor="middle" dominant-baseline="central">GL</text>
+</svg>

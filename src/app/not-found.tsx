@@ -2,6 +2,7 @@ import Link from 'next/link';
 import './globals.css';
 import Image from 'next/image';
 import { company } from '@/data/company';
+import { brand } from '@/data/brand';
 import { strings } from '@/i18n/dictionary';
 import { href } from '@/i18n/config';
 
@@ -45,10 +46,10 @@ export default function NotFound() {
     <main className="container not-found">
       <Link href="/" aria-label={`${company.displayName} — ${fr.common.homeLabel}`}>
         <Image
-          src="/assets/brand/logo.webp"
+          src={brand.lockup.src}
           alt={company.displayName}
-          width={441}
-          height={512}
+          width={brand.lockup.width}
+          height={brand.lockup.height}
           className="brand__lockup brand__lockup--header"
         />
       </Link>

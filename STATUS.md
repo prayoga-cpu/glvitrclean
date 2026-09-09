@@ -103,6 +103,67 @@ The questions to send the client are written out, in French, in
 
 ## Done
 
+### Brand kit landed, icons and social metadata wired (2026-09-09)
+
+The client supplied a real brand kit — blue, gold and cream, drawn in the
+site's own two faces. It replaces the peach raster taken off the old live site
+in August, which was the last thing on the page that did not match the design
+system. 18 files in, 3 out.
+
+**What now renders.** One asset: `public/assets/brand/lockup.webp`, the full
+horizontal lockup on its own `#12276B` plate, in the header, the footer and the
+404. It is a raster and it keeps its plate, and both of those are load-bearing
+decisions — the supplied vector lockups carry live `<text>` in Newsreader and
+Schibsted Grotesk, which an `<img>`-loaded SVG cannot reach, and the rules
+flanking `NETTOYAGE PRO` sit at coordinates measured for Newsreader's metrics,
+so a fallback serif walks into them. Newsreader also ships italic-only here, so
+inlining the SVG would not have rescued it. Verified in a headless browser at
+1280px and 390px, not assumed. Reasoning in `docs/09-design-system.md`, "Logo".
+
+**What the site now tells a crawler that it did not before.**
+
+- A real icon set: `/favicon.ico` (three sizes in one file, hand-built — the
+  kit had no `.ico`, and Google's favicon fetcher asks for that path directly),
+  `/apple-touch-icon.png`, three PNG sizes, and the two Android icons plus a
+  maskable one.
+- A generated web app manifest, `src/app/manifest.ts` — same reasoning as
+  `sitemap.ts` and `robots.ts`: the icon list comes from `brand.ts`, so a
+  renamed file cannot leave a dead entry. Emitted at `/manifest.webmanifest`.
+- `<meta name="theme-color">` on all 194 routes.
+- `logo` and `image` on the `LocalBusiness` node. Both were **absent**. `image`
+  is a precondition for a local result to be eligible for a knowledge panel at
+  all, so this was a real gap, not a polish item. Both point at the square
+  1200×1200 brand card — the only honest option while every photograph on the
+  site is stock placeholder (rule 4). Swap `image` for a real job photo in
+  phase 5.
+- A language-neutral fallback social card on the root layout, so a route that
+  ships without its own metadata export no longer ships without a card.
+
+**One source of truth.** `src/data/brand.ts` declares every icon, card and
+lockup path plus the two brand hexes that have to exist outside CSS
+(`theme-color` and the manifest cannot read a custom property). `seo.ts` now
+reads its card paths from there instead of keeping its own copy.
+
+**Derived, not supplied.** Two files needed work; the exact numbers are in
+`docs/09` so they are reproducible. The lockup was cropped 600×160 → 527×160 to
+kill 94px of dead space on the right and centre the plate optically. The two
+bilingual OG cards were kept — they are drawn in the real brand faces — but
+still embedded the peach mark, so that rectangle was painted out in the panel
+colour and the current mark composited back. Done with `sharp` in a throwaway
+script rather than a committed one: `sharp` is only a transitive dependency of
+Next, and rule 5 governs adding it for real.
+
+**Removed.** `public/assets/brand/logo.{png,webp}` (the peach derivations) and
+`src/app/icon.png`. Next's file-based icon convention emits a single icon at a
+URL it chooses and cannot express a size set, an `.ico`, or an Apple touch
+icon, so the icons are declared in `baseMetadata()` instead — once, for both
+root layouts. `logo-original.png` stays as the archived pre-kit original.
+
+`npm run verify:full` passes: 198 routes unique, 54 routes clear of tax-credit
+claims, every description within 160 chars.
+
+Item 16 in the table above ("New logo file", 2026-08-31) is superseded by this.
+
 ### Phases 1–4 closed, phase 6 built (2026-09-06)
 
 A 12-agent audit of every open roadmap phase produced 72 findings; 58 survived

@@ -1,5 +1,5 @@
 import '../globals.css';
-import { BaseLayout, baseMetadata } from '@/components/BaseLayout';
+import { BaseLayout, baseMetadata, baseViewport } from '@/components/BaseLayout';
 
 /**
  * Root layout for the French edition.
@@ -10,6 +10,7 @@ import { BaseLayout, baseMetadata } from '@/components/BaseLayout';
  * The shared body lives in BaseLayout so the two cannot drift.
  */
 export const metadata = baseMetadata();
+export const viewport = baseViewport;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return <BaseLayout lang="fr">{children}</BaseLayout>;

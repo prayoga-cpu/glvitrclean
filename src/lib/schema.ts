@@ -1,4 +1,5 @@
 import { SITE_URL, company, sapVerified } from '@/data/company';
+import { brand } from '@/data/brand';
 import { communes } from '@/data/communes';
 import type { Service } from '@/data/services';
 import type { Commune } from '@/data/communes';
@@ -56,6 +57,19 @@ export function localBusinessSchema(): Json {
         longitude: c.geo.lng,
       },
     })),
+    // Square 1200x1200 brand card, absolute as schema.org requires. `logo` is
+    // what Google may show in a knowledge panel; `image` is what it needs
+    // present at all for a local result to be eligible for one. Both point at
+    // the same file because the only photography this site has is stock
+    // placeholder, which may not be presented as the client's own work
+    // (CLAUDE.md rule 4). Swap `image` for a real job photo in phase 5.
+    logo: {
+      '@type': 'ImageObject',
+      url: `${SITE_URL}${brand.square}`,
+      width: 1200,
+      height: 1200,
+    },
+    image: `${SITE_URL}${brand.square}`,
     address: {
       '@type': 'PostalAddress',
       addressLocality: company.address.locality,

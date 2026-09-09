@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { SITE_URL, company, TAX_CREDIT_PCT } from '@/data/company';
+import { socialCards } from '@/data/brand';
 import { getService } from '@/data/services';
 import { getCommune } from '@/data/communes';
 import type { RouteDescriptor } from '@/lib/routes';
@@ -14,19 +15,16 @@ import {
 const BRAND = "GLVITR'CLEAN";
 
 /**
- * Social preview card, one per edition. 1200x630, the size every scraper
- * expects. Rendered from the real brand assets rather than pulled from a
- * generator, so it stays consistent with the site and needs no dependency and
- * no build-time image pipeline (CLAUDE.md rules 5 and 6).
- *
- * Sitewide rather than per-route: 194 generated cards would add ~13 MB to the
- * repository to say almost the same thing on every page.
+ * Social preview card, one per edition. Paths and dimensions live in
+ * src/data/brand.ts with the rest of the artwork, so a renamed file is one
+ * edit; the reasoning for one card per edition rather than per route is
+ * recorded there.
  */
 const OG_IMAGE: Record<Lang, string> = {
-  fr: '/assets/og/og-fr.png',
-  en: '/assets/og/og-en.png',
+  fr: socialCards.fr,
+  en: socialCards.en,
 };
-const OG_IMAGE_SIZE = { width: 1200, height: 630 };
+const OG_IMAGE_SIZE = { width: socialCards.width, height: socialCards.height };
 
 export interface SeoFields {
   title: string;

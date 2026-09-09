@@ -4,8 +4,9 @@ import { JsonLd } from '@/components/JsonLd';
 import { SiteHeader, SiteFooter } from '@/components/SiteChrome';
 import { ScrollChrome } from '@/components/ScrollChrome';
 import { localBusinessSchema } from '@/lib/schema';
+import { icons, socialCards, THEME_COLOR } from '@/data/brand';
 import { HTML_LANG, type Lang } from '@/i18n/config';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 
 /**
  * The shared body of both root layouts.
@@ -59,10 +60,56 @@ export function BaseLayout({ lang, children }: { lang: Lang; children: React.Rea
   );
 }
 
-/** Root metadata. Per-page titles come from buildMetadata(). */
+/**
+ * Root metadata. Per-page titles and cards come from buildMetadata().
+ *
+ * Both root layouts call this, so the icon set is declared exactly once for all
+ * 194 routes. It replaces the old `src/app/icon.png`: Next's file convention
+ * emits a single icon at a URL it chooses, which cannot express the size set, a
+ * `.ico`, or the Apple touch icon.
+ */
 export function baseMetadata(): Metadata {
   return {
     metadataBase: new URL(SITE_URL),
     title: { default: "GLVITR'CLEAN", template: '%s' },
+
+    icons: {
+      // `/favicon.ico` is also served at the root without a tag, because
+      // Google's favicon fetcher and most feed readers ask for that path
+      // directly rather than parsing the document.
+      icon: [
+        { url: icons.ico, sizes: '16x16 32x32 48x48', type: 'image/x-icon' },
+        { url: icons.png16, sizes: '16x16', type: 'image/png' },
+        { url: icons.png32, sizes: '32x32', type: 'image/png' },
+        { url: icons.png48, sizes: '48x48', type: 'image/png' },
+      ],
+      apple: [{ url: icons.appleTouch, sizes: '180x180', type: 'image/png' }],
+    },
+
+    // The language-neutral card. Every real route overwrites this with its own
+    // edition's card in toMetadata(); this is what a route without a metadata
+    // export of its own would otherwise ship with none at all.
+    openGraph: {
+      siteName: "GLVITR'CLEAN",
+      type: 'website',
+      images: [
+        {
+          url: socialCards.brand,
+          width: socialCards.width,
+          height: socialCards.height,
+          alt: "GLVITR'CLEAN",
+        },
+      ],
+    },
   };
 }
+
+/**
+ * `themeColor` is a viewport export in Next 15, not a metadata one — it is
+ * emitted as `<meta name="theme-color">` and tints the Android address bar and
+ * the iOS status bar once the site is installed. Both root layouts re-export
+ * this; it is declared here so the two cannot drift.
+ */
+export const baseViewport: Viewport = {
+  themeColor: THEME_COLOR,
+};
