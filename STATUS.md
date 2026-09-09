@@ -184,25 +184,36 @@ site's own two faces. It replaces the peach raster taken off the old live site
 in August, which was the last thing on the page that did not match the design
 system. 18 files in, 3 out.
 
-**What now renders.** The header and the 404 show the **mark alone** —
-`public/assets/brand/mark.svg` at `3.5rem`, square and transparent, no wordmark
-and no plate. The footer prints the **name as live text**, in the body face,
-with the apostrophe in `--color-accent` the way the artwork has it. Nothing on
-the page carries the full lockup.
+**What now renders.** The lockup is split across the two ends of the page, on
+the human's call. The header and the 404 show the **mark alone**
+(`mark.webp`, `4rem`, transparent, no plate). The footer shows the **wordmark
+alone** (`wordmark.webp`, `4.5rem`) — `GLVITR'CLEAN`, its `NETTOYAGE PRO`
+baseline and the flanking rules, cut out of `card-wide.png`. Neither place
+carries the whole lockup, which was in the header first and came out because at
+header size its wordmark duplicated what the nav and the H1 already say, and
+its plate put a dark block in an airy cream bar.
 
-The full lockup was in the header first and came out on the human's call: at
-header size its wordmark and `NETTOYAGE PRO` baseline duplicated what the nav
-and the H1 already say, and its plate put a dark block in an airy cream bar.
+**Everything on the page is a raster, and that is measured, not preferred.**
+All three supplied vectors set their type as live `<text>` in Newsreader and
+Schibsted Grotesk. An `<img>`-loaded SVG cannot reach the page's `@font-face`,
+and the only Newsreader this site ships is italic, so inlining would not rescue
+it either. The cost was quantified after the human reported the monogram
+looking off-centre:
 
-The wordmark could never have travelled as an SVG anyway — the supplied vector
-lockups carry live `<text>` in Newsreader and Schibsted Grotesk, which an
-`<img>`-loaded SVG cannot reach, and the rules flanking `NETTOYAGE PRO` sit at
-coordinates measured for Newsreader's metrics, so a fallback serif walks into
-them. Newsreader also ships italic-only here, so inlining would not have
-rescued it, and it is why the footer wordmark is set in Schibsted rather than
-the brand serif. `mark.svg` is safe because its only text is the two-letter
-`GL` monogram. Verified in a headless browser at 1280px and 390px, not assumed.
-Reasoning in `docs/09-design-system.md`, "Logo".
+| | GL offset from disc centre |
+|---|---|
+| `mark.svg` in a browser | **2.1% left, 3.2% low** |
+| `mark-512.png`, designer's render | 0.28% right, 0.41% high |
+
+Nudging the SVG's coordinates would calibrate it to one platform's fallback
+font and misplace it on every other, so the page uses the faithful raster and
+the vectors stay for print. The footer wordmark is stored **lossless** because
+its `#1b3a9c` ground has to match `--color-brand` exactly — banding would draw
+the rectangle back in.
+
+Verified in a headless browser at 1280px and 390px, and the centring measured
+off the rendered pixels rather than eyeballed. Reasoning in
+`docs/09-design-system.md`, "Logo".
 
 **What the site now tells a crawler that it did not before.**
 

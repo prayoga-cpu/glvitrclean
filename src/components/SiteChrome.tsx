@@ -18,8 +18,10 @@ import { href, type Lang } from '@/i18n/config';
  * and the plate put a dark block in an otherwise airy cream bar. The mark is
  * transparent, so it needs no ground of its own.
  *
- * See docs/09-design-system.md, "Logo", for why the wordmark cannot travel as
- * an SVG and why the monogram inside this file safely can.
+ * It is a raster and not the supplied `mark.svg` for a measured reason: the
+ * vector sets its GL monogram as live <text>, which no visitor's browser can
+ * set in Newsreader, and the substitute font's metrics push the monogram
+ * visibly off the disc centre. See docs/09-design-system.md, "Logo".
  */
 function BrandMark() {
   return (
@@ -35,30 +37,29 @@ function BrandMark() {
 }
 
 /**
- * The footer's counterpart: the name as live text, no artwork.
+ * The footer's counterpart: the wordmark and its NETTOYAGE PRO baseline, with
+ * no circle mark. The header already did the recognising; the footer is where
+ * the name is read.
  *
- * Text rather than an image because the footer is where the name is read, not
- * where the logo is recognised — the header already did the recognising. Live
- * text also scales with the user's font size, is selectable, and costs no
- * request.
+ * This one IS the artwork rather than live text, and it can be, because it is a
+ * raster: the wordmark set in real Newsreader and the baseline in real
+ * Schibsted Grotesk, cut out of the brand card. Live text could not have done
+ * that — the only Newsreader this site ships is italic (see docs/09), so a text
+ * wordmark would print the name at a slant or in the wrong family.
  *
- * The name is read from company.ts, never typed here. The apostrophe is split
- * out so it can carry the accent colour the way it does in the artwork; a name
- * without one simply renders whole.
+ * It carries its own #1b3a9c ground, which is exactly --color-brand, so it sits
+ * on the footer with no visible rectangle. That is also why the crop is
+ * lossless: a lossy re-encode bands a flat ground and gives the edge away.
  */
 function BrandWordmark() {
-  const [before, after] = company.displayName.split(/['’]/);
-
   return (
-    <span className="brand__wordmark">
-      {before}
-      {after !== undefined && (
-        <>
-          <span className="brand__wordmark-tick">’</span>
-          {after}
-        </>
-      )}
-    </span>
+    <Image
+      src={brand.wordmark.src}
+      alt={company.displayName}
+      width={brand.wordmark.width}
+      height={brand.wordmark.height}
+      className="brand__wordmark"
+    />
   );
 }
 

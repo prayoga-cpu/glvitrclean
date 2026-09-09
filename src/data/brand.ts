@@ -30,19 +30,37 @@ export const BACKGROUND_COLOR = '#f5f3ee';
  */
 export const brand = {
   /**
-   * The circle mark, transparent, no wordmark. Vector so it stays crisp at any
-   * size on any display. Its only text is the two-letter "GL" monogram inside
-   * the disc; an <img>-loaded SVG cannot reach this page's @font-face, so that
-   * monogram renders in the fallback serif the file declares (Georgia, then
-   * generic). At 44px inside a disc that difference is not perceptible, which
-   * is exactly why the full wordmark could not be shipped the same way.
-   * `/assets/brand/mark-512.png` is the same mark rendered in the real face,
-   * for anywhere a raster is needed.
+   * The circle mark, transparent, no wordmark.
+   *
+   * A raster, not `mark.svg`, and the reason is measurable. The vector sets its
+   * "GL" monogram as live <text> in Newsreader; an <img>-loaded SVG cannot
+   * reach this page's @font-face, so it renders in whatever serif the OS
+   * substitutes, and that substitute's metrics put the monogram 2.1% left and
+   * 3.2% low of the disc centre — visibly off. The designer's own render has it
+   * within 0.4%. Hand-nudging the SVG coordinates would only calibrate it to
+   * one platform's fallback font and misplace it on the next.
+   *
+   * 192px covers 3x at the 4rem display size. `mark-512.png` is the full-size
+   * original and `mark.svg` the supplied vector; both stay for handover, where
+   * whoever opens them has the real font.
    */
   mark: {
-    src: '/assets/brand/mark.svg',
-    width: 512,
-    height: 512,
+    src: '/assets/brand/mark.webp',
+    width: 192,
+    height: 192,
+  },
+
+  /**
+   * The wordmark and its NETTOYAGE PRO baseline, no circle mark. Cut out of
+   * card-wide.png, so the type is the real Newsreader and Schibsted Grotesk
+   * rather than a fallback. Its ground is #1b3a9c — exactly `--color-brand`, so
+   * it sits on the footer seamlessly. Stored lossless for that reason: a lossy
+   * re-encode bands the flat ground and reveals the rectangle.
+   */
+  wordmark: {
+    src: '/assets/brand/wordmark.webp',
+    width: 603,
+    height: 149,
   },
 
   /** The mark as a raster, rendered in the real brand face. Handover. */

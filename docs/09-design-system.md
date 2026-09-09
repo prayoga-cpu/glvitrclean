@@ -72,42 +72,59 @@ lockup path is declared there and read by `baseMetadata()`, `manifest.ts` and
 
 ### What renders on the page
 
-**Header and 404: the mark alone.** `public/assets/brand/mark.svg`, through
-`<BrandMark>` in `SiteChrome.tsx`, at `3.5rem` (`3rem` under 30rem). Square,
+The lockup is split across the two ends of the page. The header shows the mark
+without the name; the footer shows the name without the mark. Neither place
+carries the whole thing.
+
+**Header and 404: the mark alone.** `public/assets/brand/mark.webp`, through
+`<BrandMark>` in `SiteChrome.tsx`, at `4rem` (`3.5rem` under 30rem). Square,
 transparent, no wordmark and no plate, so it sits on the cream bar without a
-ground of its own.
+ground of its own. 192px covers 3× at that display size.
 
-**Footer: the name as live text.** `<BrandWordmark>` prints
-`company.displayName` in the body face, white, with the apostrophe split out to
-carry `--color-accent` the way it does in the artwork. Live text scales with
-the user's font size, is selectable, and costs no request. The name is read
-from `company.ts`, never typed into the component.
+**Footer: the wordmark alone.** `public/assets/brand/wordmark.webp`, through
+`<BrandWordmark>`, at `4.5rem` (`3.75rem` under 30rem) — the `GLVITR'CLEAN`
+wordmark with its `NETTOYAGE PRO` baseline and flanking rules, cut out of
+`card-wide.png`. Its ground is `#1b3a9c`, which is exactly `--color-brand`, so
+it sits on the footer with no visible rectangle.
 
-Nothing on the page carries the full lockup. That is the point: the header used
-to, and at header size the wordmark plus the `NETTOYAGE PRO` baseline were
-doing work the nav links and the H1 already do, while the plate put a dark block
-in an otherwise airy cream bar.
+The header used to carry the full lockup on a plate. At header size the
+wordmark and baseline inside it were doing work the nav links and the H1
+already do, and the plate put a dark block in an otherwise airy cream bar.
 
-Two constraints this arrangement is built around:
+### Everything on the page is a raster, and that is the point
 
-**The wordmark cannot travel as an SVG.** `lockup-on-deep.svg` and
-`lockup-on-brand.svg` carry live `<text>` set in Newsreader and Schibsted
-Grotesk. An SVG loaded through `<img>` is its own document and cannot reach
-this page's `@font-face`, so no visitor would ever see the brand faces — and
-Newsreader ships **italic only** here, so inlining the SVG would not fix it
-either. Worse, the rules flanking `NETTOYAGE PRO` sit at fixed x coordinates
-measured for Newsreader's metrics; a wider fallback serif runs the baseline
-into them. The vectors stay in `public/assets/brand/` for print, where whoever
-opens them has the fonts.
+Not a preference — a constraint, measured rather than assumed.
 
-**`mark.svg` safely can.** Its only text is the two-letter `GL` monogram inside
-the disc, which falls back to Georgia and then a generic serif. At 56px inside a
-circle that difference is not perceptible. `mark-512.png` is the same mark
-rendered in the real face if a raster is ever needed.
+**The type inside the artwork cannot travel as an SVG.** `mark.svg`,
+`lockup-on-deep.svg` and `lockup-on-brand.svg` all set their type as live
+`<text>` in Newsreader and Schibsted Grotesk. An SVG loaded through `<img>` is
+its own document and cannot reach this page's `@font-face`, so no visitor ever
+sees the brand faces. Inlining would not rescue it either: the only Newsreader
+this site ships is **italic**, and the wordmark is upright.
 
-The footer wordmark is set in Schibsted Grotesk rather than the brand's serif
-for the same reason: the only Newsreader on this site is italic, and a slanted
-brand name would be worse than a sans one.
+The damage is measurable, not theoretical:
+
+| | GL offset from the disc centre |
+|---|---|
+| `mark.svg` rendered in a browser | **2.1% left, 3.2% low** |
+| `mark-512.png`, the designer's render | 0.28% right, 0.41% high |
+
+The vector's monogram lands visibly low because the substitute serif's metrics
+differ from Newsreader's. Nudging the `<text>` coordinates would only calibrate
+it to one platform's fallback — Georgia on macOS and Windows, Noto Serif on
+Android, DejaVu on Linux — and misplace it on the next. The same failure is
+worse on the full lockup, where the rules flanking `NETTOYAGE PRO` sit at fixed
+x coordinates measured for Newsreader: a wider fallback runs the baseline
+straight into them.
+
+So the page uses rasters and the vectors stay in `public/assets/brand/` for
+print, where whoever opens them has the fonts installed.
+
+**The footer wordmark is lossless** (`webp({lossless: true})`). A lossy
+re-encode bands a flat ground, and the whole trick is that its `#1b3a9c`
+matches `--color-brand` exactly — a shifted ground would draw the rectangle
+back in. Do not add a `background` or a `border-radius` to `.brand__wordmark`
+for the same reason.
 
 ### Derived assets
 
@@ -116,6 +133,12 @@ one-off script — not committed, because `sharp` is only a transitive dependenc
 of Next and CLAUDE.md rule 5 governs adding it for real. The numbers are here
 so the derivation is reproducible:
 
+- **`mark.webp`** — `mark-512.png` resized to 192×192 at q90. 192px covers 3×
+  at the `4rem` header size; the 512px original stays for handover.
+- **`wordmark.webp`** — cut out of `card-wide.png` (1200×600, ground `#1b3a9c`).
+  Content bands measured at y 303–361 (wordmark) and y 392–411 (baseline), with
+  the block spanning x 320–882. Extracted at `left: 300, top: 283, width: 603,
+  height: 149` — 20px of breathing room on every side — and written **lossless**.
 - **`og-fr.png` / `og-en.png`** — the bilingual cards were kept (they are drawn
   in the real brand faces) but embedded the superseded peach mark at
   x 968..1102, y 80..240 on the flat `#1B3A9C` panel. That rectangle was
