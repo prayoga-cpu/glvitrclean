@@ -93,6 +93,19 @@ exposure, not a design preference. See `docs/04-compliance-sap.md`.
 
 - **Static export only.** `output: 'export'` in `next.config.mjs`. No server
   actions, no route handlers, no middleware, no ISR, no `dynamic = 'force-dynamic'`.
+- **The 404 lives at `src/app/global-not-found.tsx`, and
+  `experimental.globalNotFound` in `next.config.mjs` is what makes it work.**
+  Neither is optional and neither is decoration. A plain `src/app/not-found.tsx`
+  needs a root layout; this app has two, both inside route groups, so there is
+  none at the app root. Next only injects a synthetic layout for `/_not-found`
+  when the app has no not-found file of its own, so writing one put the route
+  into a state `next dev` answers 500 for — the 404, `/sitemap.xml`,
+  `/robots.txt` and `/manifest.webmanifest`, all of it. `next build` survived it,
+  which is why it shipped unnoticed from 2026-09-06 to 2026-09-09.
+  Do not "clean up" the experimental flag, and do not re-add a root
+  `not-found.tsx` alongside it. This is the only `experimental` key the project
+  uses; `next` is pinned to an exact version, so it cannot shift underneath us
+  without a deliberate bump. Re-check it when Next 16 lands (STATUS item 17).
 - **Every page must be complete HTML before JavaScript runs.** Content that only
   appears after hydration does not exist to a crawler.
 - `'use client'` is allowed only in `QuoteForm`, `MobileNav`, `LangToggle` and

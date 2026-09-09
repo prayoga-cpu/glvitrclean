@@ -103,6 +103,80 @@ The questions to send the client are written out, in French, in
 
 ## Done
 
+### The dev server was 500ing every app-root route, and had been for days (2026-09-09)
+
+Found by running `next dev` and requesting a page that does not exist.
+
+```
+⨯ src/app/not-found.tsx
+not-found.tsx doesn't have a root layout. To fix this error, make sure every page has a root layout.
+```
+
+**What was actually broken.** Not just the 404 — every entry that lives at the
+app root failed to compile in dev, because the failed compile poisons all of
+them together:
+
+| route | before | after |
+|---|---|---|
+| any missing path | **500** | 404 |
+| `/sitemap.xml` | **500** | 200 |
+| `/robots.txt` | **500** | 200 |
+| `/manifest.webmanifest` | **500** | 200 |
+| `/`, `/en/` | 200 | 200 |
+
+**It was not caused by the brand-kit commit.** Bisected: the identical error
+reproduces on `a35e6f8^`, where `/sitemap.xml` was already 500ing. It has been
+there since the 404 moved to `src/app/not-found.tsx` on 2026-09-06.
+`src/app/manifest.ts` merely added a fourth casualty. `next build` never
+failed, which is exactly why it went unnoticed for three days.
+
+**Root cause, from Next's own source** —
+`node_modules/next/dist/build/webpack/loaders/next-app-loader/index.js`:
+
+```js
+if (!isGlobalNotFoundEnabled && isDefaultNotFound && !layoutPath && !rootLayout) {
+  rootLayout = defaultLayoutPath          // synthetic layout, inserted for /_not-found
+}
+...
+if (!treeCodeResult.rootLayout && !isGlobalNotFoundPath) { /* error */ }
+```
+
+Next injects that synthetic root layout **only when the app has no not-found
+file of its own** (`isDefaultNotFound`). This app has two root layouts, both
+inside route groups, so there is none at the app root — and the moment a real
+`src/app/not-found.tsx` existed, `isDefaultNotFound` went false, nothing was
+injected, and the entry became uncompilable. The same condition names the
+escape hatch: `isGlobalNotFoundEnabled`.
+
+**Fix.** `src/app/not-found.tsx` → `src/app/global-not-found.tsx`, plus
+`experimental: { globalNotFound: true }` in `next.config.mjs`. That convention
+exists for precisely this case: it renders its own `<html>` and `<body>`
+instead of inheriting a layout, which is what a 404 belonging to neither
+edition needs. Now recorded as a rule in CLAUDE.md so nobody tidies the
+experimental flag away.
+
+**A bonus defect fixed on the way.** `out/404.html` was shipping `<html>` with
+**no `lang` at all** — Next's injected shell had no way to know. It is now
+`<html lang="fr">`, French being the x-default edition, with each block still
+carrying its own `lang`.
+
+Artifact re-verified, not assumed: exactly one `<html>`, `<main class="container
+not-found">`, a `<title>`, both `<h1>`s, both `lang` blocks, both home links,
+the brand mark, and a stylesheet that exists in `out/`. `out/index.html` and
+`out/en/index.html` still emit `lang="fr"` and `lang="en"`. `npm run
+verify:full` passes.
+
+Two alternatives were rejected on the record already in this repo rather than
+re-prototyped: giving `not-found.tsx` its own `<html>` (Next wraps it, nesting
+documents) and per-group `not-found.tsx` files (the export then ships Next's
+bare built-in page as 404.html). Both are described in the 2026-09-06 notes
+below, both from direct experience at the time. Only the fix that shipped was
+prototyped end to end here.
+
+Supersedes the phase 2b/2c notes further down that say the global 404 "must
+live at `src/app/not-found.tsx`". That was right about where it could not live
+and wrong about where it could.
+
 ### Brand kit landed, icons and social metadata wired (2026-09-09)
 
 The client supplied a real brand kit — blue, gold and cream, drawn in the

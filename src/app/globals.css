@@ -1627,8 +1627,8 @@ ol {
    404
 
    The global not-found renders its own document shell (see
-   src/app/not-found.tsx), so it gets a little standalone layout here rather
-   than inheriting the header/footer chrome.
+   src/app/global-not-found.tsx), so it gets a little standalone layout here
+   rather than inheriting the header/footer chrome.
    ========================================================================= */
 
 .not-found {
