@@ -23,21 +23,30 @@ export const BACKGROUND_COLOR = '#f5f3ee';
 /**
  * The brand assets, by role.
  *
- * `lockup` is the only one that renders inside a page. It is the client's
- * horizontal lockup on its own deep-blue plate, cropped to balanced padding —
- * see docs/09-design-system.md, "Logo", for why it is a raster and not the
- * supplied vector.
+ * `mark` is the only one that renders inside a page. The header and the 404
+ * show the circle mark alone; the footer prints the name as live text rather
+ * than artwork. Nothing on the page carries the full lockup any more — see
+ * docs/09-design-system.md, "Logo".
  */
 export const brand = {
-  /** Header and footer lockup. 527x160 on a #12276B ground. */
-  lockup: {
-    src: '/assets/brand/lockup.webp',
-    width: 527,
-    height: 160,
+  /**
+   * The circle mark, transparent, no wordmark. Vector so it stays crisp at any
+   * size on any display. Its only text is the two-letter "GL" monogram inside
+   * the disc; an <img>-loaded SVG cannot reach this page's @font-face, so that
+   * monogram renders in the fallback serif the file declares (Georgia, then
+   * generic). At 44px inside a disc that difference is not perceptible, which
+   * is exactly why the full wordmark could not be shipped the same way.
+   * `/assets/brand/mark-512.png` is the same mark rendered in the real face,
+   * for anywhere a raster is needed.
+   */
+  mark: {
+    src: '/assets/brand/mark.svg',
+    width: 512,
+    height: 512,
   },
 
-  /** Circle mark alone, transparent. Not used on-page; kept for handover. */
-  mark: '/assets/brand/mark-512.png',
+  /** The mark as a raster, rendered in the real brand face. Handover. */
+  markRaster: '/assets/brand/mark-512.png',
 
   /**
    * Square 1200x1200 brand card. Feeds `logo` and `image` on the

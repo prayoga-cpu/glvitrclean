@@ -110,15 +110,25 @@ site's own two faces. It replaces the peach raster taken off the old live site
 in August, which was the last thing on the page that did not match the design
 system. 18 files in, 3 out.
 
-**What now renders.** One asset: `public/assets/brand/lockup.webp`, the full
-horizontal lockup on its own `#12276B` plate, in the header, the footer and the
-404. It is a raster and it keeps its plate, and both of those are load-bearing
-decisions — the supplied vector lockups carry live `<text>` in Newsreader and
-Schibsted Grotesk, which an `<img>`-loaded SVG cannot reach, and the rules
-flanking `NETTOYAGE PRO` sit at coordinates measured for Newsreader's metrics,
-so a fallback serif walks into them. Newsreader also ships italic-only here, so
-inlining the SVG would not have rescued it. Verified in a headless browser at
-1280px and 390px, not assumed. Reasoning in `docs/09-design-system.md`, "Logo".
+**What now renders.** The header and the 404 show the **mark alone** —
+`public/assets/brand/mark.svg` at `3.5rem`, square and transparent, no wordmark
+and no plate. The footer prints the **name as live text**, in the body face,
+with the apostrophe in `--color-accent` the way the artwork has it. Nothing on
+the page carries the full lockup.
+
+The full lockup was in the header first and came out on the human's call: at
+header size its wordmark and `NETTOYAGE PRO` baseline duplicated what the nav
+and the H1 already say, and its plate put a dark block in an airy cream bar.
+
+The wordmark could never have travelled as an SVG anyway — the supplied vector
+lockups carry live `<text>` in Newsreader and Schibsted Grotesk, which an
+`<img>`-loaded SVG cannot reach, and the rules flanking `NETTOYAGE PRO` sit at
+coordinates measured for Newsreader's metrics, so a fallback serif walks into
+them. Newsreader also ships italic-only here, so inlining would not have
+rescued it, and it is why the footer wordmark is set in Schibsted rather than
+the brand serif. `mark.svg` is safe because its only text is the two-letter
+`GL` monogram. Verified in a headless browser at 1280px and 390px, not assumed.
+Reasoning in `docs/09-design-system.md`, "Logo".
 
 **What the site now tells a crawler that it did not before.**
 
@@ -144,14 +154,13 @@ lockup path plus the two brand hexes that have to exist outside CSS
 (`theme-color` and the manifest cannot read a custom property). `seo.ts` now
 reads its card paths from there instead of keeping its own copy.
 
-**Derived, not supplied.** Two files needed work; the exact numbers are in
-`docs/09` so they are reproducible. The lockup was cropped 600×160 → 527×160 to
-kill 94px of dead space on the right and centre the plate optically. The two
-bilingual OG cards were kept — they are drawn in the real brand faces — but
-still embedded the peach mark, so that rectangle was painted out in the panel
-colour and the current mark composited back. Done with `sharp` in a throwaway
-script rather than a committed one: `sharp` is only a transitive dependency of
-Next, and rule 5 governs adding it for real.
+**Derived, not supplied.** The exact numbers are in `docs/09` so they are
+reproducible. The two bilingual OG cards were kept — they are drawn in the real
+brand faces — but still embedded the peach mark, so that rectangle was painted
+out in the panel colour and the current mark composited back. `favicon.ico` was
+built by hand. Done with `sharp` in a throwaway script rather than a committed
+one: `sharp` is only a transitive dependency of Next, and rule 5 governs adding
+it for real.
 
 **Removed.** `public/assets/brand/logo.{png,webp}` (the peach derivations) and
 `src/app/icon.png`. Next's file-based icon convention emits a single icon at a

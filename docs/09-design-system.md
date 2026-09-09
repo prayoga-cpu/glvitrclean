@@ -72,14 +72,25 @@ lockup path is declared there and read by `baseMetadata()`, `manifest.ts` and
 
 ### What renders on the page
 
-Only one file: `public/assets/brand/lockup.webp`, through `<Brand>` in
-`SiteChrome.tsx` (header and footer) and `not-found.tsx`. 527×160, the full
-horizontal lockup — mark, wordmark, `NETTOYAGE PRO` baseline — on its own
-`#12276B` plate, at `--radius-md`.
+**Header and 404: the mark alone.** `public/assets/brand/mark.svg`, through
+`<BrandMark>` in `SiteChrome.tsx`, at `3.5rem` (`3rem` under 30rem). Square,
+transparent, no wordmark and no plate, so it sits on the cream bar without a
+ground of its own.
 
-Two things about that are deliberate and worth not undoing:
+**Footer: the name as live text.** `<BrandWordmark>` prints
+`company.displayName` in the body face, white, with the apostrophe split out to
+carry `--color-accent` the way it does in the artwork. Live text scales with
+the user's font size, is selectable, and costs no request. The name is read
+from `company.ts`, never typed into the component.
 
-**It is a raster, not the supplied vector.** `lockup-on-deep.svg` and
+Nothing on the page carries the full lockup. That is the point: the header used
+to, and at header size the wordmark plus the `NETTOYAGE PRO` baseline were
+doing work the nav links and the H1 already do, while the plate put a dark block
+in an otherwise airy cream bar.
+
+Two constraints this arrangement is built around:
+
+**The wordmark cannot travel as an SVG.** `lockup-on-deep.svg` and
 `lockup-on-brand.svg` carry live `<text>` set in Newsreader and Schibsted
 Grotesk. An SVG loaded through `<img>` is its own document and cannot reach
 this page's `@font-face`, so no visitor would ever see the brand faces — and
@@ -89,9 +100,14 @@ measured for Newsreader's metrics; a wider fallback serif runs the baseline
 into them. The vectors stay in `public/assets/brand/` for print, where whoever
 opens them has the fonts.
 
-**It keeps its own plate.** The wordmark is white. On the cream header it needs
-a ground of its own; on the blue footer the deeper plate reads as a card. One
-asset serves both, so there is no light/dark pair to keep in sync.
+**`mark.svg` safely can.** Its only text is the two-letter `GL` monogram inside
+the disc, which falls back to Georgia and then a generic serif. At 56px inside a
+circle that difference is not perceptible. `mark-512.png` is the same mark
+rendered in the real face if a raster is ever needed.
+
+The footer wordmark is set in Schibsted Grotesk rather than the brand's serif
+for the same reason: the only Newsreader on this site is italic, and a slanted
+brand name would be worse than a sans one.
 
 ### Derived assets
 
@@ -100,10 +116,6 @@ one-off script — not committed, because `sharp` is only a transitive dependenc
 of Next and CLAUDE.md rule 5 governs adding it for real. The numbers are here
 so the derivation is reproducible:
 
-- **`lockup.webp` / `lockup.png`** — `logo-email-signature.png` is 600×160 with
-  its artwork at x 21..505, y 24..135, leaving 94px of dead space on the right.
-  Cropped to `527×160` so the 21px either side of the artwork sits against the
-  24px above and below, and the plate is optically centred.
 - **`og-fr.png` / `og-en.png`** — the bilingual cards were kept (they are drawn
   in the real brand faces) but embedded the superseded peach mark at
   x 968..1102, y 80..240 on the flat `#1B3A9C` panel. That rectangle was
@@ -118,9 +130,15 @@ so the derivation is reproducible:
 ### Handover-only
 
 Deployed but never referenced by a page, the way `logo-original.png` already
-was: `mark.svg`, `mark-512.png`, `lockup-on-deep.svg`, `lockup-on-brand.svg`,
-`card-wide.png` (1200×600). For the Google Business Profile, print, WhatsApp
-Business and the client's own use.
+was: `mark-512.png`, `lockup-on-deep.svg`, `lockup-on-brand.svg`,
+`email-signature.png` (600×160, the horizontal lockup on its plate) and
+`card-wide.png` (1200×600). For the Google Business Profile, print, e-mail
+signatures, WhatsApp Business and the client's own use.
+
+A cropped `lockup.webp`/`lockup.png` pair existed briefly while the header
+carried the full lockup. Both were deleted when the header moved to the mark:
+`email-signature.png` is the same artwork with its original padding, and two
+near-identical files is one too many.
 
 ## Icons, manifest and social cards
 

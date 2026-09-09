@@ -46,11 +46,11 @@ export default function NotFound() {
     <main className="container not-found">
       <Link href="/" aria-label={`${company.displayName} — ${fr.common.homeLabel}`}>
         <Image
-          src={brand.lockup.src}
+          src={brand.mark.src}
           alt={company.displayName}
-          width={brand.lockup.width}
-          height={brand.lockup.height}
-          className="brand__lockup brand__lockup--header"
+          width={brand.mark.width}
+          height={brand.mark.height}
+          className="brand__mark"
         />
       </Link>
 

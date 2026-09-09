@@ -9,36 +9,56 @@ import { strings } from '@/i18n/dictionary';
 import { href, type Lang } from '@/i18n/config';
 
 /**
- * The brand lockup: circle mark, "GLVITR'CLEAN" wordmark and the NETTOYAGE PRO
- * baseline, all inside one piece of artwork. There is deliberately no separate
- * text wordmark beside it — rendering both would print the name twice.
+ * The mark alone — the gold ring, the blue disc and the GL monogram, no
+ * wordmark. Used in the header and on the 404.
  *
- * It ships as a raster on its own deep-blue plate, and both of those are
- * deliberate:
+ * The header used to carry the full lockup on a deep-blue plate. It does not
+ * any more: at header size the wordmark and the NETTOYAGE PRO baseline inside
+ * the artwork were doing the work that the nav links and the H1 already do,
+ * and the plate put a dark block in an otherwise airy cream bar. The mark is
+ * transparent, so it needs no ground of its own.
  *
- *  - Raster, because the supplied vector lockups carry live <text> set in
- *    Newsreader and Schibsted Grotesk. An SVG loaded through <img> is its own
- *    document and cannot reach this page's @font-face, so no visitor would ever
- *    see the brand faces — and the rules flanking NETTOYAGE PRO sit at fixed x
- *    coordinates measured for Newsreader, so a wider fallback serif collides
- *    with them. The vectors are kept in public/assets/brand/ for print, where
- *    the fonts are available.
- *  - Plated, because the wordmark is white. On the cream header it needs its
- *    own ground; on the blue footer the plate reads as a slightly deeper card.
- *    One asset, both places, no second variant to keep in sync.
- *
- * See docs/09-design-system.md, "Logo".
+ * See docs/09-design-system.md, "Logo", for why the wordmark cannot travel as
+ * an SVG and why the monogram inside this file safely can.
  */
-function Brand({ size = 'header' }: { size?: 'header' | 'footer' }) {
+function BrandMark() {
   return (
     <Image
-      src={brand.lockup.src}
+      src={brand.mark.src}
       alt={company.displayName}
-      width={brand.lockup.width}
-      height={brand.lockup.height}
-      className={`brand__lockup brand__lockup--${size}`}
-      priority={size === 'header'}
+      width={brand.mark.width}
+      height={brand.mark.height}
+      className="brand__mark"
+      priority
     />
+  );
+}
+
+/**
+ * The footer's counterpart: the name as live text, no artwork.
+ *
+ * Text rather than an image because the footer is where the name is read, not
+ * where the logo is recognised — the header already did the recognising. Live
+ * text also scales with the user's font size, is selectable, and costs no
+ * request.
+ *
+ * The name is read from company.ts, never typed here. The apostrophe is split
+ * out so it can carry the accent colour the way it does in the artwork; a name
+ * without one simply renders whole.
+ */
+function BrandWordmark() {
+  const [before, after] = company.displayName.split(/['’]/);
+
+  return (
+    <span className="brand__wordmark">
+      {before}
+      {after !== undefined && (
+        <>
+          <span className="brand__wordmark-tick">’</span>
+          {after}
+        </>
+      )}
+    </span>
   );
 }
 
@@ -49,7 +69,7 @@ export function SiteHeader({ lang }: { lang: Lang }) {
     <header className="site-header">
       <div className="site-header__bar">
         <Link href={href('/', lang)} aria-label={`${company.displayName} — ${t.common.homeLabel}`}>
-          <Brand />
+          <BrandMark />
         </Link>
 
         {/*
@@ -117,7 +137,7 @@ export function SiteFooter({ lang }: { lang: Lang }) {
 
         <div className="site-footer__cols">
           <div className="site-footer__about">
-            <Brand size="footer" />
+            <BrandWordmark />
             <p>{t.footer.about}</p>
           </div>
 
