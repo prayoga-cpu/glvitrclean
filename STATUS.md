@@ -166,12 +166,27 @@ the brand mark, and a stylesheet that exists in `out/`. `out/index.html` and
 `out/en/index.html` still emit `lang="fr"` and `lang="en"`. `npm run
 verify:full` passes.
 
-Two alternatives were rejected on the record already in this repo rather than
-re-prototyped: giving `not-found.tsx` its own `<html>` (Next wraps it, nesting
-documents) and per-group `not-found.tsx` files (the export then ships Next's
-bare built-in page as 404.html). Both are described in the 2026-09-06 notes
-below, both from direct experience at the time. Only the fix that shipped was
-prototyped end to end here.
+**The two alternatives were built and measured, not just remembered.** Each was
+applied in its own worktree and taken through dev, `verify:full` and the
+exported artifact. Both failures the old header comment described turned out to
+be exactly right:
+
+- *Give `not-found.tsx` its own `<html>`.* Does not even fix dev — still 500,
+  because `next-app-loader` decides `rootLayout` from **file presence** in the
+  app-root segment, never from what the component returns. A render-tree change
+  cannot answer a build-graph question. It also nests the document: two
+  `<html>`, two `<body>` in `out/404.html`.
+- *A `not-found.tsx` inside each route group.* Fixes dev completely, and
+  destroys the 404: `out/404.html` becomes Next's 5,575-byte built-in stub —
+  no `<main>`, no French, no English, no stylesheet reference at all, titled
+  "404: This page could not be found." Worse than expected, too — there is no
+  `out/en/404.html` either, so **both** editions get the same bare English
+  page, and both new files are dead weight the export never renders.
+
+A trap worth recording: `grep -c '<html' out/404.html` returns **1 even on the
+broken artifact**, because the export is one long line and `-c` counts lines,
+not matches. Use `grep -o '<html' out/404.html | wc -l`. That check would have
+passed the nested-document candidate.
 
 Supersedes the phase 2b/2c notes further down that say the global 404 "must
 live at `src/app/not-found.tsx`". That was right about where it could not live
@@ -513,7 +528,8 @@ Everything else fixed in the same pass was markup that had never been styled:
 - Body copy on inner pages capped at `--measure`.
 
 Removed `NotFoundView` from `src/views/FixedViews.tsx`: dead since the global
-404 became self-contained in `src/app/not-found.tsx`, and a second unused
+404 became self-contained in `src/app/not-found.tsx` (superseded 2026-09-09 —
+it is `src/app/global-not-found.tsx` now), and a second unused
 implementation would only drift.
 
 **Verified:** `npm run verify:full` passes — typecheck, lint (0 warnings), 194
@@ -578,6 +594,10 @@ was Next's bare built-in error page: no chrome, no stylesheet, no French.
 Cause: phase 2b put `not-found.tsx` inside the `(fr)/` route group. A
 group-scoped not-found only serves `notFound()` calls *within* that group; the
 global 404 must live at `src/app/not-found.tsx`. Moved there.
+> **Superseded 2026-09-09.** Right that it cannot live in a route group, wrong
+> that it can live at `src/app/not-found.tsx` — that is what 500'd every
+> app-root route in `next dev`. It is now
+> `src/app/global-not-found.tsx`. Do not move it back.
 
 Sitting above both route groups it has no root layout, so Next injects its own
 `<html><head><body>` shell. The first attempt rendered its own `<html>` too and
