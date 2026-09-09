@@ -43,7 +43,10 @@ second line.
 1. A real photo of real work in a recognisable place
 2. SIRET and insurance visible, not buried
 3. The declaration number, once it exists
-4. A named human, not "notre équipe"
+4. ~~A named human, not "notre équipe"~~ — **reversed by the client on
+   2026-09-09.** The site speaks as a company: "Derrière GLVITR'CLEAN, il y a
+   une équipe compétente et expérimentée." The trust this item was buying now
+   has to come from 1, 2, 3 and 6. See STATUS.md.
 5. Eco-friendly products (already on the flyer, currently unused)
 6. Free quote, stated with no asterisk
 7. The €40 referral offer as a closing nudge, not a headline

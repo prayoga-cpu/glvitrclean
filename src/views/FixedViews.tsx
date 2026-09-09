@@ -130,7 +130,7 @@ export function BusinessView({ lang }: { lang: Lang }) {
 
       <section>
         <h2>{t.b2b.contactH2}</h2>
-        <p>{t.b2b.contactBody(company.operator)}</p>
+        <p>{t.b2b.contactBody}</p>
       </section>
 
       {/* Call, WhatsApp, quote — same order as everywhere else. Note this is

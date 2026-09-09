@@ -186,6 +186,24 @@ filled in. See `docs/08-non-code-checklist.md`.
 
 ---
 
+## Client feedback round 1 — 2026-09-09
+
+Received as a numbered document from the client. Only section 3 has been passed
+to the build so far; the other sections are not in this repository yet.
+
+- [x] **§3 About Us / company positioning.** Remove the messaging that presents
+      the operator by name as the person behind GLVITR'CLEAN; the site speaks as
+      a company, not a one-man operation. Client's own wording: "Behind
+      GLVITR'CLEAN is a competent and experienced team." Done in both editions —
+      `home.aboutLead`, `home.whyCards[0]`, `b2b.contactBody`, and the English
+      `home.lead`; `company.operator` deleted. Reverses trust-stack item 4 in
+      `docs/05`. Details in STATUS.md.
+- [ ] Sections 1, 2, 4+ — not supplied to the repo. Paste them in and they get
+      specced here before anything is written.
+
+**Done when:** every supplied section is either implemented or recorded here as
+refused with a reason (rule 1 and rule 4 do not bend for feedback).
+
 ## Out of scope for v1
 
 Booking, customer accounts, online payment, blog, Google Ads, automated review

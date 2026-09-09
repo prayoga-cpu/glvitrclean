@@ -56,12 +56,6 @@ export interface SapDeclaration {
 
 export const company = {
   legalName: "GLVITR'CLEAN",
-  /**
-   * The one person who does the work. docs/05's trust stack asks for a named
-   * human rather than "notre équipe", so the name appears in copy on several
-   * pages — it belongs here, not retyped into four dictionary strings.
-   */
-  operator: 'Thibaut',
   displayName: "GLVITR'CLEAN",
   tagline: 'Une entreprise à votre écoute, votre satisfaction notre priorité',
 

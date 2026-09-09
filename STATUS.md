@@ -103,6 +103,50 @@ The questions to send the client are written out, in French, in
 
 ## Done
 
+### The site speaks as a company, not as one named person (2026-09-09)
+
+Client feedback, section 3 "About Us / Company Positioning": *"Remove messaging
+that presents Thibaut as the person behind GLVITR'CLEAN. Replace it with
+team-focused wording, for example: **'Behind GLVITR'CLEAN is a competent and
+experienced team.'** The website should communicate a professional company
+rather than a one-man operation."*
+
+Four strings named the operator, each in both languages. All eight are rewritten
+and the name no longer appears anywhere in `out/` — grepped after the build, not
+assumed.
+
+| where | before | after |
+|---|---|---|
+| `home.aboutLead` | "Derrière GLVITR'CLEAN il y a Thibaut, qui se déplace lui-même…" | "Derrière GLVITR'CLEAN, il y a une équipe compétente et expérimentée, qui se déplace sur chaque chantier." |
+| `home.whyCards[0].body` | "Thibaut réalise lui-même chaque intervention." | "Notre équipe réalise elle-même chaque intervention." |
+| `b2b.contactBody` | took `operator` as an argument | a plain string, "vous parlez directement à l'équipe qui réalise les interventions" |
+| `home.lead` (EN only) | "One person from start to finish" | "One point of contact from start to finish" |
+
+`b2b.contactBody` was `(operator: string) => string`; it is now a plain string,
+so `FixedViews` no longer passes the name in. `company.operator` is deleted from
+`src/data/company.ts` — the dictionary was its only reader, and an unused name
+field on the company record is an invitation to put it back on a page.
+
+**What deliberately did not change.** "Un seul interlocuteur" stays in the home
+lead, the about checklist and the B2B expectations list: it is a promise about
+how the customer is handled, not a claim about company size, and companies of
+every size make it. The English side already said "one point of contact" there.
+
+**Rule 4 still binds and nothing new was invented.** No headcount, no years of
+experience, no "nos experts", no "équipe formée et assurée" — the insurance is
+still unconfirmed (item 11). "Compétente et expérimentée" is the client's own
+wording, supplied in the feedback above.
+
+**The business fact is unchanged.** `docs/00-business-model.md` still records one
+operator, and the internal comments that turn on it — the access question in
+`QuoteForm` that filters out jobs one person cannot safely take, and the absence
+of a 24 h response promise — are untouched. This is a positioning change to the
+copy, not a new claim about who turns up. `docs/05`'s trust-stack item 4 ("a
+named human, not 'notre équipe'") is reversed there with a pointer here.
+
+`npm run verify:full` passes: 198 routes, compliance clear on all 54 forbidden
+routes, titles and descriptions still unique across both languages.
+
 ### The dev server was 500ing every app-root route, and had been for days (2026-09-09)
 
 Found by running `next dev` and requesting a page that does not exist.
@@ -736,6 +780,7 @@ and the commune list, both of which are data-driven and cheap to re-run.
 
 | Date | Decision | Reason |
 |---|---|---|
+| 2026-09-09 | Removed the operator's name from the copy and from `src/data/company.ts` | Client instruction (feedback section 3): the site must read as a company, not a one-man operation. The name had exactly one consumer, the dictionary, so keeping the field after the copy stopped using it would only have made it easy to reintroduce. What rule 4 forbids is unchanged — the new wording claims a team but no size, no experience in years and no certification, and "compétente et expérimentée" is the client's own phrasing. |
 | 2026-09-06 | Built `/services` and `/zones` hub pages rather than redirecting the old `/services-1/` to a fragment | ROADMAP phase 6 names `/services/` as the 301 target and it did not exist, so the redirect was going to land an indexed old URL on a 404 or on `/#services`. The hubs also answer the un-localised head terms ("entreprise de nettoyage Essonne") that no single service or commune page targets, which satisfies rule 3's "no page without a target query". |
 | 2026-09-06 | Commune×service pages render two of the four service paragraphs, not all four | Rendering all four would make each of the 72 pages a near-copy of its `/services/{slug}` parent across twelve towns — the same thin-content failure, moved. The method and quoting paragraphs are what a visitor arriving on a local query still needs; the commune's `localAngle` is what differentiates the page. The real fix needs per-commune facts: item 20. |
 | 2026-09-06 | One sitewide OG image per language, not one per route | 198 generated cards would add roughly 13 MB to the repository to say almost the same thing on every page. Rendered from the real brand assets with headless Chrome, so no dependency and no build-time image pipeline. |

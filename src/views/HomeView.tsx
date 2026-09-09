@@ -122,12 +122,12 @@ export function HomeView({ lang }: { lang: Lang }) {
             </h2>
 
             {/*
-              GLVITR'CLEAN is one operator, Thibaut. The prototype said "nos
-              experts", "notre équipe" and "nacelle comprise" — a team, and a
-              piece of access equipment, neither of which exists in src/data/ or
-              in docs/00-business-model.md. docs/05 asks for a named human
-              precisely instead of "notre équipe". Inventing either is a rule 4
-              violation, so both are gone.
+              The client asked on 2026-09-09 for company positioning rather
+              than a named individual, so this block no longer names anyone and
+              speaks as a team. What rule 4 still forbids is unchanged: no
+              headcount, no years of experience, no "nos experts", and no
+              "nacelle comprise" — none of that exists in src/data/ or in
+              docs/00-business-model.md. See STATUS.md.
             */}
             <p className="lead">{t.home.aboutLead}</p>
 

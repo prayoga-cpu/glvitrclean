@@ -13,7 +13,6 @@
  */
 
 import type { Localized } from '@/i18n/config';
-import { company } from '@/data/company';
 
 export interface UiStrings {
   common: {
@@ -135,7 +134,7 @@ export interface UiStrings {
     whyH2: string;
     why: string[];
     contactH2: string;
-    contactBody: (operator: string) => string;
+    contactBody: string;
   };
   quote: {
     h1: string;
@@ -292,7 +291,7 @@ const fr: UiStrings = {
     aboutH2a: 'Un travail minutieux,',
     aboutH2b: 'des résultats impeccables',
     aboutLead:
-      `Derrière GLVITR'CLEAN il y a ${company.operator}, qui se déplace lui-même sur chaque chantier. Vous parlez à la personne qui fait le travail, du devis jusqu'à la vérification finale.`,
+      "Derrière GLVITR'CLEAN, il y a une équipe compétente et expérimentée, qui se déplace sur chaque chantier. Vous parlez aux personnes qui font le travail, du devis jusqu'à la vérification finale.",
     aboutChecklist: [
       'Un seul interlocuteur, du devis à la fin du chantier',
       "Produits respectueux de l'environnement",
@@ -328,7 +327,7 @@ const fr: UiStrings = {
     whyCards: [
       {
         title: 'Un seul interlocuteur',
-        body: `${company.operator} réalise lui-même chaque intervention. Pas de sous-traitance, pas d'intermédiaire.`,
+        body: "Notre équipe réalise elle-même chaque intervention. Pas de sous-traitance, pas d'intermédiaire.",
       },
       {
         title: 'Produits écologiques',
@@ -403,8 +402,8 @@ const fr: UiStrings = {
       'Un devis écrit avant toute intervention, gratuit et sans engagement.',
     ],
     contactH2: 'Parler à quelqu’un',
-    contactBody: (operator) =>
-      `Vous parlez directement à ${operator}, qui réalise lui-même les interventions. Décrivez la surface, la fréquence et les contraintes d’accès, et vous recevrez un devis écrit.`,
+    contactBody:
+      'Vous parlez directement à l’équipe qui réalise les interventions. Décrivez la surface, la fréquence et les contraintes d’accès, et vous recevrez un devis écrit.',
   },
   quote: {
     h1: 'Demander un devis gratuit',
@@ -570,7 +569,7 @@ const en: UiStrings = {
     heroFlagline: 'Free quote, no obligation',
     h1a: 'Window, terrace and housekeeping cleaning',
     h1b: 'in the south of the Essonne.',
-    lead: 'Windows, terraces, shutters, facades and housekeeping at home. One person from start to finish, environmentally responsible products, and a free quote before any work begins.',
+    lead: 'Windows, terraces, shutters, facades and housekeeping at home. One point of contact from start to finish, environmentally responsible products, and a free quote before any work begins.',
     statQuote: 'free quote, no obligation',
     statServices: 'services, indoors and out',
     statCommunes: 'towns covered in the south of the Essonne',
@@ -578,7 +577,7 @@ const en: UiStrings = {
     aboutH2a: 'Careful work,',
     aboutH2b: 'spotless results',
     aboutLead:
-      `Behind GLVITR'CLEAN is ${company.operator}, who turns up to every job himself. You talk to the person doing the work, from the quote through to the final check.`,
+      "Behind GLVITR'CLEAN is a competent and experienced team, on site for every job. You talk to the people doing the work, from the quote through to the final check.",
     aboutChecklist: [
       'One point of contact, from quote to finished job',
       'Environmentally responsible products',
@@ -614,7 +613,7 @@ const en: UiStrings = {
     whyCards: [
       {
         title: 'One point of contact',
-        body: `${company.operator} carries out every job himself. No subcontracting, no middleman.`,
+        body: 'Our team carries out every job. No subcontracting, no middleman.',
       },
       {
         title: 'Eco-friendly products',
@@ -686,8 +685,8 @@ const en: UiStrings = {
       'A written quote before any work starts, free and with no obligation.',
     ],
     contactH2: 'Talk to someone',
-    contactBody: (operator) =>
-      `You deal directly with ${operator}, who carries out the work himself. Tell him the surface, the frequency and any access constraints, and you will get a written quote.`,
+    contactBody:
+      'You deal directly with the team that carries out the work. Tell us the surface, the frequency and any access constraints, and you will get a written quote.',
   },
   quote: {
     h1: 'Request a free quote',
