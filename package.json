@@ -13,7 +13,8 @@
     "verify": "npm run typecheck && npm run lint && npm run check:seo",
     "check:compliance": "node scripts/check-compliance.mjs",
     "check:metadata": "node scripts/check-exported-metadata.mjs",
-    "verify:full": "npm run verify && npm run build && npm run check:compliance && npm run check:metadata"
+    "check:proof": "node scripts/check-proof.mjs",
+    "verify:full": "npm run verify && npm run build && npm run check:compliance && npm run check:metadata && npm run check:proof"
   },
   "dependencies": {
     "next": "15.5.24",

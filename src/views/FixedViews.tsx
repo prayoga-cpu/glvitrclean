@@ -1,13 +1,17 @@
 import Link from 'next/link';
 import { faqForPage } from '@/data/faq';
 import { faqSchema } from '@/lib/schema';
+import { hoursLines } from '@/lib/hours';
 import { JsonLd } from '@/components/JsonLd';
 import { Faq } from '@/components/Faq';
 import { QuoteForm } from '@/components/QuoteForm';
 import { CallButton, WhatsAppButton } from '@/components/CallButton';
 import { ConversionBlock } from '@/components/ConversionBlock';
+import { PostalIndex } from '@/components/PostalIndex';
+import { BeforeAfter } from '@/components/BeforeAfter';
 import { services, b2bServices } from '@/data/services';
 import { communes } from '@/data/communes';
+import { realisationsPending } from '@/data/realisations';
 import {
   sapVerified,
   company,
@@ -156,6 +160,18 @@ export function QuoteView({ lang }: { lang: Lang }) {
         <WhatsAppButton lang={lang} />
       </div>
 
+      {/* Under the call button, where the question actually arises: the
+          visitor is deciding whether to ring now or fill in the form. Same
+          array as the footer and the LocalBusiness JSON-LD. */}
+      <div className="hours-note">
+        <strong>{t.hours.title}</strong>
+        <ul>
+          {hoursLines(lang).map((line) => (
+            <li key={line.days}>{line.text}</li>
+          ))}
+        </ul>
+      </div>
+
       <QuoteForm lang={lang} />
     </div>
   );
@@ -191,10 +207,18 @@ export function WorkView({ lang }: { lang: Lang }) {
         </ul>
       </section>
 
-      <section>
-        <h2>{t.work.photosPendingH2}</h2>
-        <p>{t.work.photosPending}</p>
-      </section>
+      {/* One or the other, never both and never neither: the gallery renders
+          null while `realisations` is empty, and `realisationsPending` is the
+          same condition read the other way round. ROADMAP phase 5 fills the
+          array and this section disappears on its own. */}
+      <BeforeAfter lang={lang} />
+
+      {realisationsPending && (
+        <section>
+          <h2>{t.work.photosPendingH2}</h2>
+          <p>{t.work.photosPending}</p>
+        </section>
+      )}
 
       <ConversionBlock lang={lang} />
     </div>
@@ -244,7 +268,22 @@ export function LegalNoticeView({ lang }: { lang: Lang }) {
       <p>{t.legal.toComplete}</p>
 
       <h2>{t.legal.insurance}</h2>
-      <p>{t.legal.toComplete}</p>
+      {/* Replaced by the real policy the moment `company.insurance` is filled
+          in. Until then this says plainly that it is outstanding rather than
+          implying cover that has not been confirmed. STATUS.md item 11. */}
+      {company.insurance.insurer && company.insurance.coverEur !== null ? (
+        <p>
+          {t.legal.insuranceLine(
+            company.insurance.insurer,
+            company.insurance.coverEur.toLocaleString(lang === 'fr' ? 'fr-FR' : 'en-GB'),
+          )}
+          {company.insurance.policyNumber
+            ? ` ${t.legal.insurancePolicy(company.insurance.policyNumber)}`
+            : ''}
+        </p>
+      ) : (
+        <p>{t.legal.toComplete}</p>
+      )}
     </div>
   );
 }
@@ -319,7 +358,12 @@ export function ServicesHubView({ lang }: { lang: Lang }) {
   return (
     <div className="page">
       <h1>{t.hubs.servicesH1}</h1>
-      <p className="lead">{t.hubs.servicesIntro}</p>
+      <p className="lead">{t.hubs.servicesIntro(services.length)}</p>
+
+      {/* Phase 8e: an action above the list as well as below it. The hub is
+          long enough that the only call to action used to sit past the fold on
+          every phone. */}
+      <ConversionBlock lang={lang} photoNote />
 
       <ul className="service-notes">
         {services.map((s) => (
@@ -349,6 +393,8 @@ export function ZonesHubView({ lang }: { lang: Lang }) {
       <h1>{t.hubs.zonesH1}</h1>
       <p className="lead">{t.hubs.zonesIntro}</p>
 
+      <ConversionBlock lang={lang} photoNote />
+
       <section>
         <h2>{t.hubs.zonesListH2}</h2>
         <ul className="commune-grid">
@@ -361,6 +407,21 @@ export function ZonesHubView({ lang }: { lang: Lang }) {
             </li>
           ))}
         </ul>
+      </section>
+
+      {/* ROADMAP phase 8b. Same twelve destinations as the grid above, indexed
+          by the other thing people type. A postal code is not a synonym for a
+          town name in search: "nettoyage 91150" and "nettoyage Étampes" are
+          different queries, and only one of them had an anchor on this site. */}
+      <PostalIndex lang={lang} />
+
+      {/* Phase 8b, and phase 8d's "near me" item. This is the head term the
+          hub was missing: the page ranked for the towns it lists and for
+          nothing that reads like how people actually search for a local
+          tradesman. */}
+      <section>
+        <h2>{t.hubs.nearMeH2}</h2>
+        <p>{t.hubs.nearMeBody}</p>
       </section>
 
       <ConversionBlock lang={lang} />

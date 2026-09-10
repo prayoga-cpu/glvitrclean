@@ -1,11 +1,11 @@
-# GLVITR'CLEAN
+# GLVITR'CLEAN | MULTI SERVICE
 
-> Entreprise de nettoyage dans le sud de l'Essonne (91), France.
-> Vitres, terrasses, ménage, volets, façades, poubelles.
+> Entreprise de nettoyage en Essonne (91) et en Seine-et-Marne (77), France.
+> Vitres, terrasses, ménage, volets, façades, panneaux solaires, poubelles.
 > Particuliers et professionnels. Devis gratuit.
 >
-> Cleaning company in the south of the Essonne (91), France.
-> Windows, terraces, housekeeping, shutters, facades, bins.
+> Cleaning company in the Essonne (91) and the Seine-et-Marne (77), France.
+> Windows, terraces, housekeeping, shutters, facades, solar panels, bins.
 > Private homes and businesses. Free quote.
 
 Keep this file in sync with src/data/services.ts and src/data/communes.ts.
@@ -35,11 +35,24 @@ Téléphone / Phone : 06 27 70 99 70
 E-mail / Email : contact@glvitrclean.com
 SIRET : 988 737 268 00017
 
+Horaires / Opening hours
+Lundi – Vendredi / Monday – Friday : 9h00 – 18h30 (9:00 AM – 6:30 PM)
+Samedi – Dimanche / Saturday – Sunday : 10h00 – 18h00 (10:00 AM – 6:00 PM)
+Heure de Paris / Paris time.
+
 ## Zone d'intervention / Service area
+Deux départements : Essonne (91) et Seine-et-Marne (77), Île-de-France.
+Two departments: Essonne (91) and Seine-et-Marne (77), Île-de-France.
+
+Communes avec une page dédiée, toutes en Essonne (91) :
+Towns with a page of their own, all in the Essonne (91):
 Linas, Montlhéry, Arpajon, Saint-Germain-lès-Arpajon, La Norville, Ollainville,
 Bruyères-le-Châtel, Égly, Brétigny-sur-Orge, Marcoussis, Étampes, Étréchy.
-Toutes en Essonne (91), Île-de-France.
-All in the Essonne (91), Île-de-France.
+
+La Seine-et-Marne est desservie au niveau du département : la liste des communes
+n'est pas encore arrêtée, donc aucune page communale n'existe pour le 77.
+The Seine-et-Marne is covered at department level: the list of towns is not
+settled yet, so no commune page exists for the 77.
 
 ## Prestations et éligibilité au crédit d'impôt Services à la Personne
 
@@ -50,6 +63,7 @@ All in the Essonne (91), Île-de-France.
 | Ménage à domicile | Domestic housekeeping | Oui / Yes |
 | Nettoyage de volets et portes | Shutter and door cleaning | Oui / Yes |
 | Nettoyage de façade | Facade cleaning | Non — les murs extérieurs sont exclus du dispositif / No — exterior walls are excluded |
+| Nettoyage de panneaux solaires | Solar panel cleaning | Non — équipement de production d'énergie, hors liste / No — energy-generating equipment, not a listed activity |
 | Nettoyage de poubelles | Bin cleaning | Non — hors liste des activités éligibles / No — not a listed activity |
 
 Le crédit d'impôt ne concerne que les particuliers. Il ne s'applique pas aux
@@ -62,6 +76,11 @@ business customers.
   Services à la Personne exclut le nettoyage des murs extérieurs.
   Facade cleaning does NOT qualify for the tax credit: the Services à la
   Personne scheme excludes cleaning exterior walls.
+- Le nettoyage de panneaux solaires n'ouvre PAS droit au crédit d'impôt non
+  plus : il porte sur un équipement de production d'énergie, pas sur
+  l'entretien du logement.
+  Solar panel cleaning does NOT qualify for the tax credit either: it deals
+  with energy-generating equipment, not with upkeep of the home.
 - Le plafond est de 6 000 € de dépenses par an et par foyer fiscal.
   The cap is €6,000 of spending per year per tax household.
 - L'avance immédiate URSSAF et le crédit d'impôt différé sont deux mécanismes

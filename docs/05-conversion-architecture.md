@@ -64,11 +64,43 @@ RGPD: one checkbox, one sentence, linked to `/confidentialite`. No pre-tick.
 
 ## What not to build
 
-- No live chat widget. Nobody is there to answer it.
+- No live chat widget. Nobody is there to answer it. **Still true, and asked
+  about directly** — client feedback round 1, §10, 2026-09-09. What shipped in
+  answer is not one: `ChatLauncher` is a static `<details>` in the corner of
+  every page whose panel offers call, WhatsApp and the quote form. It ships no
+  JavaScript, sets no cookie, needs no consent banner, and promises no response
+  time. See the "Chatbox" section below before changing it.
 - No online booking. The job needs a quote first.
 - No newsletter. There is nothing to send.
 - No exit-intent popup. It hurts Core Web Vitals and trust in equal measure.
 - No countdown timer or fake scarcity. This is a local tradesman, not a funnel.
+
+## Chatbox
+
+The client asked whether a chatbox can be added. It can, and one has been —
+but not the kind the phrase usually means. Three options were on the table:
+
+| Option | Verdict |
+|---|---|
+| Hosted widget (Crisp, Tawk.to, Intercom) | **No.** All of them set cookies or localStorage, which CLAUDE.md rule 2 forbids and which drags in a consent banner this site does not have. 200 kB+ of third-party JavaScript against a build measured at 97–99 Lighthouse. And it would sit there unanswered. |
+| AI chatbot | **No.** It needs a server to hold the conversation. Rule 2 pins the site to `output: 'export'`; there is no server to put one on. |
+| Static launcher into WhatsApp | **Shipped.** |
+
+What shipped is a floating bubble that opens a small panel: call, WhatsApp with
+the first line already drafted, and the quote form — the same three actions in
+the same order as the hierarchy above, which it does not reverse. It is a
+`<details>` element, so it works with JavaScript off and adds nothing to the
+bundle.
+
+The reason it is the right answer and not a cop-out: the visitor's real ask is
+"let me message you without picking up the phone", and WhatsApp already answers
+it. The client reads WhatsApp on the phone he takes to the job. A widget in a
+browser tab he never has open does not.
+
+It never claims to be staffed. No "we are online", no typing indicator, no
+response-time promise — the same reason `footer.responseTime` carries none.
+
+Revisit if, and only if, someone is actually going to sit on the other end.
 
 ## Measurement
 

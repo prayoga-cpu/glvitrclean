@@ -4,7 +4,8 @@
  *
  * This exists because 39 of 51 pages on a previous project went unindexed, and
  * the cause was duplicate metadata, not backlinks and not domain authority.
- * With 194 generated routes the failure mode is structural, so the guard is too.
+ * With over 200 generated routes the failure mode is structural, so the guard
+ * is too.
  *
  * French and English share ONE namespace on purpose. Two editions of a page are
  * allowed to say the same thing in different languages, but they must not end
@@ -75,6 +76,16 @@ if (communeSlugs.length !== communeNames.length || communeSlugs.length !== commu
 
 const BRAND = "GLVITR'CLEAN";
 /**
+ * The client's brand line, parsed out of the data file rather than typed here
+ * for the same reason the tax rate is: it is client-owned copy with one home.
+ * Since 2026-09-10 it is the suffix on every title that carries a brand.
+ */
+const BRAND_LINE = read('src/data/company.ts').match(/brandLine:\s*"([^"]+)"/)[1];
+
+/** Mirrors `branded()` in src/lib/seo.ts: head first, brand last. */
+const branded = (head) => `${head} | ${BRAND_LINE}`;
+
+/**
  * Read from src/data/company.ts rather than typed in: the /credit-impot titles
  * derive the figure from TAX_CREDIT_RATE (CLAUDE.md rule 1), so hard-coding
  * "50" here would silently disagree the day the rate changes.
@@ -87,28 +98,28 @@ const rows = [];
 
 /* ---------------------------------------------------------------- French -- */
 
-rows.push({ path: '/', title: `Nettoyage vitres et terrasse en Essonne (91) | ${BRAND}` });
+rows.push({ path: '/', title: branded('Nettoyage vitres et terrasse en Essonne (91)') });
 
 const fixedFr = {
-  '/services': `Nos prestations de nettoyage en Essonne (91) | ${BRAND}`,
-  '/zones': `Zones d'intervention en Essonne (91) | ${BRAND}`,
-  '/credit-impot': `Crédit d'impôt ${TAX_CREDIT_PCT} % sur le nettoyage à domicile | ${BRAND}`,
-  '/professionnels': `Nettoyage pour professionnels en Essonne (91) | ${BRAND}`,
-  '/devis': `Devis gratuit de nettoyage en Essonne | ${BRAND}`,
-  '/realisations': `Nos réalisations de nettoyage en Essonne | ${BRAND}`,
-  '/mentions-legales': `Mentions légales | ${BRAND}`,
-  '/confidentialite': `Politique de confidentialité | ${BRAND}`,
+  '/services': branded('Prestations de nettoyage en Essonne (91)'),
+  '/zones': branded('Nettoyage en Essonne (91) et Seine-et-Marne (77)'),
+  '/credit-impot': branded(`Crédit d'impôt ${TAX_CREDIT_PCT} % : nettoyage à domicile`),
+  '/professionnels': branded('Nettoyage pour professionnels en Essonne'),
+  '/devis': branded('Devis gratuit de nettoyage en Essonne'),
+  '/realisations': branded('Réalisations de nettoyage en Essonne'),
+  '/mentions-legales': branded('Mentions légales'),
+  '/confidentialite': branded('Politique de confidentialité'),
 };
 for (const [path, title] of Object.entries(fixedFr)) rows.push({ path, title });
 
 serviceSlugs.forEach((slug, i) => {
-  rows.push({ path: `/services/${slug}`, title: `${serviceNames[i].fr} en Essonne (91) | ${BRAND}` });
+  rows.push({ path: `/services/${slug}`, title: branded(`${serviceNames[i].fr} en Essonne (91)`) });
 });
 
 communeSlugs.forEach((cSlug, ci) => {
   rows.push({
     path: `/zones/${cSlug}`,
-    title: `Nettoyage à ${communeNames[ci]} (91) | ${BRAND}`,
+    title: branded(`Nettoyage à ${communeNames[ci]} (91)`),
   });
   serviceSlugs.forEach((sSlug, si) => {
     rows.push({
@@ -120,31 +131,31 @@ communeSlugs.forEach((cSlug, ci) => {
 
 /* --------------------------------------------------------------- English -- */
 
-rows.push({ path: '/en', title: `Window and terrace cleaning in the Essonne (91) | ${BRAND}` });
+rows.push({ path: '/en', title: branded('Window and terrace cleaning in the Essonne (91)') });
 
 const fixedEn = {
-  '/en/services': `Our cleaning services in the Essonne (91) | ${BRAND}`,
-  '/en/zones': `Where we work in the Essonne (91) | ${BRAND}`,
-  '/en/credit-impot': `${TAX_CREDIT_PCT}% tax credit on home cleaning in France | ${BRAND}`,
-  '/en/professionnels': `Commercial cleaning in the Essonne (91) | ${BRAND}`,
-  '/en/devis': `Free cleaning quote in the Essonne | ${BRAND}`,
-  '/en/realisations': `Our cleaning work in the Essonne | ${BRAND}`,
-  '/en/mentions-legales': `Legal notice | ${BRAND}`,
-  '/en/confidentialite': `Privacy policy | ${BRAND}`,
+  '/en/services': branded('Cleaning services in the Essonne (91)'),
+  '/en/zones': branded('Cleaning in the Essonne and the Seine-et-Marne'),
+  '/en/credit-impot': branded(`${TAX_CREDIT_PCT}% tax credit on home cleaning in France`),
+  '/en/professionnels': branded('Commercial cleaning in the Essonne (91)'),
+  '/en/devis': branded('Free cleaning quote in the Essonne'),
+  '/en/realisations': branded('Our cleaning work in the Essonne'),
+  '/en/mentions-legales': branded('Legal notice'),
+  '/en/confidentialite': branded('Privacy policy'),
 };
 for (const [path, title] of Object.entries(fixedEn)) rows.push({ path, title });
 
 serviceSlugs.forEach((slug, i) => {
   rows.push({
     path: `/en/services/${slug}`,
-    title: `${serviceNames[i].en} in the Essonne (91) | ${BRAND}`,
+    title: branded(`${serviceNames[i].en} in the Essonne (91)`),
   });
 });
 
 communeSlugs.forEach((cSlug, ci) => {
   rows.push({
     path: `/en/zones/${cSlug}`,
-    title: `Cleaning in ${communeNames[ci]} (91) | ${BRAND}`,
+    title: branded(`Cleaning in ${communeNames[ci]} (91)`),
   });
   serviceSlugs.forEach((sSlug, si) => {
     rows.push({
@@ -178,9 +189,29 @@ for (const r of rows) {
   }
 }
 
+/*
+ * Google renders roughly the first 60 characters of a title. Since 2026-09-10
+ * the client's brand line occupies 31 of them at the end of every branded
+ * title, so measuring the whole string against one threshold would warn on all
+ * 56 of them and say nothing useful.
+ *
+ * What has to survive the cut is the HEAD — the words before the brand, which
+ * are what the page is trying to win. So the head is measured on its own, and
+ * the whole title only against a runaway ceiling.
+ */
+const HEAD_MAX = 60;
+const TITLE_MAX = 80;
+
 for (const r of rows) {
-  if (r.title.length > 65) {
-    console.warn(`check:seo — title ${r.title.length} chars (>65), may truncate: ${r.path}`);
+  const head = r.title.split(` | ${BRAND}`)[0];
+  const hasBrand = head !== r.title;
+  if (head.length > HEAD_MAX) {
+    console.warn(
+      `check:seo — ${hasBrand ? 'title head' : 'title'} ${head.length} chars ` +
+        `(>${HEAD_MAX}), will truncate${hasBrand ? ' before the brand' : ''}: ${r.path}`,
+    );
+  } else if (r.title.length > TITLE_MAX) {
+    console.warn(`check:seo — title ${r.title.length} chars (>${TITLE_MAX}): ${r.path}`);
   }
 }
 

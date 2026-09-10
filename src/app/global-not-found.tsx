@@ -59,7 +59,7 @@ export default function GlobalNotFound() {
             never from a not-found file, so the title is rendered directly.
             React 19 hoists it into <head>. Without it out/404.html ships
             untitled. */}
-        <title>{`${fr.notFound.h1} · ${en.notFound.h1} | ${company.displayName}`}</title>
+        <title>{`${fr.notFound.h1} · ${en.notFound.h1} | ${company.brandLine}`}</title>
 
         <main className="container not-found">
           <Link href="/" aria-label={`${company.displayName} — ${fr.common.homeLabel}`}>

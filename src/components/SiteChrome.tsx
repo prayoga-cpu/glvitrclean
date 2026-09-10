@@ -3,9 +3,11 @@ import Image from 'next/image';
 import { company } from '@/data/company';
 import { brand } from '@/data/brand';
 import { services } from '@/data/services';
+import { communes } from '@/data/communes';
 import { MobileNav } from '@/components/MobileNav';
 import { LangToggle } from '@/components/LangToggle';
 import { strings } from '@/i18n/dictionary';
+import { hoursLines } from '@/lib/hours';
 import { href, type Lang } from '@/i18n/config';
 
 /**
@@ -143,11 +145,43 @@ export function SiteFooter({ lang }: { lang: Lang }) {
           </div>
 
           <div>
-            <h3>{t.nav.services}</h3>
+            <h3>
+              <Link href={href('/services', lang)}>{t.nav.services}</Link>
+            </h3>
             <ul>
               {services.map((s) => (
                 <li key={s.slug}>
                   <Link href={href(`/services/${s.slug}`, lang)}>{s.name[lang]}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/*
+            ROADMAP phase 8b. The footer is the only sitewide link surface this
+            site has — the header carries three nav links and a CTA — and until
+            now it reached seven service pages and four fixed ones. It reached
+            no commune page at all, so twelve hubs and, through them, 84
+            crossings depended entirely on the home page and /zones for their
+            internal links.
+
+            The two hub headings are links now for the same reason: /services
+            and /zones were reachable from the home page and from a breadcrumb,
+            and from nowhere else.
+
+            NOT here on purpose: /credit-impot. CLAUDE.md rule 1 permits exactly
+            one global tax-credit link and the header already carries it. A
+            second one in the footer would put the phrase inside the footer of
+            all 80 forbidden routes, including /professionnels. Do not add it.
+          */}
+          <div>
+            <h3>
+              <Link href={href('/zones', lang)}>{t.nav.zones}</Link>
+            </h3>
+            <ul className="site-footer__zones">
+              {communes.map((c) => (
+                <li key={c.slug}>
+                  <Link href={href(`/zones/${c.slug}`, lang)}>{c.name}</Link>
                 </li>
               ))}
             </ul>
@@ -182,6 +216,15 @@ export function SiteFooter({ lang }: { lang: Lang }) {
               </li>
               <li>
                 {company.address.locality} ({company.address.postalCode})
+              </li>
+              {/* The hours he answers the phone. Same source as the
+                  openingHoursSpecification in the LocalBusiness JSON-LD, so a
+                  Google result and the page can never disagree. */}
+              <li className="site-footer__hours">
+                <strong>{t.hours.title}</strong>
+                {hoursLines(lang).map((line) => (
+                  <span key={line.days}>{line.text}</span>
+                ))}
               </li>
               <li>SIRET {company.siret}</li>
             </ul>

@@ -1,14 +1,16 @@
 /**
- * The six services.
+ * The seven services.
  *
  * `taxCreditEligible` is the ONLY thing that decides whether the 50% credit is
  * shown. It mirrors docs/04-compliance-sap.md exactly. If the two disagree,
  * this file is wrong.
  *
- * Facade and bins are false. That is a legal position, not a design choice.
+ * Facade, solar panels and bins are false. That is a legal position, not a
+ * design choice.
  * Eligibility is a property of the SERVICE, never of the language: the English
  * copy states exactly the same position as the French, and the `en` half of
- * `eligibilityNote` on facade/poubelles must stay a denial, not a claim.
+ * `eligibilityNote` on facade/panneaux-solaires/poubelles must stay a denial,
+ * not a claim.
  *
  * `slug` is shared by both languages and is never translated. See
  * src/i18n/config.ts for why.
@@ -48,6 +50,39 @@ export interface Service {
     fromEur: number | null;
     note: string;
   };
+  /**
+   * Can this service be quoted from a photo, with no visit?
+   *
+   * Declared per service rather than asserted globally, for the same reason
+   * `taxCreditEligible` is: it is a property of the work, and phase 8e shipped
+   * with it hard-coded true on every service page. That printed "a photo is
+   * often enough to prepare the quote without a visit" on `facade`, whose own
+   * bodyCopy says a prior visit is indispensable, and on `terrasse`, which is
+   * measured on site — 26 routes each making an offer this repository denies two
+   * paragraphs further down, or in the crossings' case not at all, since they
+   * render only `bodyCopy[1]` and `[3]`.
+   *
+   * `true` ONLY where a bodyCopy paragraph already says so in both editions:
+   * `vitres` ("Une photo ou deux suffisent souvent à le préparer"),
+   * `panneaux-solaires` and `poubelles`. `false` everywhere else — including
+   * `menage` and `volets-portes`, where the data says neither, because silence
+   * is not permission. CLAUDE.md rule 4.
+   */
+  photoQuote: boolean;
+  /**
+   * Typical time on site, as a phrase — "environ deux heures", "une demi-journée".
+   *
+   * `null` on all seven, and it renders nothing until it is not. Mr Sparkle
+   * publishes this next to the price ("exterior only: about two hours; inside and
+   * out: four to six") and it is one of the cheapest trust elements on their
+   * site: it answers the question a homeowner will not ask, which is whether
+   * they are losing a whole day. See TODO.md, teardown 1, item A4.
+   *
+   * TODO(human): the client knows these. One phrase per service, in both
+   * editions, and it appears in `<PricingNote />` with no other edit.
+   * Do NOT estimate them — a duration is a commitment, and rule 4 applies.
+   */
+  duration: Localized | null;
   /** Longtail seeds, used for internal linking and copy, not for new routes. */
   longTail: Localized<string[]>;
 }
@@ -59,8 +94,8 @@ export const services: Service[] = [
     inSentence: { fr: 'nettoyage de vitres', en: 'window cleaning' },
     headTerm: { fr: 'nettoyage de vitres', en: 'window cleaning' },
     summary: {
-      fr: "Vitres, baies vitrées, vérandas et fenêtres de toit, à l'intérieur comme à l'extérieur. Sans trace, avec des produits écologiques.",
-      en: 'Windows, patio doors, conservatories and roof windows, inside and out. Streak-free, using eco-friendly products.',
+      fr: "Vitres, baies vitrées, vérandas et fenêtres de toit, sans trace. Intérieur et extérieur, avec des produits respectueux de l'environnement.",
+      en: 'Windows, patio doors, conservatories and roof windows, inside and out. Streak-free, using environmentally responsible products.',
     },
     bodyCopy: {
       fr: [
@@ -72,8 +107,8 @@ export const services: Service[] = [
       en: [
         'The job covers both sides of the glass: windows, patio doors, conservatories and roof windows. Frames, sills and runners are done at the same time, otherwise the first shower of rain carries dirt straight back down the clean glass. Inside and outside can be done together or separately, depending on what you need.',
         'The work goes in three stages: wet the glass and loosen the dirt, squeegee it off, then go back over the edges and corners. That last stage is what separates a clean window from a streak-free one. The products used are environmentally responsible, indoors as well as out.',
-        'Before the visit, clear the inside sills and open up the access outside: garden furniture, pots, a car parked in front of a patio door. Point out any cracked panes, worn seals or windows that no longer open, so they can be handled carefully. Anything high up is assessed before the work starts, never during.',
-        'Pricing is a flat rate for the house rather than an hourly charge: the number of windows, their type and their height give one figure for the whole job, known before anything begins. The quote is free and commits you to nothing. A photo or two is often enough to prepare it.',
+        'Before the visit, clear the inside sills and move anything standing in the way outside: garden furniture, pots, a car parked in front of a patio door. Point out any cracked panes, worn seals or windows that no longer open, so they can be handled carefully. Anything high up is assessed before the work starts, never during.',
+        'Pricing is a flat rate for the house rather than an hourly charge: the number of windows, their type and their height give one figure for the whole job, known before anything begins. The quote is free, with no obligation. A photo or two is often enough to prepare it.',
       ],
     },
     taxCreditEligible: true,
@@ -87,6 +122,8 @@ export const services: Service[] = [
       fromEur: null,
       note: 'TODO(human): confirmer',
     },
+    photoQuote: true,
+    duration: null,
     longTail: {
       fr: ['laveur de vitres', 'lavage vitres maison', 'nettoyage baies vitrées', 'nettoyage véranda'],
       en: ['window cleaner', 'house window washing', 'patio door cleaning', 'conservatory cleaning'],
@@ -99,18 +136,18 @@ export const services: Service[] = [
     headTerm: { fr: 'nettoyage de terrasse', en: 'terrace cleaning' },
     summary: {
       fr: 'Démoussage et remise en état des dallages, pavés et bois. Nettoyage haute pression maîtrisé, sans abîmer le support.',
-      en: 'Moss removal and restoration of paving, block paving and timber decking. Controlled pressure washing that will not damage the surface.',
+      en: 'Moss removal and restoration of paving slabs, block paving and timber decking. Controlled pressure washing, matched to the surface.',
     },
     bodyCopy: {
       fr: [
         "La prestation couvre le démoussage et la remise en état des dallages, des pavés autobloquants et des terrasses en bois. Les joints, les bordures et les marches font partie du chantier : c'est là que la mousse revient en premier. Les balcons se traitent de la même façon, avec l'évacuation de l'eau comme contrainte supplémentaire.",
-        "La pression est réglée en fonction du support, jamais l'inverse. Une dalle béton encaisse ce qu'une lame de bois ou un joint sablé ne supporterait pas, donc le réglage change parfois d'une zone à l'autre d'une même terrasse. Un essai sur un coin peu visible permet de valider le rendu avant de traiter l'ensemble.",
+        "Le nettoyage haute pression se règle en fonction du support, jamais l'inverse. Une dalle béton encaisse ce qu'une lame de bois ou un joint sablé ne supporterait pas, donc le réglage change parfois d'une zone à l'autre d'une même terrasse. Un essai sur un coin peu visible permet de valider le rendu avant de traiter l'ensemble.",
         "Prévoyez de dégager le mobilier, les jardinières et le barbecue, et de fermer les fenêtres qui donnent sur la terrasse. L'eau doit pouvoir partir : signalez un regard bouché ou une pente qui ramène l'eau vers la maison. Le bois demande un temps de séchage avant de remettre les meubles en place.",
         "Le devis se calcule au mètre carré : la surface est mesurée sur place et l'état du support regardé avant d'annoncer un prix. Une terrasse reprise régulièrement demande moins de travail qu'une terrasse laissée plusieurs années sans entretien. Le devis est gratuit.",
       ],
       en: [
         'The work covers moss removal and restoration of paving slabs, block paving and timber decking. Joints, edges and steps are part of the job: that is where moss comes back first. Balconies are treated the same way, with drainage as the extra constraint.',
-        'The pressure is set to suit the surface, never the other way round. A concrete slab takes what a timber board or a sanded joint would not, so the setting can change from one part of a terrace to another. A test on an out-of-the-way corner settles the finish before the whole area is done.',
+        'The pressure is set to suit the surface, never the other way round. A concrete slab takes what a timber board or a sand-filled joint would not, so the setting can change from one part of a terrace to another. A test on an out-of-the-way corner settles the finish before the whole area is done.',
         'Move the furniture, the planters and the barbecue out of the way beforehand, and close any window opening onto the terrace. The water has to drain somewhere: flag a blocked gully, or a slope that sends water back towards the house. Timber needs time to dry before the furniture goes back.',
         'Quotes are worked out per square metre: the area is measured on site and the condition of the surface assessed before a price is given. A terrace cleaned regularly takes less work than one left for several years. The quote is free.',
       ],
@@ -126,6 +163,8 @@ export const services: Service[] = [
       fromEur: null,
       note: 'TODO(human): confirmer',
     },
+    photoQuote: false,
+    duration: null,
     longTail: {
       fr: ['démoussage terrasse', 'nettoyage dallage', 'nettoyage terrasse bois'],
       en: ['terrace moss removal', 'patio slab cleaning', 'wooden decking cleaning'],
@@ -137,19 +176,19 @@ export const services: Service[] = [
     inSentence: { fr: 'ménage', en: 'housekeeping' },
     headTerm: { fr: 'ménage à domicile', en: 'domestic housekeeping' },
     summary: {
-      fr: "Entretien courant ou grand ménage ponctuel. Sols, surfaces, sanitaires, avec des produits respectueux de l'environnement.",
-      en: 'Regular upkeep or a one-off deep clean. Floors, surfaces and bathrooms, using environmentally responsible products.',
+      fr: "Entretien courant ou grand ménage après travaux ou déménagement. Sols, surfaces, sanitaires, avec des produits respectueux de l'environnement.",
+      en: 'Regular house cleaning or a one-off deep clean. Floors, surfaces and bathrooms, using environmentally responsible products.',
     },
     bodyCopy: {
       fr: [
-        "Deux formules : l'entretien courant, à intervalle régulier, et le grand ménage ponctuel, après un déménagement, des travaux ou avant de recevoir. Dans les deux cas, la prestation couvre les sols, les surfaces, la cuisine et les sanitaires. Les pièces concernées et le niveau de détail sont convenus au devis, pas le jour même.",
+        "Deux formules : l'entretien courant, à intervalle régulier, et le grand ménage ponctuel, après un déménagement ou des travaux, avant un état des lieux ou avant de recevoir. Dans les deux cas, la prestation couvre les sols, les surfaces, la cuisine et les sanitaires. Les pièces concernées et le niveau de détail sont convenus au devis, pas le jour même.",
         "Le travail suit un ordre fixe, du haut vers le bas et du fond vers la sortie, pour ne pas resalir ce qui vient d'être fait. Les produits sont respectueux de l'environnement et choisis selon la surface à traiter. Rien n'est réorganisé chez vous : ce qui est déplacé revient à sa place.",
         "De votre côté, il n'y a rien à préparer, sinon ranger ce qui traîne pour que les surfaces soient accessibles. Indiquez les pièces à ne pas toucher, les sols fragiles, et l'endroit où sont rangés vos produits si vous préférez qu'on utilise les vôtres. Dites aussi si vous serez présent : cela se cale au devis.",
         "Le ménage se facture à l'heure. Le nombre d'heures dépend de la surface, du nombre de pièces et de la fréquence : un passage hebdomadaire prend moins de temps qu'un rattrapage après plusieurs mois. Le devis est gratuit et fixe le volume horaire avant la première venue.",
       ],
       en: [
-        'Two formats: regular upkeep on a set schedule, and a one-off deep clean after a move, after building work, or before having people over. Either way the work covers floors, surfaces, the kitchen and the bathrooms. Which rooms are included, and how far the detail goes, is agreed at the quote rather than on the day.',
-        'The work follows a fixed order, top to bottom and back towards the door, so that nothing already done gets dirty again. Products are environmentally responsible and chosen to suit the surface. Nothing in your home is rearranged: whatever gets moved goes back where it was.',
+        'Two options: regular upkeep on a set schedule, and a one-off deep clean after a move, after building work, or before having people over. Either way the work covers floors, surfaces, the kitchen and the bathrooms. Which rooms are included, and how far the detail goes, is agreed at the quote rather than on the day.',
+        'The work follows a fixed order, top to bottom and from the far end of the room towards the door, so nothing already cleaned gets dirty again. Products are environmentally responsible and chosen to suit the surface. Nothing in your home is rearranged: whatever gets moved goes back where it was.',
         'There is nothing to prepare on your side beyond clearing clutter so the surfaces can be reached. Say which rooms to leave alone, which floors are delicate, and where your own products are kept if you would rather they were used. Say too whether you will be in: that is settled at the quote.',
         'Housekeeping is charged by the hour. How many hours depends on the floor area, the number of rooms and the frequency: a weekly visit takes less time than catching up after several months. The quote is free and sets the number of hours before the first visit.',
       ],
@@ -165,6 +204,8 @@ export const services: Service[] = [
       fromEur: null,
       note: 'TODO(human): confirmer',
     },
+    photoQuote: false,
+    duration: null,
     longTail: {
       fr: ['aide ménagère', 'entretien maison', 'grand ménage'],
       en: ['home help', 'house cleaning', 'deep clean'],
@@ -176,8 +217,8 @@ export const services: Service[] = [
     inSentence: { fr: 'nettoyage de volets et portes', en: 'shutter and door cleaning' },
     headTerm: { fr: 'nettoyage de volets', en: 'shutter cleaning' },
     summary: {
-      fr: "Volets battants, volets roulants, portes d'entrée et encadrements. Dépoussiérage, dégraissage, remise en état.",
-      en: 'Hinged shutters, roller shutters, front doors and frames. Dusted, degreased and brought back to condition.',
+      fr: "Volets roulants, volets battants et portes d'entrée. Lames, coffres et encadrements compris : dépoussiérage, dégraissage, remise en état.",
+      en: 'Roller shutters, hinged shutters and front doors. Slats, housings and frames included: dusted, degreased, brought back to condition.',
     },
     bodyCopy: {
       fr: [
@@ -189,8 +230,8 @@ export const services: Service[] = [
       en: [
         'The work covers hinged shutters, roller shutters including their slats and housing, front doors and frames. PVC, painted wood and aluminium do not clean the same way and are treated accordingly. Runners and guide rails are part of the job: that is where the dirt builds up most.',
         'Three stages: dry dusting, degreasing, then rinsing and wiping down. The grime that settles in the grooves of a roller shutter is lifted with the right product rather than brute force, which is what keeps a slat from being scratched or a painted finish from chipping. The products used are environmentally responsible.',
-        'Before the visit, check that each shutter opens and closes, and flag any that catch or no longer come down. A damaged roller shutter can be cleaned, but it is not repaired here. Clear the surroundings too: planters on the sill, furniture standing against the wall.',
-        'Shutters and doors are quoted as a flat rate, worked out from the number of openings, their material and their height. It is often combined with window cleaning, since the equipment is already on site and the surfaces sit side by side. The quote is free.',
+        'Before the visit, check that each shutter opens and closes, and flag any that catch or no longer come down. A damaged roller shutter can still be cleaned, but repairing it is not part of the job. Clear the surroundings too: planters on the sill, furniture standing against the wall.',
+        'Shutters and doors are quoted as a flat rate, worked out from how many there are, their material and their height. It is often combined with window cleaning, since the equipment is already on site and the surfaces sit side by side. The quote is free.',
       ],
     },
     taxCreditEligible: true,
@@ -204,6 +245,8 @@ export const services: Service[] = [
       fromEur: null,
       note: 'TODO(human): confirmer',
     },
+    photoQuote: false,
+    duration: null,
     longTail: {
       fr: ['nettoyage volets roulants', 'nettoyage portes', 'nettoyage encadrements'],
       en: ['roller shutter cleaning', 'door cleaning', 'window frame cleaning'],
@@ -229,7 +272,7 @@ export const services: Service[] = [
         'Facade cleaning deals with exterior walls: render, coatings, timber or composite cladding. Green staining, black runs under the window sills and deposits at the foot of the wall have different causes and are not treated the same way. The base of the wall and the gables that get little sun are usually the worst affected.',
         'This is a technical job rather than a simple wash. The surface is examined first: chalking render, a cracked coating or open cladding joints will not take what sound masonry takes. The cleaning is then matched to what that inspection shows, using the gentlest method that gives the result.',
         'A site visit is essential and is part of the quote. It is there to measure the surfaces, look at access, height and the condition of the wall, and then to say what can and cannot be done. Not every facade can be cleaned: where a clean result is out of reach, you are told beforehand rather than afterwards.',
-        'The price is quoted individually, with no standard rate card: two houses of the same size can involve very different work depending on height, access and the state of the wall. On your side, plan to close the windows, clear the beds along the wall and cover anything that water would spoil. The quote is free.',
+        'The price is quoted individually, with no standard rate card: two houses of the same size can involve very different work depending on height, access and the state of the wall. On your side, plan to close the windows, clear the flower beds along the wall and cover anything that water would spoil. The quote is free.',
       ],
     },
     // NOT eligible. Exterior wall cleaning is excluded from the SAP scheme.
@@ -244,9 +287,61 @@ export const services: Service[] = [
       fromEur: null,
       note: 'visite préalable',
     },
+    photoQuote: false,
+    duration: null,
     longTail: {
       fr: ['démoussage façade', 'nettoyage crépi', 'nettoyage bardage'],
       en: ['facade moss removal', 'render cleaning', 'cladding cleaning'],
+    },
+  },
+  {
+    slug: 'panneaux-solaires',
+    name: { fr: 'Nettoyage de panneaux solaires', en: 'Solar panel cleaning' },
+    inSentence: { fr: 'nettoyage de panneaux solaires', en: 'solar panel cleaning' },
+    headTerm: { fr: 'nettoyage de panneaux solaires', en: 'solar panel cleaning' },
+    summary: {
+      fr: "Panneaux photovoltaïques ou thermiques, en toiture, sur carport ou au sol. Eau claire et brosse douce, sans produit agressif ni haute pression.",
+      en: 'Solar panels, photovoltaic or thermal, on roofs, carports or the ground. Clean water and a soft brush, with no harsh products and no pressure washing.',
+    },
+    bodyCopy: {
+      fr: [
+        "La prestation couvre les panneaux photovoltaïques et les capteurs solaires thermiques, qu'ils soient posés en toiture, sur un carport ou au sol. Poussière, pollen, fientes et dépôts verts en bas de module forment un voile : le panneau reçoit moins de lumière, donc il produit moins. Les cadres et les interstices entre les rangées sont repris au passage : c'est là que la mousse s'installe et qu'elle revient en premier.",
+        "Le lavage se fait à l'eau claire, avec une brosse douce montée sur perche. Pas de produit agressif, pas de haute pression, pas de raclette : le verre d'un panneau porte un traitement de surface qu'un nettoyant ménager ou un jet trop puissant peut abîmer, et un module rayé le reste. Le passage se fait de préférence tôt le matin ou en fin de journée, sur un panneau froid.",
+        "Avant l'intervention, indiquez le type de pose, la pente du toit et la hauteur, et signalez un module fêlé, un câble apparent ou une fixation qui bouge. Ces points-là ne se nettoient pas : ils se regardent d'abord, et ils relèvent de votre installateur. Comme pour une façade, l'accès en hauteur est évalué avant l'intervention, jamais pendant, et une installation que l'on ne peut pas atteindre proprement est annoncée comme telle.",
+        "Le tarif se compte par panneau, une fois le nombre de modules, la pente et l'accès connus. Une pose au sol ou sur carport se traite plus vite qu'une toiture pentue à l'étage, à nombre de modules égal. Le devis est gratuit, et une photo de l'installation suffit souvent à le préparer.",
+      ],
+      en: [
+        'The work covers photovoltaic panels and solar thermal collectors, whether they sit on a roof, on a carport or on the ground. Dust, pollen, droppings and the green growth along the bottom edge of a module build into a film that lets through less light than bare glass. Frames and the gaps between rows are done at the same time: that is where moss takes hold, and where it comes back first.',
+        'Washing is done with clean water and a soft brush on a pole. No harsh products, no pressure washing, no squeegee: the glass on a panel carries a surface treatment that a household cleaner or too strong a jet can damage, and a scratched module stays scratched. The work is best done early in the morning or at the end of the day, on cold panels.',
+        'Before the visit, tell us how the array is mounted, the pitch of the roof and the height, and flag any cracked module, exposed cable or fixing that has worked loose. Those are not things that get cleaned: they get looked at first, and they belong to your installer. As with a facade, work at height is looked at before the job starts, never during, and if an array cannot be reached safely, you are told so up front.',
+        'Pricing is per panel, once the number of modules, the pitch and the access are known. A ground or carport array is quicker to work through than a steep roof at first-floor height, for the same number of modules. The quote is free, and a photo of the array is often enough to prepare it.',
+      ],
+    },
+    // NOT eligible. Added 2026-09-09 with the service itself. Cleaning an
+    // energy-generating installation on a roof is not one of the household
+    // activities listed for the SAP scheme — the same reasoning that excludes
+    // facade, and the same direction of caution: rule 1 exists because an
+    // unbacked claim is the expensive error, not a missing one.
+    taxCreditEligible: false,
+    eligibilityNote: {
+      fr: "Le nettoyage de panneaux solaires ne figure pas dans la liste des activités Services à la Personne : il porte sur un équipement de production d'énergie, quelle que soit sa pose. Aucun crédit d'impôt ne s'applique à cette prestation.",
+      en: 'Solar panel cleaning is not on the list of Services à la Personne activities: it deals with energy-generating equipment, wherever it is mounted. No tax credit applies to this service.',
+    },
+    b2b: true,
+    pricing: {
+      basis: { fr: 'par panneau', en: 'per panel' },
+      fromEur: null,
+      note: 'TODO(human): confirmer',
+    },
+    photoQuote: true,
+    duration: null,
+    longTail: {
+      fr: [
+        'nettoyage panneaux photovoltaïques',
+        'lavage panneaux solaires',
+        'entretien panneaux solaires',
+      ],
+      en: ['photovoltaic panel cleaning', 'solar panel washing', 'solar array maintenance'],
     },
   },
   {
@@ -255,18 +350,18 @@ export const services: Service[] = [
     inSentence: { fr: 'nettoyage de poubelles', en: 'bin cleaning' },
     headTerm: { fr: 'nettoyage de poubelles', en: 'bin cleaning' },
     summary: {
-      fr: 'Lavage et désinfection des bacs et conteneurs, à domicile ou en copropriété. Élimine les odeurs et les nuisibles.',
-      en: 'Washing and disinfecting wheelie bins and containers, at home or for a managed block. Clears odours and deters pests.',
+      fr: 'Lavage et désinfection des bacs, à domicile ou en copropriété. Bacs roulants et conteneurs collectifs. Élimine les odeurs, éloigne les nuisibles.',
+      en: 'Wheelie bin cleaning and disinfection, at home or for a managed block. Clears odours and deters pests.',
     },
     bodyCopy: {
       fr: [
-        "Le lavage concerne aussi bien les bacs roulants d'un foyer que les conteneurs collectifs d'un immeuble ou d'une copropriété. Ordures ménagères, recyclage, verre ou biodéchets : tous les bacs se traitent de la même façon. L'emplacement lui-même peut être repris s'il en a besoin.",
+        "Le lavage concerne aussi bien les bacs roulants d'un foyer que les conteneurs collectifs d'un immeuble ou d'une copropriété. Ordures ménagères, recyclage, verre ou biodéchets : tous les bacs se traitent de la même façon. Le local à poubelles ou l'emplacement du bac peut être lavé s'il en a besoin.",
         "Le bac est lavé puis désinfecté, à l'intérieur comme à l'extérieur, couvercle, poignée et roues compris. C'est le film gras collé aux parois qui retient l'odeur et attire les insectes : c'est lui qui est visé, pas seulement les résidus visibles. Les produits utilisés restent respectueux de l'environnement.",
         "De votre côté, il suffit de sortir le bac vide et d'en laisser l'accès libre. Le jour de la collecte, ou le lendemain, est le bon moment : un bac plein ne se lave pas. En copropriété, l'accès au local se cale à l'avance avec le syndic ou le gardien.",
         'Le tarif se compte par bac, ce qui garde le calcul simple quand il y en a plusieurs, ou quand des voisins font laver les leurs en même temps. Pour un immeuble, le nombre de conteneurs et leur fréquence de sortie donnent le volume à prévoir. Le devis est gratuit, et une photo du bac suffit souvent à le préparer.',
       ],
       en: [
-        'This covers a household wheelie bin as readily as the shared containers of a block or a managed building. General waste, recycling, glass or food waste: every bin is handled the same way. The standing area itself can be included if it needs it.',
+        'This is for household wheelie bins as much as for the shared containers of a block of flats or a managed building. General waste, recycling, glass or food waste: every bin is handled the same way. The standing area itself can be included if it needs it.',
         'Each bin is washed and then disinfected, inside and out, lid, handle and wheels included. It is the greasy film stuck to the walls of the bin that holds the smell and draws insects, so that film is the target, not just the visible residue. The products used are environmentally responsible.',
         'All you need to do is put the bin out empty and leave it accessible. Collection day, or the day after, is the moment for it: a full bin cannot be washed. For a managed block, access to the bin store is arranged in advance with the managing agent or the caretaker.',
         'Pricing is per bin, which keeps the arithmetic simple when there are several, or when neighbours have theirs done at the same time. For a building, the number of containers and how often they go out set the size of the job. The quote is free, and a photo of the bin is often enough to prepare it.',
@@ -284,6 +379,8 @@ export const services: Service[] = [
       fromEur: null,
       note: 'TODO(human): confirmer',
     },
+    photoQuote: true,
+    duration: null,
     longTail: {
       fr: ['désinfection bacs', 'nettoyage conteneurs', 'lavage poubelles'],
       en: ['bin disinfection', 'container cleaning', 'wheelie bin washing'],

@@ -29,7 +29,10 @@ export default function manifest(): MetadataRoute.Manifest {
   if (!home) throw new Error('No home route: allRoutes() is broken.');
 
   return {
-    name: company.legalName,
+    // `name` is the install title and the splash-screen line, so it carries
+    // the client's brand line; `short_name` is the home-screen label under an
+    // icon, where anything past the name itself is truncated anyway.
+    name: company.brandLine,
     short_name: company.legalName,
     description: seoFor(home).description,
     lang: DEFAULT_LANG,

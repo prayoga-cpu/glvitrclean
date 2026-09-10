@@ -39,7 +39,7 @@ Answer engines quote the **first sentence** of an answer. Write accordingly.
 - Every FAQ answer opens with one complete, standalone sentence that answers the
   question. Elaboration comes after.
 - `FAQPage` JSON-LD wherever an FAQ block exists.
-- `public/llms.txt` describes the business, the service area, the six services,
+- `public/llms.txt` describes the business, the service area, the seven services,
   and the credit eligibility table in plain text. Keep it in sync with
   `src/data/`.
 - Server-rendered HTML only. An answer engine that has to execute JavaScript

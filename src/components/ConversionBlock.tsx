@@ -15,16 +15,42 @@ import { href, type Lang } from '@/i18n/config';
  *
  * Server component. Do not add 'use client' — CLAUDE.md rule 2 lists the only
  * four components allowed to have it, and this is not one of them.
+ *
+ * ROADMAP phase 8e changed two things.
+ *
+ * It is no longer rendered once per page. Every long template put exactly one
+ * of these at the bottom, so a visitor who left at 40% scroll — most of them —
+ * saw no in-content action at all. Mr Sparkle places a call/quote pair after
+ * almost every section; the templates now place two or three.
+ *
+ * And it can carry the photo-quote line, via `photoNote`. Only the FIRST block
+ * on a page should set it: repeated three times down a page it reads as filler
+ * rather than as an offer.
  */
-export function ConversionBlock({ lang }: { lang: Lang }) {
+export function ConversionBlock({
+  lang,
+  photoNote = false,
+}: {
+  lang: Lang;
+  /** Show the "send a photo" line under the buttons. First block only. */
+  photoNote?: boolean;
+}) {
   const t = strings(lang);
   return (
-    <div className="actions conversion-block">
-      <CallButton lang={lang} />
-      <WhatsAppButton lang={lang} />
-      <Link href={href('/devis', lang)} className="btn btn--quiet">
-        {t.common.freeQuote} ›
-      </Link>
+    <div className="conversion-block">
+      <div className="actions">
+        <CallButton lang={lang} />
+        <WhatsAppButton lang={lang} />
+        <Link href={href('/devis', lang)} className="btn btn--quiet">
+          {t.common.freeQuote} ›
+        </Link>
+      </div>
+
+      {/* The photo route is already real — `common.whatsapp` labels the button
+          "send a photo" and ChatLauncher drafts the first line — but it was
+          only ever stated in prose, on two of seven service pages. No response
+          time here: that is a client commitment, not ours to invent. */}
+      {photoNote && <p className="conversion-block__note">{t.common.photoQuote}</p>}
     </div>
   );
 }

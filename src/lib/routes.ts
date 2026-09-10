@@ -133,7 +133,7 @@ export function routeForSlugs(
   );
 }
 
-/** 1 + 6 fixed + 6 services + 12 communes + 72 crosses = 97, per language. */
+/** 1 + 8 fixed + 7 services + 12 communes + 84 crosses = 112, per language. */
 export const EXPECTED_ROUTE_COUNT_PER_LANG =
   1 +
   FIXED_PATHS.length +
@@ -141,5 +141,5 @@ export const EXPECTED_ROUTE_COUNT_PER_LANG =
   communeSlugs.length +
   communeSlugs.length * serviceSlugs.length;
 
-/** 97 × 2 languages = 194. */
+/** 112 × 2 languages = 224. */
 export const EXPECTED_ROUTE_COUNT = EXPECTED_ROUTE_COUNT_PER_LANG * LANGS.length;

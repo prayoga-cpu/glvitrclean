@@ -3,9 +3,18 @@
 ## What the business is
 
 GLVITR'CLEAN, SIRET 988 737 268 00017. One operator, Thibaut. Based in the
-Linas / Arpajon / Étampes corridor of the Essonne (91), south of Paris.
+Linas / Arpajon / Étampes corridor of the Essonne (91), south of Paris, and
+working the Seine-et-Marne (77) as well since the client confirmed it on
+2026-09-09.
 
-Sells six services to two very different buyers.
+**The site does not say this.** On the client's instruction (feedback §3 and
+§7, 2026-09-09) the copy speaks as a company with a team and names nobody. That
+is a positioning decision about how the business presents, recorded here so the
+gap between this document and the shipped copy is deliberate rather than a bug.
+Nothing else follows from it: no headcount, no years, no certification. See
+CLAUDE.md rule 4.
+
+Sells seven services to two very different buyers.
 
 | Service | B2C | B2B | Tax credit |
 |---|---|---|---|

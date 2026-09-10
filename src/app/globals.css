@@ -139,8 +139,14 @@
   --radius-pill: 999px;
   --transition: 200ms ease-in-out;
 
-  /* Only two elevated surfaces exist: the sticky call bar and the mobile menu. */
+  /* The elevated surfaces: the sticky call bar, the mobile menu, and the chat
+     launcher with its greeting. */
   --shadow-dropdown: 0 18px 28px -20px rgba(16, 24, 40, 0.45);
+
+  /* Height of the sticky call bar. It is `min-height` on the bar itself and the
+     offset the chat launcher sits above, so the two cannot drift into an
+     overlap. Mobile only — the bar is display:none from 48rem up. */
+  --sticky-call-h: 3.5rem;
 
   --container-max: 82.5rem; /* 1320px, the prototype's outer measure */
   --container-narrow: 80rem; /* 1280px, used inside sections */
@@ -885,6 +891,25 @@ ol {
   margin: var(--space-4) 0;
 }
 
+/* /devis: the opening hours, directly under the call and WhatsApp buttons. */
+.hours-note {
+  margin-top: var(--space-2);
+  font-size: var(--text-base);
+  color: var(--color-text-muted);
+}
+
+.hours-note strong {
+  display: block;
+  margin-bottom: 0.375rem;
+  color: var(--color-text);
+}
+
+.hours-note ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 .contact-media {
   display: block;
   width: 100%;
@@ -1471,6 +1496,9 @@ ol {
   inset-inline: 0;
   bottom: 0;
   z-index: 60;
+  /* Declared rather than left to fall out of the padding: .chat is positioned
+     against this number. See --sticky-call-h. */
+  min-height: var(--sticky-call-h);
   transition: transform var(--transition);
   display: flex;
   justify-content: center;
@@ -1485,12 +1513,284 @@ ol {
   }
 }
 
-/* No-JS fallback only: keeps the sticky bar off the footer's last line when
-   ScrollChrome never runs. With JS the bar hides entirely while the footer is
-   on screen, so this padding is simply unused. */
+/* =========================================================================
+   Chat launcher and its welcome greeting
+
+   A floating <details>: the summary is the bubble, the panel holds the three
+   actions. No JavaScript is involved, so it is open-able on the exported HTML
+   with scripting off. See src/components/ChatLauncher.tsx for why the site has
+   this instead of a hosted chat widget.
+
+   `.chat` is the fixed dock, not the disclosure — the disclosure is
+   `.chat__disclosure` inside it, and the greeting is its second child. Keeping
+   the class on the wrapper is what lets every placement rule below stay
+   exactly as it was written.
+
+   Everything about where it sits is here, including the scroll-direction
+   rules, so the collision with the sticky call bar can be read in one place.
+   ========================================================================= */
+
+.chat {
+  position: fixed;
+  inset-inline-end: var(--gutter);
+  bottom: var(--space-3);
+  /* Under the sticky call bar's 60. The bar is the primary action and must
+     never be the thing that gets covered. Above the header's 50, which the
+     launcher can outrank because it never overlaps it. */
+  z-index: 55;
+  transition: bottom var(--transition);
+  /* Reversed, so the greeting — which comes AFTER the disclosure in the markup
+     — paints above it. Source order keeps the launcher first for the keyboard;
+     column-reverse puts the greeting where a greeting belongs. */
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  gap: var(--space-1);
+}
+
+/* The mobile menu is absolutely positioned inside .site-header and can reach
+   the bottom of a short viewport, where the bubble would float on top of its
+   links. `data-nav` is already set on <html> by MobileNav while it is open. */
+:root[data-nav='open'] .chat {
+  display: none;
+}
+
+.chat__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  /* Both are needed to drop the disclosure triangle: the standard property and
+     the WebKit pseudo-element. */
+  list-style: none;
+  background: var(--color-brand);
+  color: var(--color-brand-contrast);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border-radius: var(--radius-pill);
+  /* 0.75rem + the 1.3rem line box + 0.75rem = 44.8px, past the tap target. */
+  padding: 0.75rem 1.125rem;
+  box-shadow: var(--shadow-dropdown);
+}
+
+.chat__toggle::-webkit-details-marker {
+  display: none;
+}
+
+.chat__toggle:hover {
+  background: var(--color-brand-deep);
+}
+
+.chat__icon {
+  flex: none;
+}
+
+/* Only ever one label in the box, and `display: none` keeps the other out of
+   the accessibility tree as well as off the screen. */
+.chat__label--close {
+  display: none;
+}
+
+.chat__disclosure[open] .chat__label--open {
+  display: none;
+}
+
+.chat__disclosure[open] .chat__label--close {
+  display: inline;
+}
+
+.chat__panel {
+  position: absolute;
+  inset-inline-end: 0;
+  bottom: calc(100% + var(--space-1));
+  /* Never wider than the viewport minus its own gutters, so it cannot cause a
+     horizontal overflow on a 320px screen. */
+  width: min(19rem, calc(100vw - 2 * var(--gutter)));
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-dropdown);
+  padding: var(--space-2);
+}
+
+.chat__title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-brand-deep);
+  margin-bottom: 0.25rem;
+}
+
+.chat__body {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.chat__action {
+  display: block;
+  text-align: center;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.875rem;
+}
+
+.chat__action + .chat__action {
+  margin-top: var(--space-1);
+}
+
+.chat__action--call {
+  background: var(--color-brand);
+  color: var(--color-brand-contrast);
+}
+
+.chat__action--call:hover {
+  background: var(--color-brand-deep);
+  color: var(--color-brand-contrast);
+}
+
+.chat__action--whatsapp {
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-brand-deep);
+}
+
+.chat__action--whatsapp:hover {
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+}
+
+.chat__action--quote {
+  color: var(--color-brand);
+}
+
+.chat__action--quote:hover {
+  color: var(--color-brand-deep);
+}
+
+/* The footer is the one place the launcher has nothing to offer: it already
+   carries the phone number, the e-mail address, the opening hours and the legal
+   links. Floating over it, the pill covered `contact@glvitrclean.com` on mobile
+   and `Confidentialité` on desktop — measured, both. Same fix and same signal
+   as the sticky call bar's, and it applies at every width because the pill,
+   unlike the bar, is not mobile-only. */
+:root[data-footer='visible'] .chat {
+  display: none;
+}
+
+/* Below 48rem the sticky call bar owns the bottom of the viewport, so the
+   bubble is lifted clear of it — and drops back down on the two states that
+   hide the bar. With JS off neither attribute is ever set, so it stays in the
+   raised position, which is the one that never collides. */
 @media (max-width: 47.99rem) {
-  .site-footer {
-    padding-bottom: 5.5rem;
+  .chat {
+    bottom: calc(var(--sticky-call-h) + var(--space-1));
+  }
+
+  :root[data-scroll='up'] .chat,
+  :root[data-scroll='top'] .chat {
+    bottom: var(--space-2);
+  }
+}
+
+/* -------------------------------------------------------------------------
+   The welcome greeting (client feedback round 2, item 9)
+
+   Two rules hide it, and both are plain sibling selectors because the markup
+   is ordered disclosure -> checkbox -> greeting: opening the panel hides it,
+   and so does the dismiss. No `:has()`, no script, no stored state — it is
+   per-page, because rule 2 rules out localStorage and there is nothing here
+   worth a cookie.
+   ------------------------------------------------------------------------- */
+
+.chat__disclosure[open] ~ .chat__greeting,
+.chat__dismiss:checked ~ .chat__greeting {
+  display: none;
+}
+
+/* Visually hidden, still focusable and still operable by its label. Not
+   `display: none`, which would take it out of the tab order and stop the
+   :checked rule above from ever being reachable by keyboard. */
+.chat__dismiss {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.chat__greeting {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1);
+  max-width: min(15rem, calc(100vw - 2 * var(--gutter)));
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  /* The corner nearest the pill is squared off, so the bubble reads as
+     belonging to it rather than floating on its own. */
+  border-bottom-right-radius: var(--radius-sm);
+  box-shadow: var(--shadow-dropdown);
+  padding: 0.625rem 0.5rem 0.625rem 0.875rem;
+  /* `both` holds the from-state through the delay, so it is invisible until it
+     arrives rather than flashing on first paint and then animating. */
+  animation: chat-greeting-in 320ms ease-out 1.4s both;
+}
+
+.chat__greeting-text {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: var(--leading-heading);
+  color: var(--color-brand-deep);
+}
+
+.chat__greeting-close {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  font-size: var(--text-base);
+  line-height: 1;
+  color: var(--color-text-faint);
+}
+
+.chat__greeting-close:hover {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* The checkbox is off-screen, so its focus ring has to be drawn on the label
+   the visitor can actually see. */
+.chat__dismiss:focus-visible ~ .chat__greeting .chat__greeting-close {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+@keyframes chat-greeting-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Reduced motion: it still appears, it just does not travel or wait. */
+@media (prefers-reduced-motion: reduce) {
+  .chat__greeting {
+    animation: none;
   }
 }
 
@@ -1502,6 +1802,31 @@ ol {
   background: var(--color-brand);
   color: var(--color-on-brand);
   padding: clamp(3rem, 8vw, 4.75rem) var(--gutter) 2.125rem;
+}
+
+/*
+  No-JS fallback for the two fixed elements that sit at the bottom of the
+  viewport: the sticky call bar and the chat launcher. With JS, ScrollChrome
+  hides both while any part of the footer is on screen and none of this is ever
+  seen. Without JS neither hides, and the footer's last rows — the e-mail
+  address, then the legal links — end up underneath them.
+
+  This has to sit AFTER the `padding` shorthand above. The previous version was
+  up in the call-button section, several hundred lines earlier, where the
+  shorthand silently overrode it: same specificity, later source wins, so the
+  fallback had never once applied. Verified in the browser with scripting off,
+  before and after.
+*/
+.site-footer {
+  /* Clears the launcher: its 1.5rem offset plus the 2.8rem pill. */
+  padding-bottom: 4.5rem;
+}
+
+@media (max-width: 47.99rem) {
+  .site-footer {
+    /* Clears the call bar as well, with the launcher riding above it. */
+    padding-bottom: calc(var(--sticky-call-h) + 4.5rem);
+  }
 }
 
 .site-footer__inner {
@@ -1534,6 +1859,27 @@ ol {
   font-weight: 600;
   letter-spacing: 0;
   color: var(--color-on-brand);
+}
+
+/* Two of the column headings became links to their hub in phase 8b. They are
+   still headings: without this they would inherit the muted link colour from
+   `.site-footer a:not(.btn)` and read as list items that had drifted upwards. */
+.site-footer h3 a:not(.btn) {
+  color: var(--color-on-brand);
+}
+
+.site-footer h3 a:not(.btn):hover {
+  color: var(--color-accent);
+}
+
+/* The commune column carries twelve links against the other columns' four to
+   seven. Two tracks keep it from setting the height of the whole footer. */
+/* Selector carries `.site-footer__cols ul` because that rule sets the column
+   flex these twelve links have to override. */
+.site-footer__cols ul.site-footer__zones {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+  gap: 0.875rem 1.25rem;
 }
 
 .site-footer__lead {
@@ -1576,6 +1922,22 @@ ol {
   display: flex;
   flex-direction: column;
   gap: 0.875rem;
+}
+
+/* The hours are one <li> holding a label and a line per block, so they read as
+   a labelled group rather than as two more contact details in the same list. */
+.site-footer__hours {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.site-footer__hours strong {
+  font-weight: 600;
+}
+
+.site-footer__hours span {
+  color: var(--color-on-brand-muted);
 }
 
 .site-footer__about p {
@@ -1758,6 +2120,249 @@ ol {
   line-height: var(--leading-relaxed);
 }
 
+/* =========================================================================
+   Phase 8 — competitor teardown, code side
+
+   Four small modules, all of them additions to templates that already existed.
+   See ROADMAP phase 8 and TODO.md for where each pattern came from.
+   ========================================================================= */
+
+/* The "send a photo" line under the first ConversionBlock on a page. It is a
+   note attached to the buttons above it, not a paragraph of its own, so it sits
+   tight under them and takes the muted colour. */
+.conversion-block__note {
+  margin: var(--space-1) 0 0;
+  max-width: var(--measure);
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--color-text-muted);
+}
+
+/* How a service is priced. Label/value rows rather than a table: there are
+   two or three of them, and a <table> for three rows is markup pretending to
+   be data. */
+.pricing-note__rows {
+  margin: 0 0 var(--space-3);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: var(--space-2);
+  max-width: 44rem;
+}
+
+.pricing-note__row {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2);
+}
+
+.pricing-note__row dt {
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-faint);
+}
+
+.pricing-note__row dd {
+  margin: 0.25rem 0 0;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-brand-deep);
+}
+
+/* The longtail terms on a service page. Rendered as tags, deliberately: they
+   are near-queries the page already answers, not a list of separate offers,
+   and setting them as prose sentences would read as keyword stuffing. */
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.tag-list li {
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  padding: 0.4375rem 0.875rem;
+  font-size: var(--text-base);
+  color: var(--color-text-muted);
+}
+
+/* Visually hidden but read aloud. The only consumer today is the accessible
+   name on a review's star row, where the glyphs are aria-hidden decoration and
+   the number is the real content. Standard clip-rect technique rather than
+   display:none, which removes it from the accessibility tree too. */
+.u-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Before/after pairs. Nothing renders these yet — src/data/realisations.ts is
+   empty until ROADMAP phase 5 — but the rules ship with the component so that
+   dropping the client's archive in is the only step left. */
+.before-after__list {
+  display: grid;
+  gap: var(--space-4);
+  padding: 0;
+  list-style: none;
+}
+
+.pair {
+  margin: 0;
+}
+
+.pair__frames {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--space-2);
+}
+
+/* The label sits on the image, so the frame is the positioning context. */
+.pair__frame {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.pair__frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.pair__label {
+  position: absolute;
+  top: 0.625rem;
+  left: 0.625rem;
+  background: var(--color-brand);
+  color: var(--color-on-brand);
+  border-radius: var(--radius-pill);
+  padding: 0.25rem 0.75rem;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* The caption describes the job once, for both images. The `alt` on each <img>
+   is empty by design — see the comment in BeforeAfter.tsx. */
+.pair figcaption {
+  margin-top: var(--space-2);
+  max-width: var(--measure);
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--color-text-muted);
+}
+
+/* Customer reviews. No page renders these yet — src/data/reviews.ts is empty
+   until ROADMAP phase 7 — but the rules ship with the component so that adding
+   the data is the only step left. */
+.reviews__summary {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-brand-deep);
+}
+
+.reviews__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--space-3);
+  padding: 0;
+  list-style: none;
+}
+
+.review {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+}
+
+.review__rating {
+  margin: 0 0 var(--space-1);
+  color: var(--color-accent);
+  letter-spacing: 0.1em;
+}
+
+.review__body {
+  margin: 0;
+  max-width: var(--measure);
+}
+
+.review__body p {
+  margin: 0;
+  line-height: var(--leading-relaxed);
+}
+
+.review__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem var(--space-2);
+  align-items: baseline;
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-base);
+}
+
+.review__author {
+  font-weight: 600;
+  color: var(--color-brand-deep);
+}
+
+.review__source {
+  color: var(--color-text-faint);
+}
+
+/* The postal-code index on /zones. One block per code, each holding the one to
+   three communes that share it. */
+.postal-index {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: var(--space-2);
+  padding: 0;
+  list-style: none;
+}
+
+.postal-index__group {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2);
+}
+
+.postal-index__code {
+  margin: 0 0 0.5rem;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--color-text-faint);
+}
+
+.postal-index__group ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0;
+  list-style: none;
+}
+
+.postal-index__group a {
+  font-weight: 600;
+  color: var(--color-brand-deep);
+  transition: color var(--transition);
+}
+
+.postal-index__group a:hover {
+  color: var(--color-brand);
+}
+
 /* On /devis the form is the whole page, so it must not stretch to the full
    1320px container — a 1200px-wide text input is unusable. */
 .page .quote-form {
@@ -1807,7 +2412,10 @@ ol {
 /* Honour a reduced-motion preference: still hide, just do not slide. */
 @media (prefers-reduced-motion: reduce) {
   .site-header,
-  .call-button--sticky {
+  .call-button--sticky,
+  /* The launcher slides on the same signals; its rules live in the chat
+     section above, next to the offset they depend on. */
+  .chat {
     transition: none;
   }
 }

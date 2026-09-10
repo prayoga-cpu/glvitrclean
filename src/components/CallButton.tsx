@@ -18,10 +18,20 @@ export function CallButton({ lang, sticky = false }: { lang: Lang; sticky?: bool
   );
 }
 
+/**
+ * The one place a wa.me URL is built. `ChatLauncher` opens the same thread with
+ * a draft first line, so the number and the query-string encoding cannot drift
+ * between the two entry points.
+ */
+export function whatsappHref(draft?: string): string {
+  const base = `https://wa.me/${company.whatsapp}`;
+  return draft ? `${base}?text=${encodeURIComponent(draft)}` : base;
+}
+
 export function WhatsAppButton({ lang }: { lang: Lang }) {
   return (
     <a
-      href={`https://wa.me/${company.whatsapp}`}
+      href={whatsappHref()}
       className="whatsapp-button"
       rel="noopener noreferrer"
       target="_blank"

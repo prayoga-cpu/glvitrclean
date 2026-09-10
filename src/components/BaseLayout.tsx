@@ -1,8 +1,9 @@
-import { SITE_URL } from '@/data/company';
+import { SITE_URL, company } from '@/data/company';
 import { CallButton } from '@/components/CallButton';
 import { JsonLd } from '@/components/JsonLd';
 import { SiteHeader, SiteFooter } from '@/components/SiteChrome';
 import { ScrollChrome } from '@/components/ScrollChrome';
+import { ChatLauncher } from '@/components/ChatLauncher';
 import { localBusinessSchema } from '@/lib/schema';
 import { icons, socialCards, THEME_COLOR } from '@/data/brand';
 import { HTML_LANG, type Lang } from '@/i18n/config';
@@ -52,6 +53,12 @@ export function BaseLayout({ lang, children }: { lang: Lang; children: React.Rea
 
         <CallButton lang={lang} sticky />
 
+        {/* The chatbox. A static <details>, not a widget — see the header
+            comment in ChatLauncher.tsx. It sits after the call bar in source
+            order so the bar is reached first by keyboard and by a screen
+            reader: docs/05 puts the call first and this does not reorder it. */}
+        <ChatLauncher lang={lang} />
+
         {/* Renders nothing; toggles <html data-scroll> so CSS can hide the
             header on the way down and the call bar on the way back up. */}
         <ScrollChrome />
@@ -71,7 +78,10 @@ export function BaseLayout({ lang, children }: { lang: Lang; children: React.Rea
 export function baseMetadata(): Metadata {
   return {
     metadataBase: new URL(SITE_URL),
-    title: { default: "GLVITR'CLEAN", template: '%s' },
+    // The fallback for a route that ships no metadata of its own — in practice
+    // only the 404, which is noindex. Every real route overwrites it from
+    // seo.ts. The client's brand line, since that is what a bare tab should say.
+    title: { default: company.brandLine, template: '%s' },
 
     icons: {
       // `/favicon.ico` is also served at the root without a tag, because
@@ -90,7 +100,7 @@ export function baseMetadata(): Metadata {
     // edition's card in toMetadata(); this is what a route without a metadata
     // export of its own would otherwise ship with none at all.
     openGraph: {
-      siteName: "GLVITR'CLEAN",
+      siteName: company.brandLine,
       type: 'website',
       images: [
         {

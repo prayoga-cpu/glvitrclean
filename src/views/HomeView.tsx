@@ -4,6 +4,8 @@ import { services } from '@/data/services';
 import { communes } from '@/data/communes';
 import { company } from '@/data/company';
 import { QuoteForm } from '@/components/QuoteForm';
+import { ProcessSteps } from '@/components/ProcessSteps';
+import { Reviews } from '@/components/Reviews';
 import { WhatsAppButton } from '@/components/CallButton';
 import { strings } from '@/i18n/dictionary';
 import { href, type Lang } from '@/i18n/config';
@@ -210,22 +212,10 @@ export function HomeView({ lang }: { lang: Lang }) {
           </div>
         </div>
 
-        <ol className="card-grid">
-          {t.home.steps.map((step, i) => (
-            <li className="card" key={step.title}>
-              <div className="card__top">
-                <span className="card__glyph" aria-hidden="true">
-                  ◆
-                </span>
-                <span className="card__number" aria-hidden="true">
-                  {String(i + 1).padStart(2, '0')}
-                </span>
-              </div>
-              <h3>{step.title}</h3>
-              <p>{step.body}</p>
-            </li>
-          ))}
-        </ol>
+        {/* Extracted to a component in ROADMAP phase 8e so the service and
+            commune pages can render the same steps. They receive the local
+            search traffic; this page mostly receives brand traffic. */}
+        <ProcessSteps lang={lang} />
       </section>
 
       <section className="section section--flush-top" id="avantages">
@@ -281,6 +271,13 @@ export function HomeView({ lang }: { lang: Lang }) {
             </li>
           </ul>
         </div>
+      </section>
+
+      {/* Renders null until src/data/reviews.ts has real reviews (phase 7).
+          Placed after the reasons-to-choose-us block, which is where the proof
+          for those claims belongs. */}
+      <section className="section">
+        <Reviews lang={lang} />
       </section>
 
       <div className="marquee bleed" aria-hidden="true">

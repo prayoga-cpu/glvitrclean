@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { SITE_URL, company, TAX_CREDIT_PCT } from '@/data/company';
 import { socialCards } from '@/data/brand';
-import { getService } from '@/data/services';
-import { getCommune } from '@/data/communes';
+import { getService, services, type Service } from '@/data/services';
+import { getCommune, communes } from '@/data/communes';
 import type { RouteDescriptor } from '@/lib/routes';
 import {
   DEFAULT_LANG,
@@ -13,6 +13,27 @@ import {
 } from '@/i18n/config';
 
 const BRAND = "GLVITR'CLEAN";
+
+/**
+ * The client's brand line, from src/data/company.ts. Client instruction,
+ * 2026-09-10: the title must read "GLVITR'CLEAN | MULTI SERVICE".
+ *
+ * Head first, brand last, always. Google renders roughly the first 60
+ * characters of a title, and the brand line is 31 of them with its separator,
+ * so on the longest pages part of it will be cut in the SERP — the words that
+ * win the click are the ones that must survive. The full line still reads in
+ * the browser tab, in the social card and in the structured data.
+ *
+ * It goes on the 28 routes per language that already carried a brand suffix.
+ * The 84 commune x service titles stay brand-free for the reason recorded on
+ * that case below.
+ */
+const BRAND_LINE = company.brandLine;
+
+/** `head | GLVITR'CLEAN | MULTI SERVICE`. */
+function branded(head: string): string {
+  return `${head} | ${BRAND_LINE}`;
+}
 
 /**
  * Social preview card, one per edition. Paths and dimensions live in
@@ -45,8 +66,14 @@ export function absoluteUrl(basePath: string, lang: Lang): string {
  * The single generator for titles and descriptions, in both languages.
  * Never hand-write a metadata export on a route this can serve.
  *
- * Uniqueness is enforced by scripts/check-metadata-unique.mjs across ALL 194
- * routes at once — French and English share one namespace — and fails the build
+ * The declared area is Essonne (91) AND Seine-et-Marne (77) since 2026-09-09.
+ * Titles on the service and commune trees still say "Essonne (91)" alone: the
+ * twelve commune pages ARE Essonne, and a title carrying both departments runs
+ * past the point Google truncates. The second department is carried by the
+ * descriptions, by the /zones title, and by the H1 suffix in the dictionary.
+ *
+ * Uniqueness is enforced by scripts/check-metadata-unique.mjs across every
+ * route at once — French and English share one namespace — and fails the build
  * on any collision. That check exists because duplicate metadata left 39 of 51
  * pages unindexed on a previous project.
  */
@@ -64,14 +91,14 @@ export function seoFor(route: RouteDescriptor): SeoFields {
         ...common,
         ...(lang === 'fr'
           ? {
-              title: `Nettoyage vitres et terrasse en Essonne (91) | ${BRAND}`,
+              title: branded('Nettoyage vitres et terrasse en Essonne (91)'),
               description:
-                "Nettoyage de vitres, terrasses, volets et ménage à domicile dans le sud de l'Essonne. Devis gratuit, produits écologiques, intervention rapide.",
+                "Nettoyage de vitres, terrasses, volets et ménage à domicile en Essonne (91) et en Seine-et-Marne (77). Devis gratuit et sans engagement, produits écologiques.",
             }
           : {
-              title: `Window and terrace cleaning in the Essonne (91) | ${BRAND}`,
+              title: branded('Window and terrace cleaning in the Essonne (91)'),
               description:
-                'Window, terrace and shutter cleaning plus housekeeping across the south of the Essonne. Free quote, eco-friendly products, fast response.',
+                'Window, terrace and shutter cleaning plus housekeeping across the Essonne (91) and the Seine-et-Marne (77). Free quote, no obligation, eco-friendly products.',
             }),
       };
 
@@ -82,17 +109,19 @@ export function seoFor(route: RouteDescriptor): SeoFields {
         ...common,
         ...(lang === 'fr'
           ? {
-              title: `${s.name.fr} en Essonne (91) | ${BRAND}`,
+              title: branded(`${s.name.fr} en Essonne (91)`),
               description: compose(
                 firstSentence(s.summary.fr),
-                "Intervention dans le sud de l'Essonne, devis gratuit.",
+                fromPriceClause(s, 'fr'),
+                "Intervention en Essonne (91) et en Seine-et-Marne (77), devis gratuit.",
               ),
             }
           : {
-              title: `${s.name.en} in the Essonne (91) | ${BRAND}`,
+              title: branded(`${s.name.en} in the Essonne (91)`),
               description: compose(
                 firstSentence(s.summary.en),
-                'Covering the south of the Essonne, free quote.',
+                fromPriceClause(s, 'en'),
+                'Covering the Essonne (91) and the Seine-et-Marne (77), free quote.',
               ),
             }),
       };
@@ -105,7 +134,7 @@ export function seoFor(route: RouteDescriptor): SeoFields {
         ...common,
         ...(lang === 'fr'
           ? {
-              title: `Nettoyage à ${c.name} (91) | ${BRAND}`,
+              title: branded(`Nettoyage à ${c.name} (91)`),
               description: compose(
                 `Entreprise de nettoyage à ${c.name}.`,
                 firstSentence(c.localAngle.fr),
@@ -113,9 +142,9 @@ export function seoFor(route: RouteDescriptor): SeoFields {
               ),
             }
           : {
-              title: `Cleaning in ${c.name} (91) | ${BRAND}`,
+              title: branded(`Cleaning in ${c.name} (91)`),
               description: compose(
-                `Cleaning company covering ${c.name}.`,
+                `Cleaning services in ${c.name}.`,
                 firstSentence(c.localAngle.en),
                 'Free quote.',
               ),
@@ -140,15 +169,15 @@ export function seoFor(route: RouteDescriptor): SeoFields {
               description: compose(
                 `${s.name.fr} à ${c.name} et alentours.`,
                 firstSentence(s.summary.fr),
-                `Devis gratuit au ${company.phoneDisplay}.`,
+                [`Devis gratuit au ${company.phoneDisplay}.`, 'Devis gratuit.'],
               ),
             }
           : {
               title: `${s.name.en} in ${c.name} (91)`,
               description: compose(
-                `${s.name.en} in ${c.name} and the surrounding area.`,
+                `${s.name.en} in ${c.name} and nearby.`,
                 firstSentence(s.summary.en),
-                `Free quote on ${company.phoneDisplay}.`,
+                [`Free quote on ${company.phoneDisplay}.`, 'Free quote.'],
               ),
             }),
       };
@@ -168,6 +197,32 @@ type TitleAndDescription = Pick<SeoFields, 'title' | 'description'>;
  */
 const DESCRIPTION_MAX = 160;
 
+/**
+ * "À partir de 120 €." — or nothing at all.
+ *
+ * `pricing.fromEur` is `null` on all seven services, so today this contributes
+ * an empty clause that `compose()` filters out and no description changes. It is
+ * here because the SPIC AND SPAN Paris page puts its rate in the meta
+ * description itself ("Cleaning service from €26.90/h"), and a price in the
+ * snippet is a click-through lever that works before the visit rather than
+ * after it. See TODO.md, teardown 2, item 2.
+ *
+ * It is a middle clause on purpose. The first clause carries the service and
+ * commune names that keep all 224 descriptions unique, and the last is the call
+ * to action that earns the click; a price is worth having only if it does not
+ * cost either of them, and `compose()` drops a middle clause whole when the
+ * budget is tight.
+ *
+ * TODO(human): the figures. One per service in `src/data/services.ts`, and every
+ * description picks it up with no edit here. CLAUDE.md rule 4: a range or a
+ * floor with a stated basis, never a bare number.
+ */
+function fromPriceClause(service: Service, lang: Lang): string {
+  const from = service.pricing.fromEur;
+  if (from === null) return '';
+  return lang === 'fr' ? `À partir de ${from} €.` : `From €${from}.`;
+}
+
 /** First sentence of a summary, punctuation included. */
 function firstSentence(text: string): string {
   const m = text.match(/^[^.!?]*[.!?]/);
@@ -178,105 +233,137 @@ function firstSentence(text: string): string {
  * Joins clauses in priority order and stops before the cap.
  *
  * The first clause is always kept — it carries the service and commune names
- * that make each of the 194 descriptions unique, so dropping it would collapse
- * pages together and fail `check:metadata`. Later clauses are decoration and
- * are dropped whole rather than cut mid-word.
+ * that make each of the 224 descriptions unique, so dropping it would collapse
+ * pages together and fail `check:metadata`.
+ *
+ * The LAST clause is the call to action, and it is what earns the click, so it
+ * is not simply whatever happens to fit last: room for it is reserved before
+ * the middle clauses are allowed to compete for the budget. Until 2026-09-10 it
+ * was not, and 19 of the 168 commune x service descriptions — every solar-panel
+ * and bin page in English among them — shipped with the closing "Devis gratuit"
+ * silently dropped. Nothing failed: the description was still unique and still
+ * under the cap, just missing the only line in it that asks for the job.
+ *
+ * A clause may be given as an array of alternatives, longest first; the first
+ * one that fits is used. That is how the deep pages keep a call to action at
+ * all: the phone-number version when there is room, the bare one when there is
+ * not.
  */
-function compose(...clauses: string[]): string {
-  const parts = clauses.filter(Boolean);
-  let out = parts[0] ?? '';
+type Clause = string | readonly string[];
+
+function compose(...clauses: Clause[]): string {
+  const parts = clauses
+    .map((c) => (typeof c === 'string' ? [c] : [...c]).filter(Boolean))
+    .filter((alts) => alts.length > 0);
+
+  const [head, ...rest] = parts;
+  if (!head) return '';
+
+  let out = head[0] ?? '';
   if (out.length > DESCRIPTION_MAX) {
     out = out.slice(0, out.lastIndexOf(' ', DESCRIPTION_MAX - 1)).replace(/[,;:]$/, '') + '…';
   }
-  for (const clause of parts.slice(1)) {
-    const next = `${out} ${clause}`;
-    if (next.length > DESCRIPTION_MAX) break;
-    out = next;
-  }
+
+  // The shortest form of the closing clause, held back out of the budget while
+  // the middle clauses are fitted.
+  const closing = rest[rest.length - 1];
+  const reserve = closing ? 1 + Math.min(...closing.map((alt) => alt.length)) : 0;
+
+  rest.forEach((alts, i) => {
+    const budget = DESCRIPTION_MAX - (i === rest.length - 1 ? 0 : reserve);
+    const fits = alts.find((alt) => out.length + 1 + alt.length <= budget);
+    if (fits) out = `${out} ${fits}`;
+  });
+
   return out;
 }
 
 function fixedSeo(basePath: string, lang: Lang): TitleAndDescription {
   const fr: Record<string, TitleAndDescription> = {
     '/services': {
-      title: `Nos prestations de nettoyage en Essonne (91) | ${BRAND}`,
+      title: branded('Prestations de nettoyage en Essonne (91)'),
       description:
-        "Vitres, terrasses, ménage, volets, façades et poubelles, chez les particuliers comme chez les professionnels du sud de l'Essonne. Devis gratuit.",
+        // Counted, never typed: an eighth service must not leave this line
+        // claiming seven. Same reason the tax rate is read from company.ts.
+        `${services.length} prestations : nettoyage de vitres, terrasses, ménage à domicile, volets, façades, panneaux solaires et poubelles, en Essonne (91) et en Seine-et-Marne (77).`,
     },
     '/zones': {
-      title: `Zones d'intervention en Essonne (91) | ${BRAND}`,
+      title: branded('Nettoyage en Essonne (91) et Seine-et-Marne (77)'),
       description:
-        "Les communes du sud de l'Essonne où nous intervenons, sur le corridor N20 et RER C. Devis gratuit et sans engagement.",
+        // The count is derived for the same reason as /services above. Note it
+        // says "d'Essonne": the day a Seine-et-Marne town joins communes.ts,
+        // this sentence needs rewording, not just recounting.
+        `Les ${communes.length} communes d'Essonne où nous intervenons, de Montlhéry à Étampes le long de la N20 et du RER C, et notre secteur en Seine-et-Marne (77). Devis gratuit.`,
     },
     '/credit-impot': {
       // The figure is read from TAX_CREDIT_RATE, never typed. CLAUDE.md rule 1.
-      title: `Crédit d'impôt ${TAX_CREDIT_PCT} % sur le nettoyage à domicile | ${BRAND}`,
+      title: branded(`Crédit d'impôt ${TAX_CREDIT_PCT} % : nettoyage à domicile`),
       description:
-        "Comment fonctionne le crédit d'impôt Services à la Personne, quelles prestations de nettoyage y ouvrent droit, et lesquelles en sont exclues.",
+        "Vitres, terrasse, ménage, volets : le nettoyage qui ouvre droit au crédit d'impôt Services à la Personne, ce qui en est exclu, et le plafond annuel.",
     },
     '/professionnels': {
-      title: `Nettoyage pour professionnels en Essonne (91) | ${BRAND}`,
+      title: branded('Nettoyage pour professionnels en Essonne'),
       description:
-        "Vitrines, bureaux, façades et conteneurs. Interventions ponctuelles ou régulières pour commerces et entreprises du sud de l'Essonne.",
+        "Nettoyage de vitrines, bureaux, parties communes et façades en Essonne (91) et en Seine-et-Marne (77). Ponctuel ou régulier, sans sous-traitance, devis gratuit.",
     },
     '/devis': {
-      title: `Devis gratuit de nettoyage en Essonne | ${BRAND}`,
-      description: `Demandez un devis gratuit pour le nettoyage de vos vitres, terrasse ou logement. Réponse rapide, ou appelez le ${company.phoneDisplay}.`,
+      title: branded('Devis gratuit de nettoyage en Essonne'),
+      description: `Demandez un devis gratuit et sans engagement pour le nettoyage de vos vitres, terrasse ou logement. Ou appelez directement l'équipe au ${company.phoneDisplay}.`,
     },
     '/realisations': {
-      title: `Nos réalisations de nettoyage en Essonne | ${BRAND}`,
+      title: branded('Réalisations de nettoyage en Essonne'),
       description:
         // No before/after photos exist yet — STATUS item 6. Do not describe
         // imagery the page does not carry. CLAUDE.md rule 4.
-        "Ce que comprend chaque prestation de nettoyage dans le sud de l'Essonne : vitres, terrasses, façades, volets et ménage.",
+        "Ce que comprend chaque prestation : vitres, terrasses, façades, panneaux solaires, volets et ménage. Chaque chantier commence par un devis écrit et gratuit.",
     },
     '/mentions-legales': {
-      title: `Mentions légales | ${BRAND}`,
+      title: branded('Mentions légales'),
       description: `Mentions légales, éditeur, hébergeur et informations réglementaires du site ${BRAND}.`,
     },
     '/confidentialite': {
-      title: `Politique de confidentialité | ${BRAND}`,
+      title: branded('Politique de confidentialité'),
       description: `Traitement des données personnelles collectées via le formulaire de devis de ${BRAND}.`,
     },
   };
 
   const en: Record<string, TitleAndDescription> = {
     '/services': {
-      title: `Our cleaning services in the Essonne (91) | ${BRAND}`,
+      title: branded('Cleaning services in the Essonne (91)'),
       description:
-        'Windows, terraces, housekeeping, shutters, facades and bins, for private homes and businesses across the south of the Essonne. Free quote.',
+        'Windows, terraces, housekeeping, shutters, facades, solar panels and bins, across the Essonne (91) and the Seine-et-Marne (77). Free quote.',
     },
     '/zones': {
-      title: `Where we work in the Essonne (91) | ${BRAND}`,
+      title: branded('Cleaning in the Essonne and the Seine-et-Marne'),
       description:
-        'The towns we cover in the south of the Essonne, along the N20 and RER C corridor. Free quote, no obligation.',
+        `The ${communes.length} towns we cover in the Essonne, from Montlhéry to Étampes along the N20 and RER C corridor, plus our Seine-et-Marne (77) area. Free quote, no obligation.`,
     },
     '/credit-impot': {
-      title: `${TAX_CREDIT_PCT}% tax credit on home cleaning in France | ${BRAND}`,
+      title: branded(`${TAX_CREDIT_PCT}% tax credit on home cleaning in France`),
       description:
-        'How the French Services à la Personne tax credit works, which cleaning services qualify for it, and which are excluded.',
+        'Windows, terraces, housekeeping, shutters: what qualifies for the French Services à la Personne tax credit, what is excluded, and the annual cap.',
     },
     '/professionnels': {
-      title: `Commercial cleaning in the Essonne (91) | ${BRAND}`,
+      title: branded('Commercial cleaning in the Essonne (91)'),
       description:
-        'Shopfronts, offices, facades and waste containers. One-off or recurring work for shops and businesses in the south of the Essonne.',
+        'Cleaning for shopfronts, offices, communal areas and facades across the Essonne and the Seine-et-Marne. One-off or regular, no subcontractors, free quote.',
     },
     '/devis': {
-      title: `Free cleaning quote in the Essonne | ${BRAND}`,
-      description: `Ask for a free quote to clean your windows, terrace or home. Fast reply, or call ${company.phoneDisplay}.`,
+      title: branded('Free cleaning quote in the Essonne'),
+      description: `Ask for a free, no-obligation quote to clean your windows, terrace or home. Or call ${company.phoneDisplay} and speak to the team directly.`,
     },
     '/realisations': {
-      title: `Our cleaning work in the Essonne | ${BRAND}`,
+      title: branded('Our cleaning work in the Essonne'),
       description:
         // See the French note above: no photos exist yet. CLAUDE.md rule 4.
-        'What each cleaning job covers across the south of the Essonne: windows, terraces, facades, shutters and housekeeping.',
+        'What each cleaning service actually covers: windows, terraces, facades, solar panels, shutters and housekeeping. Every job starts with a free written quote.',
     },
     '/mentions-legales': {
-      title: `Legal notice | ${BRAND}`,
+      title: branded('Legal notice'),
       description: `Legal notice, publisher, hosting provider and regulatory information for the ${BRAND} website.`,
     },
     '/confidentialite': {
-      title: `Privacy policy | ${BRAND}`,
+      title: branded('Privacy policy'),
       description: `How personal data collected through the ${BRAND} quote form is handled.`,
     },
   };
@@ -306,7 +393,9 @@ export function toMetadata(fields: SeoFields): Metadata {
       title: fields.title,
       description: fields.description,
       url: fields.canonical,
-      siteName: BRAND,
+      // The client's brand line, not the bare name: og:site_name is one of the
+      // signals Google reads for the site name it prints above a result.
+      siteName: BRAND_LINE,
       locale: OG_LOCALE[fields.lang],
       // Tells Facebook and friends the other edition exists.
       alternateLocale: OG_LOCALE[otherLang(fields.lang)],

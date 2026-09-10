@@ -18,7 +18,9 @@ secondary. If a change does not serve ranking or conversion, it is out of scope.
 Languages: **French and English.** French is primary and owns the bare paths
 (`/services/vitres`); English mirrors it under `/en` (`/en/services/vitres`).
 Slugs are never translated — a slug is a shared key, not copy. Every page exists
-in both editions: 97 routes × 2 = 194.
+in both editions: 112 routes × 2 = 224. Both numbers move whenever a service
+or a commune is added — they are derived in `src/lib/routes.ts`, never typed
+into a page.
 
 This rule changed on 2026-08-31, at the human's explicit instruction, replacing
 "French only. No i18n, no locale routing, no English pages." What that old rule
@@ -28,7 +30,7 @@ was protecting still holds, and is now enforced mechanically instead:
   French, so EN sitemap priorities are stepped down to 0.8× the FR ones and the
   mirror never competes with the page it mirrors.
 - Every page emits `hreflang` for `fr`, `en` and `x-default`, `x-default`
-  pointing at French. Without that pair the 194 routes read as duplicates.
+  pointing at French. Without that pair the 224 routes read as duplicates.
 - `npm run check:seo` pools French and English into ONE uniqueness namespace, so
   an untranslated template that leaves an English title identical to its French
   twin fails the build.
@@ -54,6 +56,7 @@ business sells, and it does not apply to business customers at all.
 | `menage` | `true` |
 | `volets-portes` | `true` |
 | `facade` | `false` |
+| `panneaux-solaires` | `false` |
 | `poubelles` | `false` |
 
 Hard rules:
@@ -65,15 +68,16 @@ Hard rules:
   to say it does not apply. The one permitted exception is the global
   navigation link to `/credit-impot` (`Crédit d'impôt` / `Tax credit`), which
   sits outside `<main>`. If a B2B-specific nav is ever built, drop it.
-- `npm run check:compliance` greps the exported HTML inside `<main>` on all 54
-  forbidden routes — the 27 French ones and their 27 `/en` twins — and fails on
+- `npm run check:compliance` greps the exported HTML inside `<main>` on all 80
+  forbidden routes — the 40 French ones and their 40 `/en` twins — and fails on
   any claim, matching French *and* English assertion patterns. Run it after
   every build. Do not add an allowlist entry — fix the page.
 - Eligibility is a property of the service, never of the language. A translation
   may not soften or strengthen a claim: the English `eligibilityNote` on
-  `facade` and `poubelles` must stay a denial, and the English FAQ answer on
-  `facade-credit` must not drift into a phrase that reads as an offer. See the
-  header comments in `src/data/services.ts` and `src/data/faq.ts`.
+  `facade`, `panneaux-solaires` and `poubelles` must stay a denial, and the
+  English FAQ answers on `facade-credit` and `panneaux-credit` must not drift
+  into a phrase that reads as an offer. See the header comments in
+  `src/data/services.ts` and `src/data/faq.ts`.
 - The 50% figure must never appear as static text in a page component. It comes
   from `TAX_CREDIT_RATE` in `src/data/company.ts` and always renders through
   `<TaxCreditBadge />`, so it can be switched off globally in one edit.
@@ -121,7 +125,7 @@ exposure, not a design preference. See `docs/04-compliance-sap.md`.
   which cannot know which page renders inside it, so `usePathname()` is the only
   way to point the toggle at the current page's counterpart rather than dumping
   every visitor on the other language's home page. The export prerenders each
-  route, so the correct href is baked into all 194 HTML files — verified in the
+  route, so the correct href is baked into all 224 HTML files — verified in the
   build output, not assumed.
 - No client-side data fetching for content. All content is imported from
   `src/data/` at build time.
@@ -165,6 +169,14 @@ exposure, not a design preference. See `docs/04-compliance-sap.md`.
 - Never invent a review, a customer name, a certification, a year of experience,
   or a number of jobs completed. If a proof point is not in `src/data/`, it does
   not go on the page.
+- **The site speaks as a company — "une équipe" — and never names an
+  individual.** Client instruction, feedback §3 and §7 (2026-09-09). This is
+  positioning, and it is the one place where the copy deliberately does not
+  mirror `docs/00-business-model.md`, which still records the operating
+  reality. It does NOT license a headcount, a year of experience, a
+  certification, an insurance claim or "nos experts": everything in the bullet
+  above still binds. Do not "correct" the team wording back to a named operator,
+  and do not extend it into a claim about size.
 - Never invent a photo. Placeholder images live in `public/assets/placeholder/`
   and are visibly marked as such.
 - Commune pages must differ from each other by more than the town name. Each

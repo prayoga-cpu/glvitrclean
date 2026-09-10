@@ -24,6 +24,7 @@ cleaning of exterior walls, which belongs to qualified building trades.
 | Ménage | **Yes** | Core activity of the scheme |
 | Volets et portes | **Yes** | Ordinary upkeep, no specialised equipment |
 | Nettoyage de façade | **No** | Exterior wall cleaning is excluded |
+| Nettoyage de panneaux solaires | **No** | Cleaning an energy-generating installation is not one of the listed household activities, however the array is mounted — roof, carport or ground |
 | Nettoyage de poubelles | **No** | Outside the household activity list |
 | Any B2B customer | **No** | Scheme is for private individuals only |
 
@@ -87,10 +88,11 @@ Do not add a fourth state. Do not add an override.
 ## Rules for the writer
 
 - Never write "vous bénéficiez de 50%" while the badge is in pending mode.
-- Never put the credit on `/professionnels`, `/services/facade`, or
-  `/services/poubelles` — not even as a negative mention.
-- On `/services/facade`, state plainly that the credit does not apply. Explain
-  why in one sentence. Do not hide it.
+- Never put the credit on `/professionnels`, `/services/facade`,
+  `/services/panneaux-solaires` or `/services/poubelles` — not even as a
+  negative mention.
+- On `/services/facade` and `/services/panneaux-solaires`, state plainly that
+  the credit does not apply. Explain why in one sentence. Do not hide it.
 - Always distinguish the deferred credit from the avance immédiate. Conflating
   them is the most common error on competitor sites.
 - Never state the cap, the form number, or a case number without a source. If
