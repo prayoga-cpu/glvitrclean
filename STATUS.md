@@ -601,6 +601,42 @@ the way `panneaux-solaires` did — not a `/tasks` tree.
 **`TODO.md` end state: 17 done, 14 open, and all fourteen are `[client]`.** No
 `[code]`, no `[blocked]`. Every open box names the fact it waits on.
 
+#### The footer wordmark was distorted, and phase 8b did it
+
+Reported from a screenshot. `.brand__wordmark` was `width: auto; height: 4.5rem`,
+which looks like it preserves the aspect ratio and does not: the global
+`img { max-width: 100% }` rule still applies, because the class overrides `width`
+and `height` but not `max-width`. So in any container narrower than the
+wordmark's natural width at that height, the WIDTH was clamped while the height
+stayed pinned — and the type squashed.
+
+It had been fine, by 2.6 pixels. The wordmark is 603×149, which at 4.5rem is
+291.4px wide, and the four-column footer gave each column 294px. **Adding the
+commune column in phase 8b made it five columns and 225.6px** — a 22.6%
+horizontal distortion, on every page of the site.
+
+Fixed by sizing from the width instead, so the height follows: `width: 18.2rem`
+(the same rendered size where there is room), `max-width: 100%`, `height: auto`.
+Aspect ratio is now exact at four, five or six columns — verified against the
+built CSS, which carries no fixed height on either brand rule any more.
+
+`.brand__mark` in the header had the identical latent bug. It is square, so
+`width: 4rem; height: auto` renders pixel-identically to what it replaced and
+nothing moves; it simply cannot distort now. `flex: none` was protecting it, and
+that is one layout change away from not being true.
+
+A sweep of every fixed-height image rule found no others: the hero gallery, the
+split media, the inset and `.contact-media` all pair a fixed height with
+`object-fit: cover`, which crops rather than distorts, and that is deliberate for
+photography.
+
+**Consequence worth knowing.** The logo is no longer distorted, but in the
+five-column footer it now renders about 23% smaller than drawn, because the
+column really is that narrow. Giving the brand column `grid-column: span 2` would
+restore the drawn size — but it only helps above a 1440px viewport, and below
+that `auto-fit` drops to fewer tracks and the span produces unpredictable rows.
+Not worth the fragility without a design decision behind it.
+
 #### A fifth build check, and the bug it had on the first try
 
 `scripts/check-proof.mjs`, wired into `verify:full` as `check:proof`. Reviews and

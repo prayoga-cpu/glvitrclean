@@ -472,14 +472,21 @@ ol {
 */
 .brand__mark {
   display: block;
-  width: auto;
-  height: 4rem;
+  /* Square (192x192), so width and height are interchangeable here and this
+     renders identically to the `height: 4rem; width: auto` it replaces. Written
+     this way for the reason spelled out on .brand__wordmark below: with a fixed
+     height, the global `img { max-width: 100% }` distorts instead of scaling.
+     `flex: none` keeps the header from squeezing it today, but that is one
+     layout change away from not being true. */
+  width: 4rem;
+  max-width: 100%;
+  height: auto;
   flex: none;
 }
 
 @media (max-width: 30rem) {
   .brand__mark {
-    height: 3.5rem;
+    width: 3.5rem;
   }
 }
 
@@ -493,14 +500,33 @@ ol {
 */
 .brand__wordmark {
   display: block;
-  width: auto;
-  height: 4.5rem;
+  /*
+    Sized by WIDTH so the height follows it, and never the other way round.
+
+    603x149 at the intended 4.5rem height is 18.2rem wide, so this renders at
+    exactly the drawn size wherever the column has room for it; where it does
+    not, the width scales down and the height comes with it.
+
+    It used to be `width: auto; height: 4.5rem`, which looks equivalent and is
+    not. The global `img { max-width: 100% }` a few hundred lines up still
+    applies — `.brand__wordmark` overrides `width` and `height`, not
+    `max-width` — so a column narrower than 18.2rem clamped the WIDTH while the
+    height stayed pinned, and squashed the type.
+
+    The footer grid crossed that line the moment a fifth column was added in
+    ROADMAP phase 8b: at four columns the wordmark cleared by 2.6px, at five it
+    was 22.6% out. Do not put a fixed `height` back on this rule.
+  */
+  width: 18.2rem;
+  max-width: 100%;
+  height: auto;
   margin-bottom: var(--space-2);
 }
 
 @media (max-width: 30rem) {
+  /* 15.2rem is the same 3.75rem height expressed as a width. */
   .brand__wordmark {
-    height: 3.75rem;
+    width: 15.2rem;
   }
 }
 
