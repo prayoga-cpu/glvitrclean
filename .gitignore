@@ -3,6 +3,7 @@ node_modules/
 out/
 .env
 .env.local
+.vercel
 *.log
 .DS_Store
 next-env.d.ts
@@ -10,3 +11,4 @@ tsconfig.tsbuildinfo
 
 # Ephemeral git worktrees created by Claude Code workflows.
 .claude/worktrees/
+.env*

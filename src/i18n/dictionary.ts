@@ -701,7 +701,7 @@ const fr: UiStrings = {
         "Votre consentement, donné en cochant la case du formulaire, et l'exécution de mesures précontractuelles prises à votre demande (article 6.1.a et 6.1.b du RGPD). Vous pouvez retirer votre consentement à tout moment.",
       recipientsH2: 'Qui y a accès',
       recipientsBody:
-        "Le site est un site statique, sans base de données : il ne conserve rien. Le formulaire transmet votre demande à un prestataire d'envoi de formulaires, qui l'achemine vers notre boîte e-mail. Ce prestataire n'est pas encore arrêté ; son identité sera indiquée ici avant la mise en ligne du formulaire.",
+        "Le site est un site statique, sans base de données : il ne conserve rien. Le formulaire transmet votre demande à Resend, notre prestataire d'envoi d'e-mails, qui l'achemine vers notre boîte de réception et, si vous avez indiqué une adresse, vous envoie un e-mail de confirmation.",
       retentionH2: 'Combien de temps',
       retentionBody:
         "Une demande restée sans suite est supprimée de notre boîte e-mail au terme d'un délai que nous précisons ici avant la mise en ligne du formulaire. Une demande suivie d'une prestation est conservée le temps requis par nos obligations comptables.",
@@ -1065,7 +1065,7 @@ const en: UiStrings = {
         'Your consent, given by ticking the box on the form, and steps taken at your request before entering into a contract (GDPR Art. 6.1.a and 6.1.b). You may withdraw your consent at any time.',
       recipientsH2: 'Who can see it',
       recipientsBody:
-        'This is a static site with no database: it stores nothing. The form passes your request to a form-delivery provider, which forwards it to our mailbox. That provider has not been chosen yet; it will be named here before the form goes live.',
+        "This is a static site with no database: it stores nothing. The form passes your request to Resend, our email-delivery provider, which forwards it to our mailbox and, if you gave an address, sends you a confirmation email.",
       retentionH2: 'How long we keep it',
       retentionBody:
         'A request that does not lead to a job is deleted from our mailbox after a period we will state here before the form goes live. A request that does lead to a job is kept for as long as our accounting obligations require.',

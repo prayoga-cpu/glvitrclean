@@ -3,7 +3,8 @@
 Updated at the end of every work session. Newest entry on top.
 
 **Current phase:** phases 0–4 DONE, phase 6 done on the code side, phase 8
-(competitor teardown) DONE on the code side 2026-09-10.
+(competitor teardown) DONE on the code side 2026-09-10. Quote form wired to
+Resend 2026-09-14 — see "Done" below.
 **Everything still open is waiting on a human** — see "What we need from you".
 **Build status:** `npm run verify:full` passes — five checks now: typecheck, lint,
 `check:seo`, `check:compliance`, `check:metadata`, `check:proof`. 224 routes.
@@ -28,8 +29,6 @@ visible gap on the page.
 | # | What we need | Why it matters | Ask |
 |---|---|---|---|
 | 4 | **Registrar / DNS access for `glvitrclean.com`** | The whole cutover. `vercel.json` holds the 301 map but nothing can point at it. If the login is lost, recovery takes weeks — start now even though it is the last phase. | Who is the domain registered with, and do you still have the login? |
-| 14 | **Quote form endpoint** (Formspree, Resend or similar) | `/devis` currently cannot deliver a lead. The form posts to `NEXT_PUBLIC_FORM_ENDPOINT`, which is empty, so it errors. Every other conversion path (phone, WhatsApp) works. | Darwin's call — pick a provider and set the env var. |
-| 19 | **Which form provider you chose** | The privacy policy has to name who receives the data (RGPD Art. 13). Until then `/confidentialite` says the provider "will be named here before the form goes live", which is true but cannot ship indefinitely. | Falls out of item 14. |
 | 18 | **How long we keep a quote request that goes nowhere** | Same page, same article. 12 months is a defensible default if you have no preference. | "Une demande restée sans suite, on la garde combien de temps ?" |
 | 11 | **RC Pro insurer and policy number** | `/mentions-legales` reads "À compléter". Required by LCEN art. 6-III. | "Quel assureur, et quel numéro de contrat ?" |
 | 12 | **Hosting provider for the hébergeur block** | Same page, same law. It is Vercel unless you move. | Darwin's call. |
@@ -65,6 +64,8 @@ visible gap on the page.
 | 5 | Logo file | 2026-08-31 — taken from the client's live site |
 | 9 | Design tokens | 2026-08-31 — landed from the supplied prototype |
 | 16 | New logo file | 2026-08-31 |
+| 14 | Quote form endpoint | 2026-09-14 — Resend, via a Vercel Edge Function at `api/submit.ts`. See "Done" below. |
+| 19 | Which form provider you chose | 2026-09-14 — Resend, named in `/confidentialite` (`recipientsBody`, both languages) |
 
 The client-facing questions are written out in French, one per field, in
 `docs/10-discovery-questionnaire.md`.
@@ -106,6 +107,69 @@ The questions to send the client are written out, in French, in
 ---
 
 ## Done
+
+### The quote form now delivers a lead, by Resend (2026-09-14)
+
+Item 14 was "Darwin's call — pick a provider." The call is Resend, using the
+same account already running for serrurier-paris.
+
+**The static-export rule and a mailer both had to survive.** CLAUDE.md rule 2
+is explicit — `output: 'export'`, no route handlers, no server actions — and
+Resend needs a secret API key held on a server, which a static export has
+nowhere to put. serrurier-paris solved this by dropping static export
+entirely for a Next.js Route Handler. That is a bigger change than this rule
+allows without asking, so the human was asked, and picked the other real
+option: `api/submit.ts` is a plain Vercel Edge Function under the top-level
+`api/` directory — Vercel's own convention, independent of Next.js routing.
+It is not a route handler, a server action, or middleware, and it does not
+touch `next.config.mjs`. `npm run build` still exports all 224 routes exactly
+as before; `api/submit.ts` is a second, independent Vercel deployable next to
+it.
+
+**What it does.** `QuoteForm` POSTs JSON to `/api/submit` (same-origin, so no
+CORS). The handler checks the request's origin, rate-limits by IP and by
+recipient address, drops anything that fills the new `company_website`
+honeypot field, then calls Resend twice: a team notification to
+**thibautglossoa@gmail.com** and **prayogadevelopment@gmail.com** with every
+field, and — gated on the team send succeeding, so a promise is never made
+that nobody received — a confirmation to the customer's own address if they
+gave one, echoing back only the structured fields (service, commune, access)
+and never the free-prose ones, since this is a public endpoint and a
+confirmation email is otherwise a place to deliver attacker-chosen text to an
+attacker-chosen inbox. `MAIL_FROM` defaults to
+`GLVITR'CLEAN <devis@prionation.io>`: `glvitrclean.com` is not yet a domain
+verified in the shared Resend account (checked directly against the Resend
+API — only `prionation.io` is), and verifying it needs DNS records at the
+registrar, which is item 4, human-only work. Once that lands, setting
+`MAIL_FROM` is the only change needed.
+
+**Tested live, not just typechecked.** `vercel dev` locally, a real POST to
+`/api/submit`, and both emails confirmed `delivered` by querying the Resend
+API directly — one team notification, one customer confirmation. Also
+verified: a forged `Origin` gets 403, a filled honeypot returns success
+without sending anything, and a non-POST method gets 405.
+
+**Two related items closed with this one.** Item 19 — the privacy policy had
+to name who receives the data (RGPD Art. 13) once a provider was picked — is
+also done: `/confidentialite`'s `recipientsBody` now names Resend, in both
+languages, replacing the placeholder that said the provider "will be named
+here before the form goes live." Item 18 (how long an unanswered request is
+kept) is untouched — that is a retention-policy decision, not a technical one,
+and is still open.
+
+`RESEND_API_KEY` and `MAIL_TEAM_RECIPIENTS` are set in the `glvitrclean`
+Vercel project (production, preview, development) via the Vercel CLI, and
+pulled into a git-ignored `.env.local` for local `vercel dev` runs. Nothing
+about this needed a new npm dependency — `api/_lib/email.ts` calls the Resend
+REST API with `fetch`, the same choice serrurier-paris made.
+
+**Found in passing, not touched:** the `glvitrclean` Vercel project also
+carries a `NEXT_PUBLIC_SAP_NUMBER` environment variable that nothing in the
+codebase reads. CLAUDE.md rule 1 is explicit that the SAP number must never
+be an env var — it is a reviewed edit to `company.sapDeclaration.number`, so
+that `check:compliance` always sees it. This variable looks like a stale
+leftover rather than something live, but removing it was out of scope here;
+worth deleting from the Vercel project when convenient.
 
 ### The title carries the brand line, and 97 strings of copy were rewritten (2026-09-10)
 
