@@ -1,17 +1,20 @@
 /**
- * Dial codes offered on the quote form's phone field. France first and
- * default — this is a two-département local business (Essonne, Seine-et-Marne),
- * so the list stays short by design rather than attempting global coverage:
- * Belgium, Switzerland and Luxembourg are France's French-speaking neighbours
- * (plausible for a second-home owner or a B2B contact in this exact region),
- * and the UK is the one non-francophone entry because the site itself ships a
- * maintained English edition. Anyone else picks "Autre pays" / "Other country"
- * in QuoteForm.tsx and types their own international number.
+ * ITU-T E.164 calling codes, one row per ISO 3166-1 territory — 229
+ * entries. Ported from the sibling project serrurier-paris
+ * (lib/countryCodes.ts), which has already done the work of a hand-checked,
+ * complete world list; re-typing it here from scratch would just be a new
+ * chance to introduce a wrong dial code. Real ISO 3166-1 codes and real ITU-T
+ * dial codes only — this is reference data, not a claim about the business,
+ * so CLAUDE.md rule 4 does not apply to it the way it does to copy.
  *
- * Real ISO 3166-1 alpha-2 codes and real ITU-T dial codes only — this is
- * reference data, not a claim about the business, so CLAUDE.md rule 4 does not
- * apply to it the way it does to copy.
+ * Used to build the quote form's phone country-code select
+ * (src/components/QuoteForm.tsx): the number input stays a national-format
+ * value, this supplies the prefix. France is pinned first and is the
+ * default — see DEFAULT_PHONE_COUNTRY — with every other territory reachable
+ * below it, sorted by the visitor's own language.
  */
+
+import type { Lang } from '@/i18n/config';
 
 export interface PhoneCountry {
   iso: string;
@@ -20,10 +23,264 @@ export interface PhoneCountry {
   nameEn: string;
 }
 
+export const DEFAULT_PHONE_COUNTRY_ISO = 'FR';
+
 export const PHONE_COUNTRIES: PhoneCountry[] = [
-  { iso: 'FR', dial: '+33', nameFr: 'France', nameEn: 'France' },
+  { iso: 'AF', dial: '+93', nameFr: 'Afghanistan', nameEn: 'Afghanistan' },
+  { iso: 'ZA', dial: '+27', nameFr: 'Afrique du Sud', nameEn: 'South Africa' },
+  { iso: 'AL', dial: '+355', nameFr: 'Albanie', nameEn: 'Albania' },
+  { iso: 'DZ', dial: '+213', nameFr: 'Algérie', nameEn: 'Algeria' },
+  { iso: 'DE', dial: '+49', nameFr: 'Allemagne', nameEn: 'Germany' },
+  { iso: 'AD', dial: '+376', nameFr: 'Andorre', nameEn: 'Andorra' },
+  { iso: 'AO', dial: '+244', nameFr: 'Angola', nameEn: 'Angola' },
+  { iso: 'AI', dial: '+1264', nameFr: 'Anguilla', nameEn: 'Anguilla' },
+  { iso: 'AG', dial: '+1268', nameFr: 'Antigua-et-Barbuda', nameEn: 'Antigua and Barbuda' },
+  { iso: 'SA', dial: '+966', nameFr: 'Arabie saoudite', nameEn: 'Saudi Arabia' },
+  { iso: 'AR', dial: '+54', nameFr: 'Argentine', nameEn: 'Argentina' },
+  { iso: 'AM', dial: '+374', nameFr: 'Arménie', nameEn: 'Armenia' },
+  { iso: 'AW', dial: '+297', nameFr: 'Aruba', nameEn: 'Aruba' },
+  { iso: 'AU', dial: '+61', nameFr: 'Australie', nameEn: 'Australia' },
+  { iso: 'AT', dial: '+43', nameFr: 'Autriche', nameEn: 'Austria' },
+  { iso: 'AZ', dial: '+994', nameFr: 'Azerbaïdjan', nameEn: 'Azerbaijan' },
+  { iso: 'BS', dial: '+1242', nameFr: 'Bahamas', nameEn: 'Bahamas' },
+  { iso: 'BH', dial: '+973', nameFr: 'Bahreïn', nameEn: 'Bahrain' },
+  { iso: 'BD', dial: '+880', nameFr: 'Bangladesh', nameEn: 'Bangladesh' },
+  { iso: 'BB', dial: '+1246', nameFr: 'Barbade', nameEn: 'Barbados' },
   { iso: 'BE', dial: '+32', nameFr: 'Belgique', nameEn: 'Belgium' },
-  { iso: 'CH', dial: '+41', nameFr: 'Suisse', nameEn: 'Switzerland' },
+  { iso: 'BZ', dial: '+501', nameFr: 'Belize', nameEn: 'Belize' },
+  { iso: 'BJ', dial: '+229', nameFr: 'Bénin', nameEn: 'Benin' },
+  { iso: 'BM', dial: '+1441', nameFr: 'Bermudes', nameEn: 'Bermuda' },
+  { iso: 'BT', dial: '+975', nameFr: 'Bhoutan', nameEn: 'Bhutan' },
+  { iso: 'BY', dial: '+375', nameFr: 'Biélorussie', nameEn: 'Belarus' },
+  { iso: 'MM', dial: '+95', nameFr: 'Birmanie', nameEn: 'Myanmar' },
+  { iso: 'BO', dial: '+591', nameFr: 'Bolivie', nameEn: 'Bolivia' },
+  { iso: 'BA', dial: '+387', nameFr: 'Bosnie-Herzégovine', nameEn: 'Bosnia and Herzegovina' },
+  { iso: 'BW', dial: '+267', nameFr: 'Botswana', nameEn: 'Botswana' },
+  { iso: 'BR', dial: '+55', nameFr: 'Brésil', nameEn: 'Brazil' },
+  { iso: 'BN', dial: '+673', nameFr: 'Brunei', nameEn: 'Brunei' },
+  { iso: 'BG', dial: '+359', nameFr: 'Bulgarie', nameEn: 'Bulgaria' },
+  { iso: 'BF', dial: '+226', nameFr: 'Burkina Faso', nameEn: 'Burkina Faso' },
+  { iso: 'BI', dial: '+257', nameFr: 'Burundi', nameEn: 'Burundi' },
+  { iso: 'KH', dial: '+855', nameFr: 'Cambodge', nameEn: 'Cambodia' },
+  { iso: 'CM', dial: '+237', nameFr: 'Cameroun', nameEn: 'Cameroon' },
+  { iso: 'CA', dial: '+1', nameFr: 'Canada', nameEn: 'Canada' },
+  { iso: 'CV', dial: '+238', nameFr: 'Cap-Vert', nameEn: 'Cabo Verde' },
+  { iso: 'CF', dial: '+236', nameFr: 'République centrafricaine', nameEn: 'Central African Republic' },
+  { iso: 'CL', dial: '+56', nameFr: 'Chili', nameEn: 'Chile' },
+  { iso: 'CN', dial: '+86', nameFr: 'Chine', nameEn: 'China' },
+  { iso: 'CY', dial: '+357', nameFr: 'Chypre', nameEn: 'Cyprus' },
+  { iso: 'CO', dial: '+57', nameFr: 'Colombie', nameEn: 'Colombia' },
+  { iso: 'KM', dial: '+269', nameFr: 'Comores', nameEn: 'Comoros' },
+  { iso: 'CG', dial: '+242', nameFr: 'Congo', nameEn: 'Congo' },
+  { iso: 'CD', dial: '+243', nameFr: 'République démocratique du Congo', nameEn: 'DR Congo' },
+  { iso: 'KP', dial: '+850', nameFr: 'Corée du Nord', nameEn: 'North Korea' },
+  { iso: 'KR', dial: '+82', nameFr: 'Corée du Sud', nameEn: 'South Korea' },
+  { iso: 'CR', dial: '+506', nameFr: 'Costa Rica', nameEn: 'Costa Rica' },
+  { iso: 'CI', dial: '+225', nameFr: 'Côte d\'Ivoire', nameEn: 'Côte d\'Ivoire' },
+  { iso: 'HR', dial: '+385', nameFr: 'Croatie', nameEn: 'Croatia' },
+  { iso: 'CU', dial: '+53', nameFr: 'Cuba', nameEn: 'Cuba' },
+  { iso: 'CW', dial: '+599', nameFr: 'Curaçao', nameEn: 'Curaçao' },
+  { iso: 'DK', dial: '+45', nameFr: 'Danemark', nameEn: 'Denmark' },
+  { iso: 'DJ', dial: '+253', nameFr: 'Djibouti', nameEn: 'Djibouti' },
+  { iso: 'DM', dial: '+1767', nameFr: 'Dominique', nameEn: 'Dominica' },
+  { iso: 'EG', dial: '+20', nameFr: 'Égypte', nameEn: 'Egypt' },
+  { iso: 'AE', dial: '+971', nameFr: 'Émirats arabes unis', nameEn: 'United Arab Emirates' },
+  { iso: 'EC', dial: '+593', nameFr: 'Équateur', nameEn: 'Ecuador' },
+  { iso: 'ER', dial: '+291', nameFr: 'Érythrée', nameEn: 'Eritrea' },
+  { iso: 'ES', dial: '+34', nameFr: 'Espagne', nameEn: 'Spain' },
+  { iso: 'EE', dial: '+372', nameFr: 'Estonie', nameEn: 'Estonia' },
+  { iso: 'SZ', dial: '+268', nameFr: 'Eswatini', nameEn: 'Eswatini' },
+  { iso: 'US', dial: '+1', nameFr: 'États-Unis', nameEn: 'United States' },
+  { iso: 'ET', dial: '+251', nameFr: 'Éthiopie', nameEn: 'Ethiopia' },
+  { iso: 'FJ', dial: '+679', nameFr: 'Fidji', nameEn: 'Fiji' },
+  { iso: 'FI', dial: '+358', nameFr: 'Finlande', nameEn: 'Finland' },
+  { iso: 'FR', dial: '+33', nameFr: 'France', nameEn: 'France' },
+  { iso: 'GA', dial: '+241', nameFr: 'Gabon', nameEn: 'Gabon' },
+  { iso: 'GM', dial: '+220', nameFr: 'Gambie', nameEn: 'Gambia' },
+  { iso: 'GE', dial: '+995', nameFr: 'Géorgie', nameEn: 'Georgia' },
+  { iso: 'GH', dial: '+233', nameFr: 'Ghana', nameEn: 'Ghana' },
+  { iso: 'GI', dial: '+350', nameFr: 'Gibraltar', nameEn: 'Gibraltar' },
+  { iso: 'GR', dial: '+30', nameFr: 'Grèce', nameEn: 'Greece' },
+  { iso: 'GD', dial: '+1473', nameFr: 'Grenade', nameEn: 'Grenada' },
+  { iso: 'GL', dial: '+299', nameFr: 'Groenland', nameEn: 'Greenland' },
+  { iso: 'GP', dial: '+590', nameFr: 'Guadeloupe', nameEn: 'Guadeloupe' },
+  { iso: 'GU', dial: '+1671', nameFr: 'Guam', nameEn: 'Guam' },
+  { iso: 'GT', dial: '+502', nameFr: 'Guatemala', nameEn: 'Guatemala' },
+  { iso: 'GG', dial: '+44', nameFr: 'Guernesey', nameEn: 'Guernsey' },
+  { iso: 'GN', dial: '+224', nameFr: 'Guinée', nameEn: 'Guinea' },
+  { iso: 'GQ', dial: '+240', nameFr: 'Guinée équatoriale', nameEn: 'Equatorial Guinea' },
+  { iso: 'GW', dial: '+245', nameFr: 'Guinée-Bissau', nameEn: 'Guinea-Bissau' },
+  { iso: 'GY', dial: '+592', nameFr: 'Guyana', nameEn: 'Guyana' },
+  { iso: 'GF', dial: '+594', nameFr: 'Guyane française', nameEn: 'French Guiana' },
+  { iso: 'HT', dial: '+509', nameFr: 'Haïti', nameEn: 'Haiti' },
+  { iso: 'HN', dial: '+504', nameFr: 'Honduras', nameEn: 'Honduras' },
+  { iso: 'HK', dial: '+852', nameFr: 'Hong Kong', nameEn: 'Hong Kong' },
+  { iso: 'HU', dial: '+36', nameFr: 'Hongrie', nameEn: 'Hungary' },
+  { iso: 'IM', dial: '+44', nameFr: 'Île de Man', nameEn: 'Isle of Man' },
+  { iso: 'KY', dial: '+1345', nameFr: 'Îles Caïmans', nameEn: 'Cayman Islands' },
+  { iso: 'MH', dial: '+692', nameFr: 'Îles Marshall', nameEn: 'Marshall Islands' },
+  { iso: 'SB', dial: '+677', nameFr: 'Îles Salomon', nameEn: 'Solomon Islands' },
+  { iso: 'TC', dial: '+1649', nameFr: 'Îles Turques-et-Caïques', nameEn: 'Turks and Caicos Islands' },
+  { iso: 'VG', dial: '+1284', nameFr: 'Îles Vierges britanniques', nameEn: 'British Virgin Islands' },
+  { iso: 'VI', dial: '+1340', nameFr: 'Îles Vierges des États-Unis', nameEn: 'U.S. Virgin Islands' },
+  { iso: 'IN', dial: '+91', nameFr: 'Inde', nameEn: 'India' },
+  { iso: 'ID', dial: '+62', nameFr: 'Indonésie', nameEn: 'Indonesia' },
+  { iso: 'IQ', dial: '+964', nameFr: 'Irak', nameEn: 'Iraq' },
+  { iso: 'IR', dial: '+98', nameFr: 'Iran', nameEn: 'Iran' },
+  { iso: 'IE', dial: '+353', nameFr: 'Irlande', nameEn: 'Ireland' },
+  { iso: 'IS', dial: '+354', nameFr: 'Islande', nameEn: 'Iceland' },
+  { iso: 'IL', dial: '+972', nameFr: 'Israël', nameEn: 'Israel' },
+  { iso: 'IT', dial: '+39', nameFr: 'Italie', nameEn: 'Italy' },
+  { iso: 'JM', dial: '+1876', nameFr: 'Jamaïque', nameEn: 'Jamaica' },
+  { iso: 'JP', dial: '+81', nameFr: 'Japon', nameEn: 'Japan' },
+  { iso: 'JE', dial: '+44', nameFr: 'Jersey', nameEn: 'Jersey' },
+  { iso: 'JO', dial: '+962', nameFr: 'Jordanie', nameEn: 'Jordan' },
+  { iso: 'KZ', dial: '+7', nameFr: 'Kazakhstan', nameEn: 'Kazakhstan' },
+  { iso: 'KE', dial: '+254', nameFr: 'Kenya', nameEn: 'Kenya' },
+  { iso: 'KG', dial: '+996', nameFr: 'Kirghizistan', nameEn: 'Kyrgyzstan' },
+  { iso: 'KI', dial: '+686', nameFr: 'Kiribati', nameEn: 'Kiribati' },
+  { iso: 'XK', dial: '+383', nameFr: 'Kosovo', nameEn: 'Kosovo' },
+  { iso: 'KW', dial: '+965', nameFr: 'Koweït', nameEn: 'Kuwait' },
+  { iso: 'LA', dial: '+856', nameFr: 'Laos', nameEn: 'Laos' },
+  { iso: 'LS', dial: '+266', nameFr: 'Lesotho', nameEn: 'Lesotho' },
+  { iso: 'LV', dial: '+371', nameFr: 'Lettonie', nameEn: 'Latvia' },
+  { iso: 'LB', dial: '+961', nameFr: 'Liban', nameEn: 'Lebanon' },
+  { iso: 'LR', dial: '+231', nameFr: 'Liberia', nameEn: 'Liberia' },
+  { iso: 'LY', dial: '+218', nameFr: 'Libye', nameEn: 'Libya' },
+  { iso: 'LI', dial: '+423', nameFr: 'Liechtenstein', nameEn: 'Liechtenstein' },
+  { iso: 'LT', dial: '+370', nameFr: 'Lituanie', nameEn: 'Lithuania' },
   { iso: 'LU', dial: '+352', nameFr: 'Luxembourg', nameEn: 'Luxembourg' },
+  { iso: 'MO', dial: '+853', nameFr: 'Macao', nameEn: 'Macau' },
+  { iso: 'MK', dial: '+389', nameFr: 'Macédoine du Nord', nameEn: 'North Macedonia' },
+  { iso: 'MG', dial: '+261', nameFr: 'Madagascar', nameEn: 'Madagascar' },
+  { iso: 'MY', dial: '+60', nameFr: 'Malaisie', nameEn: 'Malaysia' },
+  { iso: 'MW', dial: '+265', nameFr: 'Malawi', nameEn: 'Malawi' },
+  { iso: 'MV', dial: '+960', nameFr: 'Maldives', nameEn: 'Maldives' },
+  { iso: 'ML', dial: '+223', nameFr: 'Mali', nameEn: 'Mali' },
+  { iso: 'MT', dial: '+356', nameFr: 'Malte', nameEn: 'Malta' },
+  { iso: 'MA', dial: '+212', nameFr: 'Maroc', nameEn: 'Morocco' },
+  { iso: 'MQ', dial: '+596', nameFr: 'Martinique', nameEn: 'Martinique' },
+  { iso: 'MU', dial: '+230', nameFr: 'Maurice', nameEn: 'Mauritius' },
+  { iso: 'MR', dial: '+222', nameFr: 'Mauritanie', nameEn: 'Mauritania' },
+  { iso: 'YT', dial: '+262', nameFr: 'Mayotte', nameEn: 'Mayotte' },
+  { iso: 'MX', dial: '+52', nameFr: 'Mexique', nameEn: 'Mexico' },
+  { iso: 'FM', dial: '+691', nameFr: 'Micronésie', nameEn: 'Micronesia' },
+  { iso: 'MD', dial: '+373', nameFr: 'Moldavie', nameEn: 'Moldova' },
+  { iso: 'MC', dial: '+377', nameFr: 'Monaco', nameEn: 'Monaco' },
+  { iso: 'MN', dial: '+976', nameFr: 'Mongolie', nameEn: 'Mongolia' },
+  { iso: 'ME', dial: '+382', nameFr: 'Monténégro', nameEn: 'Montenegro' },
+  { iso: 'MS', dial: '+1664', nameFr: 'Montserrat', nameEn: 'Montserrat' },
+  { iso: 'MZ', dial: '+258', nameFr: 'Mozambique', nameEn: 'Mozambique' },
+  { iso: 'NA', dial: '+264', nameFr: 'Namibie', nameEn: 'Namibia' },
+  { iso: 'NR', dial: '+674', nameFr: 'Nauru', nameEn: 'Nauru' },
+  { iso: 'NP', dial: '+977', nameFr: 'Népal', nameEn: 'Nepal' },
+  { iso: 'NI', dial: '+505', nameFr: 'Nicaragua', nameEn: 'Nicaragua' },
+  { iso: 'NE', dial: '+227', nameFr: 'Niger', nameEn: 'Niger' },
+  { iso: 'NG', dial: '+234', nameFr: 'Nigeria', nameEn: 'Nigeria' },
+  { iso: 'NU', dial: '+683', nameFr: 'Niue', nameEn: 'Niue' },
+  { iso: 'NO', dial: '+47', nameFr: 'Norvège', nameEn: 'Norway' },
+  { iso: 'NC', dial: '+687', nameFr: 'Nouvelle-Calédonie', nameEn: 'New Caledonia' },
+  { iso: 'NZ', dial: '+64', nameFr: 'Nouvelle-Zélande', nameEn: 'New Zealand' },
+  { iso: 'OM', dial: '+968', nameFr: 'Oman', nameEn: 'Oman' },
+  { iso: 'UG', dial: '+256', nameFr: 'Ouganda', nameEn: 'Uganda' },
+  { iso: 'UZ', dial: '+998', nameFr: 'Ouzbékistan', nameEn: 'Uzbekistan' },
+  { iso: 'PK', dial: '+92', nameFr: 'Pakistan', nameEn: 'Pakistan' },
+  { iso: 'PW', dial: '+680', nameFr: 'Palaos', nameEn: 'Palau' },
+  { iso: 'PS', dial: '+970', nameFr: 'Palestine', nameEn: 'Palestine' },
+  { iso: 'PA', dial: '+507', nameFr: 'Panama', nameEn: 'Panama' },
+  { iso: 'PG', dial: '+675', nameFr: 'Papouasie-Nouvelle-Guinée', nameEn: 'Papua New Guinea' },
+  { iso: 'PY', dial: '+595', nameFr: 'Paraguay', nameEn: 'Paraguay' },
+  { iso: 'NL', dial: '+31', nameFr: 'Pays-Bas', nameEn: 'Netherlands' },
+  { iso: 'PE', dial: '+51', nameFr: 'Pérou', nameEn: 'Peru' },
+  { iso: 'PH', dial: '+63', nameFr: 'Philippines', nameEn: 'Philippines' },
+  { iso: 'PL', dial: '+48', nameFr: 'Pologne', nameEn: 'Poland' },
+  { iso: 'PF', dial: '+689', nameFr: 'Polynésie française', nameEn: 'French Polynesia' },
+  { iso: 'PR', dial: '+1787', nameFr: 'Porto Rico', nameEn: 'Puerto Rico' },
+  { iso: 'PT', dial: '+351', nameFr: 'Portugal', nameEn: 'Portugal' },
+  { iso: 'QA', dial: '+974', nameFr: 'Qatar', nameEn: 'Qatar' },
+  { iso: 'CZ', dial: '+420', nameFr: 'République tchèque', nameEn: 'Czechia' },
+  { iso: 'DO', dial: '+1809', nameFr: 'République dominicaine', nameEn: 'Dominican Republic' },
+  { iso: 'RE', dial: '+262', nameFr: 'Réunion', nameEn: 'Réunion' },
+  { iso: 'RO', dial: '+40', nameFr: 'Roumanie', nameEn: 'Romania' },
   { iso: 'GB', dial: '+44', nameFr: 'Royaume-Uni', nameEn: 'United Kingdom' },
+  { iso: 'RU', dial: '+7', nameFr: 'Russie', nameEn: 'Russia' },
+  { iso: 'RW', dial: '+250', nameFr: 'Rwanda', nameEn: 'Rwanda' },
+  { iso: 'EH', dial: '+212', nameFr: 'Sahara occidental', nameEn: 'Western Sahara' },
+  { iso: 'BL', dial: '+590', nameFr: 'Saint-Barthélemy', nameEn: 'Saint Barthélemy' },
+  { iso: 'KN', dial: '+1869', nameFr: 'Saint-Christophe-et-Niévès', nameEn: 'Saint Kitts and Nevis' },
+  { iso: 'SM', dial: '+378', nameFr: 'Saint-Marin', nameEn: 'San Marino' },
+  { iso: 'MF', dial: '+590', nameFr: 'Saint-Martin', nameEn: 'Saint Martin' },
+  { iso: 'PM', dial: '+508', nameFr: 'Saint-Pierre-et-Miquelon', nameEn: 'Saint Pierre and Miquelon' },
+  { iso: 'VC', dial: '+1784', nameFr: 'Saint-Vincent-et-les-Grenadines', nameEn: 'Saint Vincent and the Grenadines' },
+  { iso: 'SH', dial: '+290', nameFr: 'Sainte-Hélène', nameEn: 'Saint Helena' },
+  { iso: 'LC', dial: '+1758', nameFr: 'Sainte-Lucie', nameEn: 'Saint Lucia' },
+  { iso: 'SV', dial: '+503', nameFr: 'Salvador', nameEn: 'El Salvador' },
+  { iso: 'WS', dial: '+685', nameFr: 'Samoa', nameEn: 'Samoa' },
+  { iso: 'ST', dial: '+239', nameFr: 'Sao Tomé-et-Principe', nameEn: 'Sao Tome and Principe' },
+  { iso: 'SN', dial: '+221', nameFr: 'Sénégal', nameEn: 'Senegal' },
+  { iso: 'RS', dial: '+381', nameFr: 'Serbie', nameEn: 'Serbia' },
+  { iso: 'SC', dial: '+248', nameFr: 'Seychelles', nameEn: 'Seychelles' },
+  { iso: 'SL', dial: '+232', nameFr: 'Sierra Leone', nameEn: 'Sierra Leone' },
+  { iso: 'SG', dial: '+65', nameFr: 'Singapour', nameEn: 'Singapore' },
+  { iso: 'SK', dial: '+421', nameFr: 'Slovaquie', nameEn: 'Slovakia' },
+  { iso: 'SI', dial: '+386', nameFr: 'Slovénie', nameEn: 'Slovenia' },
+  { iso: 'SO', dial: '+252', nameFr: 'Somalie', nameEn: 'Somalia' },
+  { iso: 'SD', dial: '+249', nameFr: 'Soudan', nameEn: 'Sudan' },
+  { iso: 'SS', dial: '+211', nameFr: 'Soudan du Sud', nameEn: 'South Sudan' },
+  { iso: 'LK', dial: '+94', nameFr: 'Sri Lanka', nameEn: 'Sri Lanka' },
+  { iso: 'SE', dial: '+46', nameFr: 'Suède', nameEn: 'Sweden' },
+  { iso: 'CH', dial: '+41', nameFr: 'Suisse', nameEn: 'Switzerland' },
+  { iso: 'SR', dial: '+597', nameFr: 'Suriname', nameEn: 'Suriname' },
+  { iso: 'SY', dial: '+963', nameFr: 'Syrie', nameEn: 'Syria' },
+  { iso: 'TJ', dial: '+992', nameFr: 'Tadjikistan', nameEn: 'Tajikistan' },
+  { iso: 'TW', dial: '+886', nameFr: 'Taïwan', nameEn: 'Taiwan' },
+  { iso: 'TZ', dial: '+255', nameFr: 'Tanzanie', nameEn: 'Tanzania' },
+  { iso: 'TD', dial: '+235', nameFr: 'Tchad', nameEn: 'Chad' },
+  { iso: 'TH', dial: '+66', nameFr: 'Thaïlande', nameEn: 'Thailand' },
+  { iso: 'TL', dial: '+670', nameFr: 'Timor oriental', nameEn: 'Timor-Leste' },
+  { iso: 'TG', dial: '+228', nameFr: 'Togo', nameEn: 'Togo' },
+  { iso: 'TO', dial: '+676', nameFr: 'Tonga', nameEn: 'Tonga' },
+  { iso: 'TT', dial: '+1868', nameFr: 'Trinité-et-Tobago', nameEn: 'Trinidad and Tobago' },
+  { iso: 'TN', dial: '+216', nameFr: 'Tunisie', nameEn: 'Tunisia' },
+  { iso: 'TM', dial: '+993', nameFr: 'Turkménistan', nameEn: 'Turkmenistan' },
+  { iso: 'TR', dial: '+90', nameFr: 'Turquie', nameEn: 'Turkey' },
+  { iso: 'TV', dial: '+688', nameFr: 'Tuvalu', nameEn: 'Tuvalu' },
+  { iso: 'UA', dial: '+380', nameFr: 'Ukraine', nameEn: 'Ukraine' },
+  { iso: 'UY', dial: '+598', nameFr: 'Uruguay', nameEn: 'Uruguay' },
+  { iso: 'VU', dial: '+678', nameFr: 'Vanuatu', nameEn: 'Vanuatu' },
+  { iso: 'VA', dial: '+379', nameFr: 'Vatican', nameEn: 'Vatican City' },
+  { iso: 'VE', dial: '+58', nameFr: 'Venezuela', nameEn: 'Venezuela' },
+  { iso: 'VN', dial: '+84', nameFr: 'Vietnam', nameEn: 'Vietnam' },
+  { iso: 'WF', dial: '+681', nameFr: 'Wallis-et-Futuna', nameEn: 'Wallis and Futuna' },
+  { iso: 'YE', dial: '+967', nameFr: 'Yémen', nameEn: 'Yemen' },
+  { iso: 'ZM', dial: '+260', nameFr: 'Zambie', nameEn: 'Zambia' },
+  { iso: 'ZW', dial: '+263', nameFr: 'Zimbabwe', nameEn: 'Zimbabwe' },
 ];
+
+export const DEFAULT_PHONE_COUNTRY = PHONE_COUNTRIES.find(
+  (c) => c.iso === DEFAULT_PHONE_COUNTRY_ISO,
+)!;
+
+/** Every entry except the default, sorted by the visitor's own language —
+ * fills the select below the pinned default option. */
+export function otherPhoneCountries(lang: Lang): PhoneCountry[] {
+  const key = lang === 'fr' ? 'nameFr' : 'nameEn';
+  return PHONE_COUNTRIES.filter((c) => c.iso !== DEFAULT_PHONE_COUNTRY_ISO).sort((a, b) =>
+    a[key].localeCompare(b[key], lang),
+  );
+}
+
+/**
+ * ISO 3166-1 alpha-2 → flag emoji, via the Unicode regional-indicator trick
+ * (each letter maps to 0x1F1E6 plus its offset from 'A'). Same technique
+ * serrurier-paris uses — no flag is hand-typed, so there is nothing to
+ * transcribe wrong. Kept short in the select's closed box: the flag plus
+ * dial code, not the spelled-out name, so the row fits on one line whatever
+ * country is selected. The full name is still available via the option's
+ * title attribute.
+ */
+export function flagEmoji(iso: string): string {
+  return String.fromCodePoint(
+    ...[...iso.toUpperCase()].map((char) => 0x1f1e6 + (char.charCodeAt(0) - 65)),
+  );
+}

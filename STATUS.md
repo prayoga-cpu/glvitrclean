@@ -126,13 +126,24 @@ invented demographic), and rejecting a proposed phone-normalization heuristic an
 POST-redirect fallback as unjustified complexity for what was actually asked. The synthesis is what got
 built.
 
-**Phone field.** `src/data/phone-countries.ts` (new): France, Belgium, Switzerland, Luxembourg, the
-UK — the short list stays deliberately short (two départements' worth of local demand, not a national
-or export business) and France is always first/default. An uncontrolled `<select name="phoneCountry">`
-sits beside the existing `<input name="phone">`; at submit time, `handleSubmit` folds the two into the
-single `"phone"` string `src/lib/submission.ts`'s `FIELD_KEYS` already expects — `"phoneCountry"` is
-never added there, by design, so it can't leak into the notification/confirmation emails.
-`src/lib/submission.ts` and `api/submit.ts` are both untouched; verified, not assumed.
+**Phone field.** `src/data/phone-countries.ts` (new): originally shipped as a 5-entry curated list
+(France, Belgium, Switzerland, Luxembourg, UK), justified on "this is a two-département local business,
+not a national one." A same-session follow-up pointed at the sibling project `serrurier-paris`, whose
+own `lib/countryCodes.ts` + `components/PhoneField.tsx` already solve this properly — a hand-checked,
+229-territory ITU-T/ISO 3166-1 list, France pinned first, flags derived programmatically (the Unicode
+regional-indicator trick: each ISO letter maps to `0x1F1E6 + offset`, so nothing is hand-typed and
+nothing can be mistyped), closed box showing flag + dial code only with the full name on `title`. Ported
+rather than re-typed — re-typing 229 rows by hand is a new chance to get a dial code wrong that copying
+the already-correct data isn't — via a small Node transform (`iso2/dialCode/fr/en` →
+`iso/dial/nameFr/nameEn`, this codebase's own field names) run once, checked against the source file's
+own entry count (231 `iso2:` matches minus 2 from the type declaration and the `flagEmoji` parameter
+= 229, matching exactly) and spot-checked for escaping on names with apostrophes/diacritics
+("Côte d'Ivoire", "Curaçao"). The now-unnecessary "Autre pays" escape hatch came out along with it — a
+229-territory list has nothing left for it to catch. An uncontrolled `<select name="phoneCountry">` sits
+beside the existing `<input name="phone">`; at submit time, `handleSubmit` folds the two into the single
+`"phone"` string `src/lib/submission.ts`'s `FIELD_KEYS` already expects — `"phoneCountry"` is never added
+there, by design, so it can't leak into the notification/confirmation emails. `src/lib/submission.ts` and
+`api/submit.ts` are both untouched; verified, not assumed.
 
 **Confirmation modal.** A native `<dialog>` + `showModal()`, opened from a `useEffect` once the form's
 existing `state === 'sent'` branch renders it. Its WhatsApp CTA reuses `whatsappHref()`
@@ -176,15 +187,15 @@ Edge Function that plain `next dev` does not serve, and `vercel dev` would send 
 neither is appropriate for a QA pass. Instead `window.fetch` was intercepted (via
 `Page.addScriptToEvaluateOnNewDocument`, before any page script runs) to fake a successful response, a
 real form fill + submit was driven over the DevTools protocol, and the actual POST body was inspected:
-`phone` arrived as `"+33 06 12 34 56 78"` for the default France selection, exactly as designed.
+`phone` arrived as `"+33 06 12 34 56 78"` for the default France selection. Re-run after the 229-country
+expansion, this time selecting Belgium from partway down the list rather than leaving the default alone
+— `phone` arrived as `"+32 470 12 34 56"` — plus a direct read of the rendered `<select>`'s option count
+(230: 229 territories + the disabled separator) and its first/last/a middle entry, confirming the pinned
+France default, the alphabetical sort, and the flag rendering (`🇫🇷`, `🇧🇪`, …) all landed as designed. The
+close/Esc/backdrop dismissal paths and focus-return, unaffected by this change, still passed on re-test.
 
 `npm run verify:full` passes (224 routes; `check:proof` unaffected — this touches neither `reviews.ts`
 nor `realisations.ts`).
-
-**Environment note, not a code issue:** this machine also runs a `serrurier-paris` dev server sharing
-the same session. Stopping this session's `next dev` (started on port 3001, since 3000 was already
-taken) appears to have also stopped that unrelated server — no files outside this repo were touched,
-but the human may need to restart it themselves.
 
 ### Home page gets a draggable before/after slider, then real photos and video to fill it (2026-09-14)
 

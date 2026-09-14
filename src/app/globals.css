@@ -1293,13 +1293,19 @@ ol {
   gap: var(--space-1);
 }
 
+/* Fixed, not flexible: the closed box only ever shows a flag and a dial
+   code ("🇫🇷 +33"), never the spelled-out name, so it never needs to grow —
+   giving that space to the number input instead. */
 .quote-form__phone-country {
-  flex: 1 1 9rem;
-  width: auto;
+  flex: 0 0 7.5rem;
+  width: 7.5rem;
+  /* Some dial codes run to five digits ("+1264") and must not clip against
+     the native dropdown arrow. */
+  padding-right: 0.5rem;
 }
 
 .quote-form__phone-number {
-  flex: 2 1 12rem;
+  flex: 1 1 12rem;
   width: auto;
 }
 

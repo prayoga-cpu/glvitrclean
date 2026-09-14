@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { services } from '@/data/services';
 import { communes } from '@/data/communes';
-import { PHONE_COUNTRIES } from '@/data/phone-countries';
+import { DEFAULT_PHONE_COUNTRY, flagEmoji, otherPhoneCountries } from '@/data/phone-countries';
 import { whatsappHref } from '@/components/CallButton';
 import { strings } from '@/i18n/dictionary';
 import { href, type Lang } from '@/i18n/config';
@@ -205,20 +205,28 @@ export function QuoteForm({ lang }: { lang: Lang }) {
       <label htmlFor="phone">{t.phone}</label>
       <div className="quote-form__phone">
         {/* Uncontrolled on purpose: read once, at submit time, via
-            FormData — no React state, no per-keystroke JS. */}
+            FormData — no React state, no per-keystroke JS. Closed box shows
+            flag + dial code only, not the spelled-out name (229 entries: a
+            name would make the row overflow for most of them) — the full
+            name is still on the option via `title`, and the source list is
+            comprehensive enough that there is no "other country" escape
+            hatch to maintain. */}
         <select
           name="phoneCountry"
-          defaultValue="+33"
+          defaultValue={DEFAULT_PHONE_COUNTRY.dial}
           aria-label={t.phoneCountry}
           autoComplete="tel-country-code"
           className="quote-form__phone-country"
         >
-          {PHONE_COUNTRIES.map((c) => (
-            <option key={c.iso} value={c.dial}>
-              {(lang === 'fr' ? c.nameFr : c.nameEn)} ({c.dial})
+          <option value={DEFAULT_PHONE_COUNTRY.dial} title={DEFAULT_PHONE_COUNTRY[lang === 'fr' ? 'nameFr' : 'nameEn']}>
+            {flagEmoji(DEFAULT_PHONE_COUNTRY.iso)} {DEFAULT_PHONE_COUNTRY.dial}
+          </option>
+          <option disabled>──────────</option>
+          {otherPhoneCountries(lang).map((c) => (
+            <option key={c.iso} value={c.dial} title={c[lang === 'fr' ? 'nameFr' : 'nameEn']}>
+              {flagEmoji(c.iso)} {c.dial}
             </option>
           ))}
-          <option value="">{t.phoneCountryOther}</option>
         </select>
         <input
           id="phone"

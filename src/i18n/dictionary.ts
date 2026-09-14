@@ -390,8 +390,6 @@ export interface UiStrings {
     phone: string;
     /** Accessible name for the dial-code <select> next to the phone number. */
     phoneCountry: string;
-    /** The "Autre pays" sentinel option — visitors outside src/data/phone-countries.ts type their own international number. */
-    phoneCountryOther: string;
     /** Example format shown in the phone number field. */
     phonePlaceholder: string;
     whatToClean: string;
@@ -799,7 +797,6 @@ const fr: UiStrings = {
     name: 'Votre nom',
     phone: 'Votre téléphone',
     phoneCountry: 'Indicatif du pays',
-    phoneCountryOther: 'Autre pays',
     phonePlaceholder: '06 27 70 99 70',
     whatToClean: "Ce qu'il faut nettoyer",
     choosePlaceholder: 'Choisir une prestation',
@@ -1186,7 +1183,6 @@ const en: UiStrings = {
     name: 'Your name',
     phone: 'Your phone number',
     phoneCountry: 'Country calling code',
-    phoneCountryOther: 'Other country',
     // Same French national format as the FR edition, deliberately: the
     // dial-code select next to this field still defaults to France (+33) on
     // both editions — this is a translated edition of a French site, not a
