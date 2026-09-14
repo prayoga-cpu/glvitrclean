@@ -81,6 +81,11 @@
 
   --color-focus: #1b3a9c;
 
+  /* The confirm-modal's <dialog>::backdrop. Same (16, 24, 40) ink triplet
+     --shadow-dropdown already standardised on, as a flat fill instead of a
+     blurred shadow, rather than an unrelated hue. */
+  --color-scrim: rgba(16, 24, 40, 0.45);
+
   /* Large decorative numerals on --color-surface. 3.03:1. */
   --color-step-ghost: #969490;
 
@@ -1278,6 +1283,26 @@ ol {
   border-color: var(--color-brand);
 }
 
+/* The dial-code select and the number input, side by side. No new colour,
+   spacing or radius here: `.quote-form select` / `.quote-form input` above
+   already match one level deeper, so both keep the same border, background,
+   focus ring and font as every other field for free. */
+.quote-form__phone {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.quote-form__phone-country {
+  flex: 1 1 9rem;
+  width: auto;
+}
+
+.quote-form__phone-number {
+  flex: 2 1 12rem;
+  width: auto;
+}
+
 /* Spam honeypot. Off-screen rather than display:none/visibility:hidden so a
    bot that fills every input on the page still fills this one. */
 .quote-form__honeypot {
@@ -1356,12 +1381,120 @@ ol {
   font-size: var(--text-lg);
   font-weight: 600;
   color: var(--color-brand);
+  /* Sits inside .quote-form-done's flex column now, which already supplies
+     spacing via `gap` — the UA default heading margin would double it up. */
+  margin: 0;
 }
 
 .form-error {
   font-size: var(--text-sm);
   color: #9b2c2c;
   margin-top: var(--space-1);
+}
+
+/* What QuoteForm.tsx renders once state === 'sent': the permanent in-page
+   confirmation (this) plus the .confirm-modal dialog layered on top of it.
+   The WhatsApp link here is deliberately the ordinary, quiet .whatsapp-button
+   used everywhere else on the site — it is what survives once the dialog is
+   dismissed, so the WhatsApp path is never fully lost to a reflex Esc. */
+.quote-form-done {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+/* The confirmation dialog. The <dialog> element itself carries no visible
+   chrome — border, background and shadow all live one level in, on
+   .confirm-modal__panel — so the native dialog box and the card never double
+   up visually. Width comes from the UA's own centring rather than hand-rolled
+   position:fixed math, on purpose: fewer custom code paths, fewer places for
+   a centring or stacking bug to hide. */
+.confirm-modal {
+  border: none;
+  padding: 0;
+  background: transparent;
+  max-width: min(26rem, calc(100% - 2 * var(--space-2)));
+}
+
+.confirm-modal::backdrop {
+  background: var(--color-scrim);
+}
+
+.confirm-modal__panel {
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-dropdown);
+  padding: clamp(1.5rem, 5vw, 2.5rem);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.confirm-modal__close {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: var(--color-surface-alt);
+  color: var(--color-text-muted);
+  font-size: var(--text-lg);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition:
+    background var(--transition),
+    color var(--transition);
+}
+
+.confirm-modal__close:hover {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
+.confirm-modal__title {
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+  /* Clears the close button, which sits absolutely positioned top-right. */
+  padding-right: var(--space-4);
+}
+
+.confirm-modal__body {
+  font-size: var(--text-base);
+  line-height: var(--leading-body);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.confirm-modal__whatsapp {
+  align-self: stretch;
+  justify-content: center;
+  margin-top: var(--space-1);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .confirm-modal[open] .confirm-modal__panel {
+    animation: confirm-modal-in 180ms ease-out;
+  }
+
+  @keyframes confirm-modal-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.5rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
 /* =========================================================================

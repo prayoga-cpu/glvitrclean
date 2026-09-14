@@ -5,7 +5,9 @@ Updated at the end of every work session. Newest entry on top.
 **Current phase:** phases 0–4 DONE, phase 6 done on the code side, phase 8
 (competitor teardown) DONE on the code side 2026-09-10. Quote form wired to
 Resend 2026-09-14. Home page gets a draggable before/after slider, filled with
-the client's first real photos and video, 2026-09-14 — see "Done" below.
+the client's first real photos and video, 2026-09-14. Quote form gets a phone
+country-code field and a post-submit WhatsApp confirmation modal, 2026-09-14
+— see "Done" below. **Not committed yet.**
 **Everything still open is waiting on a human** — see "What we need from you".
 **Build status:** `npm run verify:full` passes — five checks now: typecheck, lint,
 `check:seo`, `check:compliance`, `check:metadata`, `check:proof`. 224 routes.
@@ -108,6 +110,81 @@ The questions to send the client are written out, in French, in
 ---
 
 ## Done
+
+### Quote form: a phone country-code field, and a WhatsApp confirmation modal on submit (2026-09-14)
+
+Requested directly, from a screenshot of the live form: a proper country-code control on the phone
+field with France as the default, and a real confirmation screen after submit — "maybe like a modal
+pop-up" — that pushes the customer toward WhatsApp.
+
+**Design was run as a judge panel before any code was written**, not decided solo: three independent
+proposals (minimal native-first, WhatsApp-conversion-focused, accessibility/robustness-first), each
+grounded in the actual current `QuoteForm.tsx`, `src/lib/submission.ts`'s field contract, the design
+tokens, and CLAUDE.md's rules — then synthesized into one spec, taking the simplest plumbing from one
+proposal, the country list from two others (justified by a fact already true of this codebase, not an
+invented demographic), and rejecting a proposed phone-normalization heuristic and a proposed no-JS
+POST-redirect fallback as unjustified complexity for what was actually asked. The synthesis is what got
+built.
+
+**Phone field.** `src/data/phone-countries.ts` (new): France, Belgium, Switzerland, Luxembourg, the
+UK — the short list stays deliberately short (two départements' worth of local demand, not a national
+or export business) and France is always first/default. An uncontrolled `<select name="phoneCountry">`
+sits beside the existing `<input name="phone">`; at submit time, `handleSubmit` folds the two into the
+single `"phone"` string `src/lib/submission.ts`'s `FIELD_KEYS` already expects — `"phoneCountry"` is
+never added there, by design, so it can't leak into the notification/confirmation emails.
+`src/lib/submission.ts` and `api/submit.ts` are both untouched; verified, not assumed.
+
+**Confirmation modal.** A native `<dialog>` + `showModal()`, opened from a `useEffect` once the form's
+existing `state === 'sent'` branch renders it. Its WhatsApp CTA reuses `whatsappHref()`
+(`CallButton.tsx`) with a message naming the service just requested, and a quiet copy of the same link
+stays on the page once the dialog is dismissed — docs/05 ranks WhatsApp second only to a phone call, so
+a reflex Esc should not cost that channel entirely. New `--color-scrim` token, recorded in
+`docs/09-design-system.md` per rule 6.
+
+**Two real bugs, caught by an adversarial review pass run on the actual diff after implementation, not
+by inspection.** Four independent reviewers (correctness, accessibility, i18n/content, design-system
+compliance) read the real files and reported five findings; each was then handed to a second agent
+whose only job was to try to refute it. The rate limit cut the automated refute pass short after one
+verification, so the remaining three were verified by hand, the same way — reading the exact file and
+line, not trusting the summary:
+
+- **The close button's `autoFocus` never actually focused it.** React does not reflect `autoFocus` as
+  the real HTML `autofocus` attribute for host elements — it only calls `.focus()` imperatively at
+  mount, which for this dialog happens on the render where `state` first becomes `'sent'`, before
+  `showModal()` has run, while the `<dialog>` is still `display: none` per the UA stylesheet. That early
+  `.focus()` silently no-ops, and `showModal()`'s own native focusing step then finds no real
+  `autofocus` attribute anywhere and falls back to focusing the `<dialog>` element itself. Fixed with an
+  explicit `closeButtonRef.current?.focus()` called right after `showModal()`, once the panel is
+  actually visible. Confirmed after the fix by driving a real submit over the DevTools protocol and
+  reading `document.activeElement` — it lands on the close button, and Esc / the close button / a
+  backdrop click all correctly close the dialog and return focus to the success heading, the one path
+  `onClose` is responsible for.
+- **The WhatsApp prefill used `service.name` (the capitalized heading form) instead of
+  `service.inSentence`**, `services.ts`'s own field made for exactly this ("used inside sentences") —
+  the draft read "...pour Nettoyage de vitres." instead of "...pour nettoyage de vitres.", a capitalized
+  common noun that reads as a typo mid-sentence in French. Fixed; confirmed via the mocked-submit test
+  that the decoded WhatsApp `text=` param now reads correctly in both cases tested.
+
+Two more, lower severity, fixed the same pass: a pasted `"00"`-prefixed international number (e.g.
+`"0033 6 27 70 99 70"`) was not recognised as already-international the way a `"+"`-prefixed one was, so
+it could get double-prefixed with the selected dial code — the guard now checks both. And the phone
+field's placeholder text was the one hard-coded, unlocalized string in the component — moved into
+`src/i18n/dictionary.ts` as `form.phonePlaceholder`.
+
+**Verified end-to-end against a mocked `/api/submit`**, not just typechecked: `/api/submit` is a Vercel
+Edge Function that plain `next dev` does not serve, and `vercel dev` would send a real Resend email —
+neither is appropriate for a QA pass. Instead `window.fetch` was intercepted (via
+`Page.addScriptToEvaluateOnNewDocument`, before any page script runs) to fake a successful response, a
+real form fill + submit was driven over the DevTools protocol, and the actual POST body was inspected:
+`phone` arrived as `"+33 06 12 34 56 78"` for the default France selection, exactly as designed.
+
+`npm run verify:full` passes (224 routes; `check:proof` unaffected — this touches neither `reviews.ts`
+nor `realisations.ts`).
+
+**Environment note, not a code issue:** this machine also runs a `serrurier-paris` dev server sharing
+the same session. Stopping this session's `next dev` (started on port 3001, since 3000 was already
+taken) appears to have also stopped that unrelated server — no files outside this repo were touched,
+but the human may need to restart it themselves.
 
 ### Home page gets a draggable before/after slider, then real photos and video to fill it (2026-09-14)
 

@@ -388,6 +388,12 @@ export interface UiStrings {
   form: {
     name: string;
     phone: string;
+    /** Accessible name for the dial-code <select> next to the phone number. */
+    phoneCountry: string;
+    /** The "Autre pays" sentinel option — visitors outside src/data/phone-countries.ts type their own international number. */
+    phoneCountryOther: string;
+    /** Example format shown in the phone number field. */
+    phonePlaceholder: string;
     whatToClean: string;
     choosePlaceholder: string;
     choose: string;
@@ -409,6 +415,26 @@ export interface UiStrings {
     sending: string;
     success: string;
     error: string;
+  };
+  /**
+   * The post-submit confirmation dialog in QuoteForm.tsx. Docs/05 ranks
+   * WhatsApp second only to a phone call, so this exists to move a visitor
+   * who just proved intent (by submitting) into that channel with a photo.
+   * The button LABEL is deliberately not duplicated here — it reads from
+   * `common.whatsapp` so every WhatsApp entry point on the site (this modal,
+   * the quiet link left on the page once it closes, ChatLauncher, the
+   * footer) says exactly the same thing by construction, not by convention.
+   * Never add a response-time promise here — nothing in src/data/ backs one,
+   * same reason footer.responseTime and chat.body carry none. CLAUDE.md rule 4.
+   */
+  confirmModal: {
+    title: string;
+    body: string;
+    /** Takes the selected service's translated name. */
+    whatsappPrefill: (service: string) => string;
+    /** Same sentence with no service clause, for the defensive case the lookup misses. */
+    whatsappPrefillGeneric: string;
+    close: string;
   };
   taxCreditBadge: {
     pending: (pct: number) => string;
@@ -772,6 +798,9 @@ const fr: UiStrings = {
   form: {
     name: 'Votre nom',
     phone: 'Votre téléphone',
+    phoneCountry: 'Indicatif du pays',
+    phoneCountryOther: 'Autre pays',
+    phonePlaceholder: '06 27 70 99 70',
     whatToClean: "Ce qu'il faut nettoyer",
     choosePlaceholder: 'Choisir une prestation',
     choose: 'Choisir',
@@ -792,6 +821,14 @@ const fr: UiStrings = {
     sending: 'Envoi…',
     success: 'Merci, votre demande est bien partie. Nous vous rappelons au numéro indiqué.',
     error: "L'envoi a échoué. Appelez-nous directement.",
+  },
+  confirmModal: {
+    title: 'Votre demande est bien envoyée',
+    body: 'Vous pouvez aussi envoyer une photo du chantier sur WhatsApp : pour beaucoup de prestations, elle suffit à préparer le devis sans déplacement.',
+    whatsappPrefill: (service) =>
+      `Bonjour, je viens de vous envoyer une demande de devis pour ${service}. Voici une photo :`,
+    whatsappPrefillGeneric: "Bonjour, je viens de vous envoyer une demande de devis. Voici une photo :",
+    close: 'Fermer',
   },
   taxCreditBadge: {
     pending: (pct) =>
@@ -1148,6 +1185,13 @@ const en: UiStrings = {
   form: {
     name: 'Your name',
     phone: 'Your phone number',
+    phoneCountry: 'Country calling code',
+    phoneCountryOther: 'Other country',
+    // Same French national format as the FR edition, deliberately: the
+    // dial-code select next to this field still defaults to France (+33) on
+    // both editions — this is a translated edition of a French site, not a
+    // different country's edition — so the example format stays the same.
+    phonePlaceholder: '06 27 70 99 70',
     whatToClean: 'What needs cleaning',
     choosePlaceholder: 'Choose a service',
     choose: 'Choose',
@@ -1168,6 +1212,13 @@ const en: UiStrings = {
     sending: 'Sending…',
     success: 'Thank you, your request has been sent. We will call you back on the number you gave.',
     error: 'Sending failed. Please call us directly.',
+  },
+  confirmModal: {
+    title: 'Your request has been sent',
+    body: "You can also send a photo of the job on WhatsApp: for many jobs, it's enough to prepare the quote without a visit.",
+    whatsappPrefill: (service) => `Hi, I've just sent a quote request for ${service}. Here's a photo:`,
+    whatsappPrefillGeneric: "Hi, I've just sent a quote request. Here's a photo:",
+    close: 'Close',
   },
   taxCreditBadge: {
     pending: (pct) =>

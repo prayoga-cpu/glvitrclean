@@ -30,9 +30,14 @@ up better behind photography and keeps the gold legible as an accent.
 | `--color-border` | `#E4E1DA` | card and divider hairlines |
 | `--color-text` | `#101828` | body |
 | `--color-text-muted` | `#5A6072` | secondary copy |
+| `--color-scrim` | `rgba(16, 24, 40, 0.45)` | `<dialog>::backdrop` on the quote-form confirmation modal |
 
 Everything that sits **on** a blue panel has its own token
 (`--color-on-brand*`), so no component ever writes an `rgba()` inline.
+`--color-scrim` is the same rule applied to the one other place a component
+needs a translucent overlay: it reuses the `(16, 24, 40)` ink triplet
+`--shadow-dropdown` already standardised on, as a flat fill instead of a blur,
+2026-09-14.
 
 ## Typography
 
