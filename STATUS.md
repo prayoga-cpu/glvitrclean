@@ -4,7 +4,8 @@ Updated at the end of every work session. Newest entry on top.
 
 **Current phase:** phases 0–4 DONE, phase 6 done on the code side, phase 8
 (competitor teardown) DONE on the code side 2026-09-10. Quote form wired to
-Resend 2026-09-14 — see "Done" below.
+Resend 2026-09-14. Home page gets a draggable before/after slider, filled with
+the client's first real photos and video, 2026-09-14 — see "Done" below.
 **Everything still open is waiting on a human** — see "What we need from you".
 **Build status:** `npm run verify:full` passes — five checks now: typecheck, lint,
 `check:seo`, `check:compliance`, `check:metadata`, `check:proof`. 224 routes.
@@ -107,6 +108,89 @@ The questions to send the client are written out, in French, in
 ---
 
 ## Done
+
+### Home page gets a draggable before/after slider, then real photos and video to fill it (2026-09-14)
+
+Built in two passes the same session. First pass: a comparison-slider section
+on the home page, draggable, with a hover effect, two cards of placeholder
+stock photos (told apart by a grayscale filter, since `src/data/realisations.ts`'s
+header forbids ever presenting a stock image as real work). Second pass, later
+the same session: the human dropped three real before/after pairs from the
+client's own jobs into a `NEW CONTENT/` folder at the repo root — two photo
+pairs and one video pair, the first real proof content this site has had —
+and asked for them organized into that section, the folder deleted, and the
+result pushed. The placeholder technique is gone; every card is real now.
+
+Built as `src/components/CompareSlider.tsx` plus a `#avant-apres` section in
+`HomeView.tsx`, between the "why choose us" cards and the (still-dormant)
+reviews block.
+
+**The fifth client component, justified here per CLAUDE.md rule 2.** A
+draggable divider has to react to a live pointer position, which no CSS
+primitive alone can do. The interactive surface is kept to the minimum: one
+native `<input type="range">` per card writes a single CSS custom property
+(`--pos`) on `onChange`; every visual — the clip, the divider, the handle — is
+plain CSS reading that variable. With JS off, every still and every label is
+still in the HTML (rule 2's "complete HTML before JavaScript runs" holds);
+only the live drag sync and the video's play button are inert, and each split
+sits at its default 50/50.
+
+**What the three pairs show, and why each is filed the way it is.**
+`src/data/services.ts` was checked before writing captions, not guessed:
+`vitres`'s own summary names "vérandas et fenêtres de toit", `terrasse`'s
+names "dallages, pavés" — so a tiled terrace and a paved terrace are both
+`terrasse`, and a veranda's glazed roof is `vitres`, not a new category
+invented for the occasion.
+
+- `terrasse-01` — a tiled terrace under moss and debris, then clean. Portrait
+  phone photos, both 1200×1600.
+- `vitres-01` — a veranda's glazed roof, grimy then clear. The "before" shot
+  is landscape (1600×1200) where "after" is portrait (1200×1600) — genuinely
+  two different phone orientations, not a bug — so the frame crops both to
+  3:4 with `object-fit: cover` rather than assuming a matched pair.
+- `terrasse-02` — a paved terrace/driveway, cleaning in progress then
+  finished, as two vertical video clips (576×1024, H.264/AAC, 41.6s and 26s —
+  different lengths, different framing, not a locked-off before/after
+  tripod shot). Muted, looped, `playsInline`, and — the only real design
+  decision in this pass — **not autoplayed**: the two clips together are
+  ~11.2 MB, against ~560 KB for the four photos combined, so playback starts
+  only on a "Voir la vidéo" button press. `CompareSlider` still shows a real
+  still (also the `<video poster>`) before that click, so the card is never
+  empty and the drag works on the stills immediately, before any video has
+  loaded. No `ffmpeg`/`ffprobe` in this environment to trim or re-encode the
+  clips, so they ship as supplied; `qlmanage` (built into macOS) generated
+  the poster frames, converted to WebP same as the photos.
+
+Assets: `cwebp` (Homebrew, not project-installed) at 800px-wide / q72 for the
+photos and posters, `public/assets/realisations/{terrasse-01,vitres-01,
+terrasse-02}-{avant,apres}.{webp,mp4}` plus the two `-poster.webp` files.
+`sips` cannot encode WebP; `cwebp` was the only encoder available.
+
+**Deliberately NOT added to `src/data/realisations.ts`.** That file also
+feeds `/realisations` and the service/commune galleries, and its `Photo` type
+has no video variant — wiring it up is a bigger publishing decision (ROADMAP
+phase 5) than "put the new photos on the home page," which is what was asked
+this session. The two photo pairs are ready to reuse there directly if that
+is wanted next; the video pair would need the type extended first.
+
+**Two bugs caught by driving real interaction, not by reading the code back:**
+the first version made the range thumb 100% of the frame so the whole image
+would be grabbable, which collapses the input's internal track length
+(`frame width − thumb width`) to zero — every drag snapped straight to 0 or
+100 instead of tracking the pointer. A 1px thumb fixed it. Second, the "play"
+button first sat dead-centre over the drag handle, the one spot every card
+needs free; moved to a bottom-centre pill so dragging a video card's stills
+still works before playback starts. Both found and re-checked by dispatching
+real mousedown/mousemove/mouseup and click sequences at the rendered page
+over the DevTools protocol (`chromium-cli` and Playwright are not installed
+in this environment) rather than by setting `.value` in JS, and by reading
+back `video.paused`/`readyState` after a simulated click to confirm both the
+before and after clips actually start.
+
+`npm run verify:full` passes (224 routes; `check:proof` still reports both
+`reviews` and `realisations` dormant, since neither data file was touched) —
+the section uses its own `compare*` class namespace specifically so it never
+touches the `before-after` markup that check watches for.
 
 ### The quote form now delivers a lead, by Resend (2026-09-14)
 

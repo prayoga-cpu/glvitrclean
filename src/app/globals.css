@@ -2298,6 +2298,229 @@ ol {
   color: var(--color-text-muted);
 }
 
+/* Home page before/after comparison slider (CompareSlider.tsx). Distinct from
+   `.pair` above on purpose: that gallery renders real completed jobs from
+   src/data/realisations.ts and stays dormant until the client's archive
+   lands, and scripts/check-proof.mjs fails the build if a `before-after`
+   class reaches the export while that array is empty. This is a separate,
+   always-on interactive section, so it gets its own class namespace and never
+   touches that check. */
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--space-4);
+}
+
+.compare {
+  margin: 0;
+}
+
+.compare__frame {
+  position: relative;
+  /* 3:4 — the client's own photos are portrait phone shots; a landscape frame
+     would crop most of each one away. */
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-surface-alt);
+}
+
+/* Covers both a next/image `fill` (which already sets these inline — this
+   rule just agrees with it) and a plain <video>, which has no such helper and
+   needs the position set explicitly to sit flush in the frame. */
+.compare__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Clipped to `--pos`, not resized to it — the image itself stays full-frame
+   so it never rescales as the divider moves, only the visible slice changes. */
+.compare__before {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(0 calc(100% - var(--pos, 50%)) 0 0);
+}
+
+.compare__label {
+  position: absolute;
+  top: 0.625rem;
+  z-index: 1;
+  background: var(--color-brand);
+  color: var(--color-on-brand);
+  border-radius: var(--radius-pill);
+  padding: 0.25rem 0.75rem;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+
+.compare__label--before {
+  left: 0.625rem;
+}
+
+.compare__label--after {
+  right: 0.625rem;
+}
+
+.compare__divider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--pos, 50%);
+  width: 3px;
+  margin-left: -1.5px;
+  background: var(--color-surface);
+  pointer-events: none;
+}
+
+.compare__handle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-dropdown);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  transition:
+    transform var(--transition),
+    box-shadow var(--transition);
+}
+
+/* Chevrons drawn from borders: no glyph in a system font lines up with the
+   handle the way two rotated squares do, and rule 6 rules out an icon library. */
+.compare__chevron {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-left: 2px solid var(--color-brand);
+  border-bottom: 2px solid var(--color-brand);
+}
+
+.compare__chevron--left {
+  transform: rotate(45deg);
+}
+
+.compare__chevron--right {
+  transform: rotate(-135deg);
+}
+
+/* Stretched over the whole frame so the drag works from anywhere on the
+   image, not only on the thin divider line — visually invisible, always
+   interactive. Sits above the stills but below the play button (z-index),
+   so a video card's button stays clickable rather than swallowed by the
+   drag surface on top of it. */
+.compare__range {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: ew-resize;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/*
+  The thumb is kept at 1px, not stretched to fill the frame: a range input's
+  value maps linearly across (track length = frame width − thumb width), so a
+  full-width thumb collapses that track to zero and every drag snaps straight
+  to 0 or 100 — caught by simulating an actual pointer drag, not just setting
+  `.value` in JS. A near-zero thumb keeps the mapping linear across the whole
+  frame, matching the 0–100% the clip-path above expects. The click-anywhere
+  behaviour still comes from the input spanning the full frame, not from the
+  thumb's size.
+*/
+.compare__range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 1px;
+  height: 100%;
+  background: transparent;
+}
+
+.compare__range::-moz-range-thumb {
+  width: 1px;
+  height: 100%;
+  background: transparent;
+  border: none;
+}
+
+.compare__range::-moz-range-track {
+  background: transparent;
+  border: none;
+  height: 100%;
+}
+
+/* Hover affordance: the handle grows so a visitor sees the whole frame is
+   draggable before they touch it. */
+.compare__frame:hover .compare__handle {
+  transform: translate(-50%, -50%) scale(1.12);
+  box-shadow: 0 18px 32px -16px rgba(16, 24, 40, 0.55);
+}
+
+.compare__frame:focus-within .compare__handle {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Docked bottom-centre, not over the handle: the handle already owns the
+   frame's centre, and a video card still has to stay draggable on its two
+   stills before anyone presses play. */
+.compare__play {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 50%;
+  z-index: 2;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.4375rem;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand);
+  color: var(--color-on-brand);
+  padding: 0.5rem 1rem 0.5rem 0.75rem;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: var(--shadow-dropdown);
+  transition: transform var(--transition);
+}
+
+.compare__play:hover,
+.compare__play:focus-visible {
+  transform: translateX(-50%) scale(1.05);
+}
+
+.compare__play-icon {
+  width: 0;
+  height: 0;
+  border-top: 0.375rem solid transparent;
+  border-bottom: 0.375rem solid transparent;
+  border-left: 0.5625rem solid currentColor;
+}
+
+/* The caption describes the pair once, for both stills — same pattern as
+   `.pair figcaption` above, which this intentionally matches. */
+.compare__caption {
+  margin: var(--space-2) 0 0;
+  max-width: var(--measure);
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--color-text-muted);
+}
+
 /* Customer reviews. No page renders these yet — src/data/reviews.ts is empty
    until ROADMAP phase 7 — but the rules ship with the component so that adding
    the data is the only step left. */

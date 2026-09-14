@@ -5,6 +5,7 @@ import { communes } from '@/data/communes';
 import { company } from '@/data/company';
 import { QuoteForm } from '@/components/QuoteForm';
 import { ProcessSteps } from '@/components/ProcessSteps';
+import { CompareSlider } from '@/components/CompareSlider';
 import { Reviews } from '@/components/Reviews';
 import { WhatsAppButton } from '@/components/CallButton';
 import { strings } from '@/i18n/dictionary';
@@ -270,6 +271,80 @@ export function HomeView({ lang }: { lang: Lang }) {
               </p>
             </li>
           </ul>
+        </div>
+      </section>
+
+      {/*
+        Drag-to-compare slider, placed right after the reasons-to-choose-us
+        block and before the (still-empty) review proof. Three real pairs from
+        the client's own jobs — the first the site has had (STATUS.md,
+        2026-09-14). Assets live in public/assets/realisations/; the video
+        pair plays only once "play" is pressed, so the section costs four
+        photos (~560 KB) on load, not the ~11 MB of video.
+
+        Deliberately NOT added to src/data/realisations.ts: that file feeds
+        `/realisations` and the service/commune galleries too, which is a
+        wider publishing decision than "put the new photos on the home page,"
+        and its Photo type has no video variant yet. Revisit if these three
+        (or more) are meant to go there as well.
+      */}
+      <section className="section" id="avant-apres">
+        <div className="section-head">
+          <div>
+            <span className="eyebrow">{t.home.beforeAfterEyebrow}</span>
+            <h2>
+              {t.home.beforeAfterH2a} <span className="accent">{t.home.beforeAfterH2b}</span>
+            </h2>
+          </div>
+          <p>{t.home.beforeAfterIntro}</p>
+        </div>
+
+        <ul className="compare-grid">
+          <li>
+            <CompareSlider
+              before="/assets/realisations/terrasse-01-avant.webp"
+              after="/assets/realisations/terrasse-01-apres.webp"
+              beforeLabel={t.work.before}
+              afterLabel={t.work.after}
+              ariaLabel={t.home.compareAriaLabel(1)}
+              caption={t.home.beforeAfterCaptions[0]}
+            />
+          </li>
+          <li>
+            <CompareSlider
+              before="/assets/realisations/vitres-01-avant.webp"
+              after="/assets/realisations/vitres-01-apres.webp"
+              beforeLabel={t.work.before}
+              afterLabel={t.work.after}
+              ariaLabel={t.home.compareAriaLabel(2)}
+              caption={t.home.beforeAfterCaptions[1]}
+            />
+          </li>
+          <li>
+            <CompareSlider
+              before="/assets/realisations/terrasse-02-avant-poster.webp"
+              after="/assets/realisations/terrasse-02-apres-poster.webp"
+              beforeVideo="/assets/realisations/terrasse-02-avant.mp4"
+              afterVideo="/assets/realisations/terrasse-02-apres.mp4"
+              beforeLabel={t.work.before}
+              afterLabel={t.work.after}
+              ariaLabel={t.home.compareAriaLabel(3)}
+              playLabel={t.home.comparePlayLabel}
+              caption={t.home.beforeAfterCaptions[2]}
+            />
+          </li>
+        </ul>
+
+        <div className="actions">
+          <a href={`tel:${company.phone}`} className="btn btn--accent" data-action="call">
+            {t.common.callPrefix} {company.phoneDisplay}
+            <span className="btn__arrow" aria-hidden="true">
+              →
+            </span>
+          </a>
+          <Link href={href('/devis', lang)} className="btn btn--quiet">
+            {t.common.requestQuoteOnline}
+          </Link>
         </div>
       </section>
 

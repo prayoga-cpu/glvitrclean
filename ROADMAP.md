@@ -128,9 +128,21 @@ difference is the test server, not the site.
 
 ## Phase 5 — Assets and proof
 
-- [ ] Real photos processed to WebP, sized, alt text per commune — BLOCKED,
-      STATUS item 6
-- [ ] Before/after pairs on `/realisations` — BLOCKED, STATUS item 6
+- [ ] Real photos processed to WebP, sized, alt text per commune — PARTIAL:
+      two photo pairs + one video pair landed 2026-09-14 and are processed
+      and live (home page only — see the item below). Still BLOCKED on the
+      rest of the archive and on per-commune assignment, STATUS item 6.
+- [ ] Before/after pairs on `/realisations` — still BLOCKED, STATUS item 6.
+      The two photo pairs below are ready to reuse here directly;
+      `src/data/realisations.ts`'s `Photo` type has no video variant yet, so
+      the video pair would need that extended first. Not done this session —
+      wiring the shared gallery is a bigger publishing decision than the home
+      page section that was actually asked for.
+- [x] Home page draggable before/after slider, with real content — code side,
+      2026-09-14. `CompareSlider.tsx`, three cards: two real photo pairs
+      (terrace, veranda roof) and one real video pair (paved terrace),
+      supplied directly and processed from source. See STATUS.md, "Done",
+      2026-09-14.
 - [x] Logo and favicon set — client's brand kit landed 2026-09-09.
       `src/data/brand.ts` declares every path; `public/assets/brand/`,
       `public/assets/icons/`, `public/favicon.ico`, `src/app/manifest.ts`.

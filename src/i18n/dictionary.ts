@@ -134,6 +134,17 @@ export interface UiStrings {
     whyCards: { title: string; body: string }[];
     referralTitle: string;
     referralBody: string;
+    beforeAfterEyebrow: string;
+    beforeAfterH2a: string;
+    beforeAfterH2b: string;
+    beforeAfterIntro: string;
+    /** Accessible name for one slider, numbered so several on the same page differ. */
+    compareAriaLabel: (n: number) => string;
+    /** The "play" button on the one card that carries video. */
+    comparePlayLabel: string;
+    /** What each of the three home page pairs shows. Order matches the cards
+     * in HomeView.tsx: terrace, veranda roof, paved terrace (video). */
+    beforeAfterCaptions: [string, string, string];
     zonesEyebrow: string;
     zonesH2a: string;
     zonesH2b: string;
@@ -542,6 +553,17 @@ const fr: UiStrings = {
     ],
     referralTitle: 'Parrainage',
     referralBody: 'pour chaque nouveau client que vous nous recommandez.',
+    beforeAfterEyebrow: '◆ Avant / après',
+    beforeAfterH2a: 'Voyez',
+    beforeAfterH2b: 'la différence',
+    beforeAfterIntro: 'Faites glisser le curseur pour comparer. Chantiers réalisés par notre équipe.',
+    compareAriaLabel: (n) => `Faites glisser pour comparer avant et après (${n})`,
+    comparePlayLabel: 'Voir la vidéo',
+    beforeAfterCaptions: [
+      'Terrasse carrelée envahie de mousse et de débris, avant et après nettoyage haute pression.',
+      'Toiture vitrée de véranda, avant et après nettoyage.',
+      'Terrasse pavée, avant et après nettoyage haute pression.',
+    ],
     zonesEyebrow: "◆ Zones d'intervention",
     zonesH2a: 'Nous intervenons',
     zonesH2b: 'dans votre commune',
@@ -913,6 +935,17 @@ const en: UiStrings = {
     ],
     referralTitle: 'Referrals',
     referralBody: 'for every new customer you send our way.',
+    beforeAfterEyebrow: '◆ Before / after',
+    beforeAfterH2a: 'See',
+    beforeAfterH2b: 'the difference',
+    beforeAfterIntro: 'Drag the slider to compare. Real jobs, done by our own team.',
+    compareAriaLabel: (n) => `Drag to compare before and after (${n})`,
+    comparePlayLabel: 'Watch the video',
+    beforeAfterCaptions: [
+      'Tiled terrace covered in moss and debris, before and after pressure washing.',
+      'Veranda glass roof, before and after cleaning.',
+      'Paved terrace, before and after pressure washing.',
+    ],
     zonesEyebrow: '◆ Areas we cover',
     zonesH2a: 'We work',
     zonesH2b: 'in your town',
