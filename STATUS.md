@@ -6,8 +6,9 @@ Updated at the end of every work session. Newest entry on top.
 (competitor teardown) DONE on the code side 2026-09-10. Quote form wired to
 Resend 2026-09-14. Home page gets a draggable before/after slider, filled with
 the client's first real photos and video, 2026-09-14. Quote form gets a phone
-country-code field and a post-submit WhatsApp confirmation modal, 2026-09-14
-— see "Done" below. **Not committed yet.**
+country-code field and a post-submit WhatsApp confirmation modal, 2026-09-14.
+The seven `public/assets/placeholder/` stock images were refreshed 2026-09-16
+— see "Done" below.
 **Everything still open is waiting on a human** — see "What we need from you".
 **Build status:** `npm run verify:full` passes — five checks now: typecheck, lint,
 `check:seo`, `check:compliance`, `check:metadata`, `check:proof`. 224 routes.
@@ -110,6 +111,37 @@ The questions to send the client are written out, in French, in
 ---
 
 ## Done
+
+### Placeholder stock photos refreshed, all seven images (2026-09-16)
+
+Darwin deleted the previous seven stock files from `public/assets/placeholder/` and dropped a new
+batch of stock photography (Freepik-style AVIF exports, "Photo"/"Premium Photo" naming) into
+`~/Downloads`. Reviewed each image, matched by orientation and subject to the seven existing slots in
+`HomeView.tsx`, then cropped (`cwebp -crop`, centered) and resized to the exact pixel dimensions each
+`<Image>` call already declares, so no code changed — only the seven files at their existing paths.
+
+| File | Source content | Slot |
+|---|---|---|
+| `hero-01.webp` | Outdoor plaza/terrace clean, mop + bucket | hero gallery, priority |
+| `hero-02.webp` | Indoor office floor mop | hero gallery |
+| `hero-03.webp` | Residential hallway floor mop | hero gallery |
+| `hero-04.webp` | Two-person office clean (fits "une équipe" copy) | hero gallery |
+| `apropos-01.webp` | Office clean, wet-floor sign | about-us, main |
+| `apropos-02.webp` | Gloved hands + phone, detail shot | about-us, inset |
+| `contact-01.webp` | Two people reviewing a phone together | contact section |
+
+**Caveat carried forward, not resolved:** five of the seven source images are indoor **office**
+cleaning scenes (desks, monitors, wet-floor signs) rather than the outdoor window/terrace/facade work
+this business actually sells. STATUS.md flagged this exact mismatch against the *previous* stock set
+("misrepresents an outdoor window/terrace business") when item 6 was still open — this refresh does not
+fix that, it only supplies a same-class stock set with slightly better subject variety (an outdoor
+terrace shot now anchors the priority hero slot). Item 6 (the client's real photo archive) is what
+actually resolves this, and is unchanged by this commit. All seven files keep the
+`placeholder-note`/`illustrativePhoto(s)` on-screen marking per rule 4; two extra landscape stock
+photos (a vacuum shot and a monitor-wipe close-up) were left unused in `~/Downloads`, not deleted.
+
+`npm run verify:full` passes on the new files — no code path changed, only asset bytes at existing
+paths.
 
 ### Quote form: a phone country-code field, and a WhatsApp confirmation modal on submit (2026-09-14)
 
