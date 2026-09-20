@@ -60,6 +60,7 @@ visible gap on the page.
 | 23 | **Confirm the hard water** | `communes.ts` tells the Égly page the tap water is calcaire across the sector, which drives the "traces de calcaire" story on several pages. It is almost certainly right for the Beauce limestone, but the only thing in the repo permitting it is a comment written in the same pass as the claim. One sentence from you retires the question. | "L'eau est bien calcaire dans tout le secteur ?" |
 | 15 | **English legal wording** | The FR pages are the binding ones and the EN pages say so. Worth an accountant's eye before launch, not before. | Client's accountant. |
 | 17 | **Next.js 15 reaches EOL 2026-10-21** | `next@15.5.24` is pinned. After EOL the next CVE has no 15.x patch to move to. | Darwin — plan the 16 bump. |
+| 24 | **Redeploy production so the third quote recipient is live** | `MAIL_TEAM_RECIPIENTS` on the Vercel project was updated 2026-09-20 to add gaelgdu91@gmail.com, but Vercel applies an env change only to *new* deployments. Until one runs, the live `/api/submit` still notifies the old two addresses. Deploying to production is human-only (rule 7). | Redeploy `glvitrclean`, or push the commit that carries the `email.ts` change. |
 
 ### Verified as done, kept for the record
 
@@ -111,6 +112,43 @@ The questions to send the client are written out, in French, in
 ---
 
 ## Done
+
+### Quote-form notifications go to a third recipient, gaelgdu91@gmail.com (2026-09-20)
+
+Requested directly: add gaelgdu91@gmail.com to the addresses that receive every quote request, in local
+and in production.
+
+**Editing the code default alone would have changed nothing.** `TEAM_RECIPIENTS` in
+`api/_lib/email.ts` is `process.env.MAIL_TEAM_RECIPIENTS ?? DEFAULT_TEAM_RECIPIENTS`, and
+`MAIL_TEAM_RECIPIENTS` is set in the Vercel project (see the Resend entry below), so that variable
+*replaces* the default rather than adding to it. Every place that decides the list had to change:
+
+| Where | Change |
+|---|---|
+| `api/_lib/email.ts` `DEFAULT_TEAM_RECIPIENTS` | third address added, for any environment where the variable is unset |
+| `.env.local` (git-ignored) | third address added — local `vercel dev` |
+| Vercel `MAIL_TEAM_RECIPIENTS`, **Development** | third address added, so a later `vercel env pull` cannot silently revert `.env.local` |
+| Vercel `MAIL_TEAM_RECIPIENTS`, **Production** | third address added; still type `sensitive` |
+| `.env.example` | comment updated, and now says the variable replaces the default |
+
+**Deliberately not changed:** the Vercel **Preview** value. Only "local and prod" was asked for, so
+preview deployments keep notifying the previous two addresses.
+
+**Caveat on Production.** Production and Preview are `sensitive` variables, which Vercel makes
+write-only, so the old Production value could not be read back before overwriting it. The new value is
+the full three-address list, written from the Development value. That is an inference, not a check:
+all three environments were created 2026-09-13 and the Resend entry below records them as set
+together, but nothing proves Production still held the same two addresses. If it had been hand-edited
+since to hold something else, that edit is gone.
+
+**Verified.** The real `sendTeamNotification` was compiled and run against a stubbed `fetch` that
+captures the Resend payload — no mail was sent. With the variable unset and with it set to the
+`.env.local` value, `to` is all three addresses and `reply_to` is still the visitor's address. Vercel
+Development was read back from a `vercel env pull`; Production could only be checked by its API
+`updatedAt` timestamp, which moved (Preview's did not). `npm run verify` passes. `npm run
+verify:full` was not run — no page, route or exported HTML is touched.
+
+**Still needed:** a production redeploy before the live endpoint uses the new value — item 24.
 
 ### Placeholder stock photos refreshed, all seven images (2026-09-16)
 
@@ -334,8 +372,8 @@ it.
 CORS). The handler checks the request's origin, rate-limits by IP and by
 recipient address, drops anything that fills the new `company_website`
 honeypot field, then calls Resend twice: a team notification to
-**thibautglossoa@gmail.com** and **prayogadevelopment@gmail.com** with every
-field, and — gated on the team send succeeding, so a promise is never made
+**thibautglossoa@gmail.com** and **prayogadevelopment@gmail.com** (a third
+recipient joined 2026-09-20, see the entry above) with every field, and — gated on the team send succeeding, so a promise is never made
 that nobody received — a confirmation to the customer's own address if they
 gave one, echoing back only the structured fields (service, commune, access)
 and never the free-prose ones, since this is a public endpoint and a

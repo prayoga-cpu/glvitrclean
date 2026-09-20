@@ -35,7 +35,8 @@ const PHONE_TEL = '+33627709970';
 const MAIL_FROM = process.env.MAIL_FROM ?? `${BRAND_NAME} <devis@prionation.io>`;
 
 /** Every submission is notified here. Comma-separated, overridable per env. */
-const DEFAULT_TEAM_RECIPIENTS = 'thibautglossoa@gmail.com,prayogadevelopment@gmail.com';
+const DEFAULT_TEAM_RECIPIENTS =
+  'thibautglossoa@gmail.com,prayogadevelopment@gmail.com,gaelgdu91@gmail.com';
 const TEAM_RECIPIENTS = (process.env.MAIL_TEAM_RECIPIENTS ?? DEFAULT_TEAM_RECIPIENTS)
   .split(',')
   .map((address) => address.trim())
