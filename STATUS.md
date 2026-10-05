@@ -161,6 +161,18 @@ obeying the site's own instructions never reached a new page.
 | `docs/07-migration-plan.md` | Rewritten around the move: what went wrong, the two domains side by side, the map and how `vercel.json` expresses it, the IONOS steps, e-mail, search engines, verification, and a baseline. |
 | `docs/08`, `docs/10`, `ROADMAP.md` | Phase 6 re-specified; registrar items superseded; new human items. |
 
+**Found while verifying production, fixed in a second commit: the catch-alls never fired on a page.**
+They were written `source: "/:path*"`, the form the 2026-09-06 map used. On the live
+`glvitrclean.vercel.app` they redirected `/robots.txt` and `/sitemap.xml` and served every HTML page
+with a 200. Vercel compiles `source` strictly: a trailing `:path*` matches neither `/` nor any path
+ending in `/` — every page, under `trailingSlash: true`. The old-domain catch-all had the same defect
+and would have failed silently the day IONOS DNS moved. Pinned down on two throwaway **preview**
+deployments (production untouched; read through `vercel curl`, which bypasses their SSO): five host
+matchers — anchored regex, unanchored, `{re}`, `{suf}`, `.*` — all fire, a substring pattern does not
+(Vercel anchors host matches itself); and `/(.*)` → `https://…/$1` carries `/`, `/devis/`,
+`/zones/linas`, `/robots.txt`, `/caf%C3%A9/` and `?utm_source=flyer&x=1` through intact. Both
+catch-alls now use that form, and `check:host` fails on any source ending in `:param*`.
+
 **Deliberately not changed.** `company.email` stays `contact@glvitrclean.com` until
 `contact@glvitr-clean.com` is known to exist (item 25) — switching to a dead mailbox would be worse
 than keeping one that still works; outbound SMTP is blocked from this machine, so it could not be

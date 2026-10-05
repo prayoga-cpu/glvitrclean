@@ -31,25 +31,25 @@
       "statusCode": 301
     },
     {
-      "source": "/:path*",
+      "source": "/(.*)",
       "has": [
         {
           "type": "host",
           "value": "^(www\\.)?glvitrclean\\.com$"
         }
       ],
-      "destination": "https://www.glvitr-clean.com/:path*",
+      "destination": "https://www.glvitr-clean.com/$1",
       "statusCode": 301
     },
     {
-      "source": "/:path*",
+      "source": "/(.*)",
       "has": [
         {
           "type": "host",
           "value": "^glvitrclean\\.vercel\\.app$"
         }
       ],
-      "destination": "https://www.glvitr-clean.com/:path*",
+      "destination": "https://www.glvitr-clean.com/$1",
       "statusCode": 301
     }
   ]

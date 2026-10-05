@@ -32,9 +32,11 @@
  *      "glvitr" host other than SITE_URL's. That is the net under 1-3: it
  *      catches the old domain wherever it hides.
  *   5. vercel.json: no host condition may match SITE_URL's own host (it would
- *      redirect the whole live site, possibly to itself); no rule that fires
- *      on every host may sit on a path the export serves (it would hide that
- *      page); every absolute destination is on SITE_URL; and every
+ *      redirect the whole live site, possibly to itself); no source may end in
+ *      `:param*` (Vercel never matches it against `/` or a slash-terminated
+ *      path, i.e. any page here); no rule that fires on every host may sit on
+ *      a path the export serves (it would hide that page); every absolute
+ *      destination is on SITE_URL; and every
  *      destination that names a page names one the export contains — a 301
  *      onto a 404 throws away exactly the equity the redirect exists to keep.
  *
@@ -298,12 +300,24 @@ if (existsSync(vercelPath)) {
       }
     }
 
+    // Vercel compiles `source` strictly: a trailing `:param*` never matches `/`
+    // or any path ending in `/` — and with `trailingSlash: true` that is every
+    // page on this site. The first catch-alls were written that way and fired
+    // only on /robots.txt and /sitemap.xml (measured 2026-10-05). Use `/(.*)`
+    // with `$1` in the destination: verified to carry the root, both slash
+    // forms, files, encoded paths and the query string.
+    const source = String(r.source ?? '');
+    if (/:[A-Za-z_]\w*\*\/?$/.test(source)) {
+      fail('vercel', `${label}: a trailing ":param*" never matches "/" or a slash-terminated path on Vercel — use "/(.*)" and "$1".`);
+    }
+
     // A rule with no host condition fires on the live host too, and Vercel runs
     // redirects before the filesystem: sitting on a path the export serves, it
     // would hide that page from every visitor — or, pointed at itself, loop.
     const hostConditioned = (r.has ?? []).some((h) => h.type === 'host');
-    if (!hostConditioned && !String(r.source).includes(':') && existsInOut(String(r.source))) {
-      fail('vercel', `${label}: source ${r.source} is a page the export serves — the redirect would hide it on ${siteHost}.`);
+    const literalSource = !/[:(*]/.test(source);
+    if (!hostConditioned && literalSource && existsInOut(source)) {
+      fail('vercel', `${label}: source ${source} is a page the export serves — the redirect would hide it on ${siteHost}.`);
     }
 
     const dest = String(r.destination ?? '');
@@ -317,11 +331,12 @@ if (existsSync(vercelPath)) {
     }
     if (absolute && target.host !== siteHost) fail('vercel', `${label}: destination ${dest} is not on ${siteHost}.`);
 
-    // A parameterised destination (`/:path*`) passes the path through and
-    // cannot be checked statically; a fixed one must land on a real page.
-    if (!/\/:/.test(dest) && !existsInOut(target.pathname)) {
+    // A parameterised destination (`/:path`, `/$1`) passes the path through
+    // and cannot be checked statically; a fixed one must land on a real page.
+    const passThrough = /\/:|\$\d/.test(dest);
+    if (!passThrough && !existsInOut(target.pathname)) {
       fail('vercel', `${label}: destination ${dest} is not a page in the export — a 301 onto a 404.`);
-    } else if (!/\/:/.test(dest)) {
+    } else if (!passThrough) {
       fixedDestinations++;
     }
   }

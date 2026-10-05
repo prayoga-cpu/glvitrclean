@@ -98,16 +98,27 @@ redirects before the filesystem:
    site does not serve — a rule on a real path would hide that page on the live
    site, and `check:host` fails the build if one does.
 2. **Catch-all, old hosts only.** `has: [{ type: "host", value:
-   "^(www\\.)?glvitrclean\\.com$" }]`, source `/:path*`, destination
-   `https://www.glvitr-clean.com/:path*`. Path and query string are carried
-   over.
+   "^(www\\.)?glvitrclean\\.com$" }]`, source `/(.*)`, destination
+   `https://www.glvitr-clean.com/$1`. The same again for
+   `^glvitrclean\\.vercel\\.app$`.
 
 Details that are load-bearing:
 
+- **The catch-all source is `/(.*)`, never `/:path*`.** Vercel compiles
+  `source` strictly, and a trailing `:path*` matches neither `/` nor any path
+  ending in `/` — which, with `trailingSlash: true`, is every page on this
+  site. The first version of these rules used `/:path*`; on the live
+  `glvitrclean.vercel.app` it redirected `/robots.txt` and `/sitemap.xml` and
+  silently served every page. `/(.*)` → `$1` was then verified on a preview
+  deployment against the root, both slash forms, a file, a percent-encoded
+  path and a query string (`?utm_source=flyer&x=1` survives). `check:host`
+  now fails on a trailing `:param*` source.
 - **The host condition is an anchored, dot-escaped regular expression.** It
   matches exactly `glvitrclean.com` and `www.glvitrclean.com`. It cannot match
   `www.glvitr-clean.com` — and `check:host` proves that on every build, because
   a host condition matching the live host would redirect the whole site.
+  Vercel anchors the match itself (a probe with a substring pattern did not
+  fire, 2026-10-05), so the explicit `^…$` is belt and braces.
 - **Each known path is listed twice, with and without its trailing slash.**
   Redirects run before the trailing-slash normalisation that
   `trailingSlash: true` gives the export, so a slash-less old link would
