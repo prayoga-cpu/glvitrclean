@@ -14,7 +14,7 @@ not build the page.
 | Decision | `[service] prix` / `tarif` | prix nettoyage terrasse m2 | medium | low | service page pricing block |
 | Blue ocean | `nettoyage poubelles [commune]` | nettoyage poubelles Étampes | very low | **none** | `/zones/[commune]/poubelles` |
 | B2B | `nettoyage vitrine [commune]` | nettoyage vitrine Arpajon | low | medium | `/professionnels` |
-| Brand | `glvitr clean` | — | low | owned | `/` |
+| Brand | `glvitr clean` | — | low | owned — by the old domain until its 301s and Change of Address land (`docs/07`); the new hostname tokenises as "glvitr clean" too | `/` |
 
 ## Service slugs and their head terms
 

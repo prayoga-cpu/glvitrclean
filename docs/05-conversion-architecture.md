@@ -104,6 +104,7 @@ Revisit if, and only if, someone is actually going to sit on the other end.
 
 ## Measurement
 
-Phase 6 onward: Google Search Console only. Which query brought the visit, which
+Phase 6 onward: Google Search Console only — the Domain property for
+`glvitr-clean.com` (the old domain's property exists only for the move). Which query brought the visit, which
 page they landed on, whether they called. No analytics script in v1, so no
 consent banner, so no CLS from a consent banner.

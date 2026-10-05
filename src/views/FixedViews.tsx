@@ -246,7 +246,7 @@ export function LegalNoticeView({ lang }: { lang: Lang }) {
       <h1>{t.legal.noticeH1}</h1>
       <CourtesyNote lang={lang} />
 
-      {/* Required by LCEN art. 6-III. The current live site has none.
+      {/* Required by LCEN art. 6-III. The old IONOS site had none.
           TODO(human): RC Pro insurer, policy number, and the cooperative's
           details. See docs/08-non-code-checklist.md. */}
 

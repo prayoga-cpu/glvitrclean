@@ -19,10 +19,16 @@ depends on one of these, stop and log it in `STATUS.md`.
 
 ## Blocking the domain move (2026-10-05)
 
-- [ ] **IONOS access for the old `glvitrclean.com`.** Two DNS records there
-      (apex A, `www` CNAME) turn the old WordPress site into 301s to the new
-      one. Exact values in `docs/07-migration-plan.md`, "The old domain". Do
-      **not** touch its MX records — they carry `contact@glvitrclean.com`.
+- [ ] **IONOS access for the old `glvitrclean.com`.** A few DNS records there
+      turn the old WordPress site into 301s to the new one — after the two old
+      hosts are attached in Vercel, never before. Exact values and order in
+      `docs/07-migration-plan.md`, "The old domain". Do **not** touch its MX
+      records — they carry `contact@glvitrclean.com`. Until this is done the
+      old site keeps showing an unbacked "50% de crédit d'impôt" under the
+      client's name (`docs/04`).
+- [ ] **Who owns the Squarespace account for `glvitr-clean.com`?** It renews
+      on 2027-09-20; the client must hold it (or at least have access) before
+      handover — it now carries the site, the mail and Search Console.
 - [ ] **Keep `glvitrclean.com` registered.** Paid at IONOS until 2028-02-06.
       Cancelling the IONOS contract deletes it (and the mailbox) early, and a
       lapsed domain with this name and phone-number history can be bought by

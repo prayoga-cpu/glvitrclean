@@ -31,6 +31,16 @@
       "statusCode": 301
     },
     {
+      "source": "/book-appointment",
+      "destination": "https://www.glvitr-clean.com/devis/",
+      "statusCode": 301
+    },
+    {
+      "source": "/book-appointment/",
+      "destination": "https://www.glvitr-clean.com/devis/",
+      "statusCode": 301
+    },
+    {
       "source": "/(.*)",
       "has": [
         {

@@ -129,11 +129,42 @@ function headRegion(html) {
 
 /** Does a site-relative asset path exist in the export? */
 function existsInOut(pathname) {
-  const p = decodeURIComponent(pathname);
+  let p = pathname;
+  try {
+    p = decodeURIComponent(pathname);
+  } catch {
+    // A malformed escape is looked up as written.
+  }
   const direct = join(out, p);
   if (existsSync(direct) && statSync(direct).isFile()) return true;
   const index = join(out, p, 'index.html');
   return existsSync(index);
+}
+
+/**
+ * Would a `has`/`missing` host condition match `host`? A string value is a
+ * regular expression, which Vercel anchors (probed 2026-10-05: a substring
+ * pattern did not fire). An object value uses Vercel's documented operators.
+ * No value, or an operator this script does not know, counts as a match: a
+ * guard that cannot tell must fail closed.
+ */
+function hostConditionMatches(value, host) {
+  if (value === undefined || value === null) return true;
+  if (typeof value === 'string') return new RegExp(`^(?:${value})$`, 'i').test(host);
+  if (typeof value !== 'object') return true;
+  const lower = (v) => String(v).toLowerCase();
+  const ops = {
+    eq: (v) => host === lower(v),
+    neq: (v) => host !== lower(v),
+    inc: (v) => Array.isArray(v) && v.map(lower).includes(host),
+    ninc: (v) => Array.isArray(v) && !v.map(lower).includes(host),
+    pre: (v) => host.startsWith(lower(v)),
+    suf: (v) => host.endsWith(lower(v)),
+    // Unanchored on purpose: whether Vercel anchors `re` is undocumented, and
+    // the looser reading is the one that can only make this guard stricter.
+    re: (v) => new RegExp(String(v), 'i').test(host),
+  };
+  return Object.entries(value).every(([op, v]) => (op in ops ? ops[op](v) : true));
 }
 
 function walk(dir, found = []) {
@@ -255,8 +286,11 @@ if (!existsSync(robotsPath)) {
 /* ------------------------------------------- 4. look-alike hosts, anywhere -- */
 
 const TEXT_EXT = new Set(['.html', '.txt', '.xml', '.json', '.webmanifest', '.js', '.css', '.svg', '.rsc']);
-/** `https://host` and the JSON-escaped `https:\/\/host` the flight payload can carry. */
-const ABSOLUTE_URL = /https?:(?:\\?\/){2}([a-z0-9.-]+)/gi;
+/** `https://host`, protocol-relative `//host`, and the JSON-escaped
+ *  `https:\/\/host` the flight payload can carry. Only hosts carrying the
+ *  brand stem are judged, so the loose pattern cannot raise a false alarm on
+ *  anything else. */
+const ABSOLUTE_URL = /(?:https?:)?(?:\\?\/){2}([a-z0-9.-]+)/gi;
 let scanned = 0;
 
 for (const file of allFiles) {
@@ -282,22 +316,25 @@ if (existsSync(vercelPath)) {
   const vercel = JSON.parse(readFileSync(vercelPath, 'utf8'));
   for (const r of vercel.redirects ?? []) {
     redirectCount++;
-    const label = `vercel.json redirect ${r.source}${r.has ? ' (host-conditioned)' : ''}`;
+    const label = `vercel.json redirect ${r.source}${r.has || r.missing ? ' (conditioned)' : ''}`;
 
-    for (const h of r.has ?? []) {
-      if (h.type !== 'host' || typeof h.value !== 'string') continue;
-      let re;
-      try {
-        // Vercel matches `has` values as regular expressions; anchor them the
-        // way it does, so an unanchored pattern is judged as it will behave.
-        re = new RegExp(`^(?:${h.value})$`, 'i');
-      } catch {
-        fail('vercel', `${label}: host condition "${h.value}" is not a valid regular expression.`);
-        continue;
-      }
-      if (re.test(siteHost)) {
-        fail('vercel', `${label}: host condition "${h.value}" matches ${siteHost} itself — it would redirect the live site.`);
-      }
+    // Does this rule fire on the live host? Every `has` host condition must
+    // match it and no `missing` one may. Header, cookie and query conditions
+    // are ignored, i.e. assumed satisfiable — failing closed again.
+    const hostHas = (r.has ?? []).filter((h) => h.type === 'host');
+    const hostMissing = (r.missing ?? []).filter((h) => h.type === 'host');
+    let firesOnSite;
+    try {
+      firesOnSite =
+        hostHas.every((h) => hostConditionMatches(h.value, siteHost)) &&
+        !hostMissing.some((h) => hostConditionMatches(h.value, siteHost));
+    } catch {
+      fail('vercel', `${label}: a host condition is not a valid regular expression.`);
+      continue;
+    }
+    const hostConditioned = hostHas.length > 0 || hostMissing.length > 0;
+    if (hostConditioned && firesOnSite) {
+      fail('vercel', `${label}: its host condition matches ${siteHost} itself — it would redirect the live site.`);
     }
 
     // Vercel compiles `source` strictly: a trailing `:param*` never matches `/`
@@ -314,9 +351,8 @@ if (existsSync(vercelPath)) {
     // A rule with no host condition fires on the live host too, and Vercel runs
     // redirects before the filesystem: sitting on a path the export serves, it
     // would hide that page from every visitor — or, pointed at itself, loop.
-    const hostConditioned = (r.has ?? []).some((h) => h.type === 'host');
     const literalSource = !/[:(*]/.test(source);
-    if (!hostConditioned && literalSource && existsInOut(source)) {
+    if (firesOnSite && literalSource && existsInOut(source)) {
       fail('vercel', `${label}: source ${source} is a page the export serves — the redirect would hide it on ${siteHost}.`);
     }
 

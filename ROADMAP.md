@@ -177,9 +177,12 @@ blocked indexing for two weeks. See `docs/07-migration-plan.md`.
       every `vercel.json` rule, checked against `SITE_URL`
 - [x] 301 map, old site → new: page-level rules for every known old URL, plus
       a host-conditioned catch-all for both old hosts — `vercel.json`
-- [x] Old hosts attached to the Vercel project, so the map fires the moment
-      their DNS points here
-- [x] IndexNow configured — key file on the live host, `npm run indexnow`
+- [ ] Old hosts attached to the Vercel project (no domain-level redirect), so
+      the map fires the moment their DNS points here — Darwin, two CLI
+      commands in `docs/07`; the session that shipped the map was not
+      permitted to change domains
+- [x] IndexNow configured — key file on the live host, `npm run indexnow`;
+      first submission accepted 2026-10-05 (HTTP 200, 224 URLs)
 - [ ] Old domain's DNS pointed at Vercel — BLOCKED, human (IONOS access)
 - [ ] Search Console domain property for `glvitr-clean.com`, sitemap
       submitted — BLOCKED, human

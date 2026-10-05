@@ -42,7 +42,7 @@ Fixed 2026-10-05, in three layers:
 | Role | canonical. `www` serves; the apex 308s to `www` (Vercel domain setting) | 301 source only — never canonical again |
 | Registrar | Squarespace Domains, created 2026-09-20, **expires 2027-09-20** — keep auto-renew on | IONOS, created 2026-02-06, paid to 2028-02-06 |
 | DNS | Squarespace | IONOS |
-| Web | Vercel, project `glvitrclean` | IONOS "MyWebsite Now" (WordPress), still live — four pages, titled "Laveur de Vitres 91 & 94"; apex A `217.160.0.239`, `www` A `212.227.172.249` |
+| Web | Vercel, project `glvitrclean` | IONOS "MyWebsite Now" (WordPress), still live, titled "Laveur de Vitres 91 & 94"; apex A `217.160.0.239` + AAAA `2001:8d8:100f:f000::200`, `www` A `212.227.172.249` + AAAA `2001:8d8:105:1:0:1:0:7`, TTL 1 h |
 | Mail | Google Workspace (MX `aspmx.l.google.com`) | IONOS (MX `mx00/mx01.ionos.fr`) — `contact@glvitrclean.com` |
 
 The old site's history is small — the domain is eight months old — so the
@@ -51,12 +51,25 @@ other: same name, same phone number, different service area (the old site
 still says 91 and 94; the business is 91 and 77). Google and customers both
 get a single answer only once the old host stops serving its own pages.
 
+There is a second, sharper reason. The old home page and `/avantages/` still
+say **"50% de crédit d'impôt"** with no SAP declaration behind it — exactly the
+unbacked claim `CLAUDE.md` rule 1 exists to keep off this business's pages
+(Art. L121-2, `docs/04-compliance-sap.md`) — under the client's name and phone
+number. That exposure lasts until the old host stops serving.
+
 ## Redirect map: old site → new site
 
 The old site's `wp-sitemap.xml` lists exactly four URLs (read 2026-10-05):
 the home page, `/services-1/`, `/avantages/` and `/contact/` — the same four
-the 2026-09-06 map was built from, so that map was complete and survives with
-new, absolute destinations.
+the 2026-09-06 map was built from, and they survive with new, absolute
+destinations. The sitemap is not the whole URL space, though. Walking
+`/?page_id=1…330` (the REST API is disabled) found every public object: the
+four pages, six pages a booking plugin created and nobody configured
+(`/book-appointment/` and five confirmation/cancellation pages), and 103 empty
+image-attachment pages (`/gox_u-<uuid>/…`). Only `/book-appointment/` has a
+human intent with an equivalent here — booking means asking for a quote — so
+it earns a line. The rest are plumbing for the catch-all. `/services/` was a
+404 on the old site; the `-1` suffix did not hide a page.
 
 | Old URL — either old host, with or without the slash | New | Code |
 |---|---|---|
@@ -64,6 +77,7 @@ new, absolute destinations.
 | `/services-1/` | `https://www.glvitr-clean.com/services/` | 301 |
 | `/avantages/` | `https://www.glvitr-clean.com/credit-impot/` | 301 |
 | `/contact/` | `https://www.glvitr-clean.com/devis/` | 301 |
+| `/book-appointment/` | `https://www.glvitr-clean.com/devis/` | 301 |
 | anything else | the same path on `https://www.glvitr-clean.com` | 301 |
 | any path on `glvitrclean.vercel.app` | the same path on `https://www.glvitr-clean.com` | 301 |
 
@@ -130,9 +144,8 @@ Details that are load-bearing:
   pages of a retired site.
 - **No domain-level redirect for the old hosts in the Vercel dashboard.** It
   would fire before `vercel.json`, every old path would land on the same path
-  of the new host, and the page-level map above would never run. Both old
-  hosts are attached to the project as plain domains; `vercel.json` does the
-  rest.
+  of the new host, and the page-level map above would never run. Attach both
+  old hosts to the project as plain domains; `vercel.json` does the rest.
 
 ## The old domain: what has to happen (human, IONOS access)
 
@@ -143,28 +156,61 @@ Details that are load-bearing:
    still type it or follow an old link: in practice for good. Renewal is cheap;
    a lapsed domain with this name and this phone number's history
    is an impersonation risk.
-2. **IONOS → Domains & SSL → `glvitrclean.com` → DNS**, change exactly two
-   records:
-   {{DNS_RECORDS}}
-   Leave MX, the SPF TXT record and anything else mail-related alone: they
-   carry `contact@glvitrclean.com`. If IONOS refuses the `www` CNAME because an
-   A or AAAA record exists for `www`, delete that record first; delete any AAAA
-   record on `@` and `www` too.
-3. Both old hosts are already attached to the Vercel project, so Vercel issues
-   their certificates as soon as DNS resolves, usually within minutes. Do not
-   add a domain-level redirect for them in the dashboard (see above).
-4. Run the old-host block under "Verifying".
-5. Search Console: verify `glvitrclean.com` as a domain property (TXT record
-   at IONOS) and run **Change of Address** to `glvitr-clean.com`.
-6. Only then cancel the IONOS **website** product. Not the domain, and not the
+2. **Attach both old hosts to the Vercel project — before anything at IONOS.**
+   (Darwin. The CLI session that made this change was not permitted to.)
+   `vercel domains add glvitrclean.com glvitrclean` and
+   `vercel domains add www.glvitrclean.com glvitrclean` — or Settings → Domains
+   in the dashboard, connected to Production **with no redirect**. Harmless
+   while DNS still points at IONOS. **Doing step 4 first would take the old
+   domain from a working WordPress site to a Vercel 404:** an unattached host
+   answers `404 DEPLOYMENT_NOT_FOUND` (checked 2026-10-05).
+3. **Prove the rules before touching DNS.** Vercel routes by the `Host`
+   header, so once step 2 is done the old-host block under "Verifying" runs
+   against the live site today with `-H 'Host: glvitrclean.com'` and
+   `-H 'Host: www.glvitrclean.com'`. Every line must be a single 301 to
+   `https://www.glvitr-clean.com/…`. Browsers cache 301s permanently: a wrong
+   one is expensive to take back.
+4. **IONOS → Domains & SSL → `glvitrclean.com` → DNS** (Thibaut). A day ahead,
+   lower the TTL of the records below from 1 h to 5 min. Then:
+
+   | Host | Delete | Add |
+   |---|---|---|
+   | `@` | A `217.160.0.239`, **AAAA `2001:8d8:100f:f000::200`** | A `216.198.79.1`, A `64.29.17.1` |
+   | `www` | A `212.227.172.249`, **AAAA `2001:8d8:105:1:0:1:0:7`** | CNAME `a1e12e7089ea9631.vercel-dns-017.com` |
+
+   These are the values Vercel recommends for this project (2026-10-05):
+   `www.glvitr-clean.com` already resolves through that same CNAME, and
+   `glvitr-clean.com` through `216.198.79.1`. The older generic values,
+   A `76.76.21.21` and CNAME `cname.vercel-dns.com`, are still accepted. The
+   **AAAA deletions are not optional**: Vercel serves no IPv6 here, so a
+   leftover AAAA keeps IPv6 visitors — and Googlebot, often — on the old
+   WordPress site, and can stall the certificate. Leave **MX, the SPF TXT
+   record and the nameservers** exactly as they are: they carry
+   `contact@glvitrclean.com`.
+
+   For a few minutes after the switch the old hosts have no certificate yet
+   and HTTPS fails on them; the short TTL keeps that window short.
+5. Run the old-host block under "Verifying" without the `Host` header.
+6. **Search Console Change of Address.** Verify the old domain as a Domain
+   property by DNS TXT at IONOS — not by HTML file or meta tag, which stop
+   working once the host only redirects — and file Change of Address to
+   `glvitr-clean.com` for **both** `glvitrclean.com` and `www.glvitrclean.com`:
+   the tool does not move `www` when it moves the apex. It needs the same
+   Google account to own both properties.
+7. Keep the redirects at least 180 days (Google's minimum for the move to
+   stick) — in practice, as long as the domain is renewed. Then, and only
+   then, cancel the IONOS **website** product — not the domain, and not the
    mailbox until "Email" below is done.
 
 ## Email
 
 `contact@glvitrclean.com` is an IONOS mailbox on the old domain, and it is
 still what the site, the JSON-LD and the quote confirmation e-mails print. It
-keeps working as long as the IONOS mail service and the domain do — moving the
-web records does not touch it. The switch, in order:
+is also the **`reply_to` of every customer confirmation** (`api/_lib/email.ts`):
+a customer who simply answers their confirmation writes to the IONOS mailbox.
+Lead notifications themselves go to the team's Gmail addresses and do not
+depend on it. It keeps working as long as the IONOS mail service and the
+domain do — moving the web records does not touch it. The switch, in order:
 
 1. Create `contact@glvitr-clean.com` in the Google Workspace that already
    receives the new domain's mail, and send it a test.
@@ -213,14 +259,15 @@ curl -sI http://www.glvitr-clean.com/devis/ | grep -iE '^(HTTP|location:)'
 # unknown URL: a real 404, not a redirect to /
 curl -sI https://www.glvitr-clean.com/une-page-qui-nexiste-pas/ | head -1
 
-# the old hosts: one 301 to the new equivalent, never two
+# the old hosts: one 301 to the new equivalent, never two.
+# Before the IONOS change (after attaching them in Vercel), add
+#   -H "Host: $h"  and request https://www.glvitr-clean.com$p  instead.
 for h in glvitrclean.com www.glvitrclean.com; do
-  for p in / /contact /contact/ /avantages/ /services-1/ /une-page-quelconque/; do
-    curl -sI "https://$h$p" | grep -iE '^(HTTP|location:)'
+  for p in / /contact /contact/ /avantages/ /services-1/ /book-appointment/ \
+           /gox_u-quelconque/ '/?utm_source=flyer'; do
+    echo "$h$p  $(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' "https://$h$p")"
   done
 done
-# Before the IONOS change the same rules can be exercised on Vercel directly:
-#   curl -skI --resolve glvitrclean.com:443:76.76.21.21 https://glvitrclean.com/contact/
 
 # the public Vercel alias is not a second copy of the site
 curl -sI https://glvitrclean.vercel.app/devis/ | grep -iE '^(HTTP|location:)'

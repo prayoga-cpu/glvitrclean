@@ -36,13 +36,13 @@ visible gap on the page.
 
 | # | What we need | Why it matters | Ask |
 |---|---|---|---|
-| 4 | **IONOS access for the old `glvitrclean.com`** — re-scoped 2026-10-05 | The site now lives on `glvitr-clean.com`, but the old WordPress site is still live with the same name and phone number and a different service area (91 + 94): it contradicts the new site to Google and to customers. Two DNS records at IONOS turn it into 301s — the map is deployed in `vercel.json`, waiting. Values and steps: `docs/07-migration-plan.md`, "The old domain". **Never let the domain lapse** (paid to 2028-02-06; cancelling the IONOS package can delete it). Do not touch its MX records. | "Vous avez encore accès au compte IONOS de glvitrclean.com ?" |
-| 25 | **Create `contact@glvitr-clean.com`** | `contact@glvitrclean.com` is on IONOS mail and dies with the old domain. The new domain's mail already goes to Google Workspace; the mailbox just has to exist. Then forward the old address to it for 12+ months, and `company.email` changes in one edit (the quote e-mails read it since 2026-10-05). Not switched yet because whether it exists could not be tested from here. | Thibaut, in Google Workspace — then tell us. |
+| 4 | **IONOS access for the old `glvitrclean.com`** — re-scoped 2026-10-05 | The site now lives on `glvitr-clean.com`, but the old WordPress site is still live with the same name and phone number and a different service area (91 + 94): it contradicts the new site to Google and to customers — and it still shows an unbacked "50% de crédit d'impôt" under the client's name, the exact L121-2 exposure rule 1 exists to prevent. A few DNS records at IONOS turn it into 301s — the map is deployed in `vercel.json`, waiting. **Order matters: item 27 (a) first**; an unattached host answers Vercel's `404 DEPLOYMENT_NOT_FOUND`, which would be worse than the old site. Delete the two AAAA records too. Values and steps: `docs/07-migration-plan.md`, "The old domain". **Never let the domain lapse** (paid to 2028-02-06; cancelling the IONOS package can delete it). Do not touch its MX records. | "Vous avez encore accès au compte IONOS de glvitrclean.com ?" |
+| 25 | **Create `contact@glvitr-clean.com`** | `contact@glvitrclean.com` is on IONOS mail and dies with the old domain. It is also the `reply_to` of every customer confirmation e-mail, so a customer answering their confirmation writes to IONOS (lead notifications go to the team's Gmail addresses and are unaffected). The new domain's mail already goes to Google Workspace; the mailbox just has to exist. Then forward the old address to it for 12+ months, and `company.email` changes in one edit (the quote e-mails read it since 2026-10-05). Not switched yet because whether it exists could not be tested from here. | Thibaut, in Google Workspace — then tell us. |
 | 26 | **Search Console for `glvitr-clean.com`** | Google cannot be told about the new sitemap any other way — its ping endpoint is gone. Domain property, DNS TXT at Squarespace (two `google-site-verification` records already exist there: check whether a property is already verified), then submit `https://www.glvitr-clean.com/sitemap.xml` and request indexing on the home and service pages. The developer's Google account has no access to either domain (checked 2026-10-05). | Whoever owns the Squarespace account. |
-| 27 | **Delete `NEXT_PUBLIC_SITE_URL` from the Vercel project** | Inert since 2026-10-05 — nothing reads it — but it is the variable that held the old domain, and a future reader could re-wire it. Deleting it from this session was refused by the permission guard because a write-only value cannot be inspected first. Same for the stale `NEXT_PUBLIC_SAP_NUMBER` (see the Resend entry). | Darwin: `vercel env rm NEXT_PUBLIC_SITE_URL --yes` |
+| 27 | **Two Vercel-side steps the 2026-10-05 session was not permitted to take** | (a) **Attach `glvitrclean.com` and `www.glvitrclean.com` to the project**, no domain-level redirect — the deployed map only fires for hosts the project serves, so without this the IONOS DNS change in item 4 would land on a Vercel 404. Refused by the permission guard as a domain change. (b) **Delete `NEXT_PUBLIC_SITE_URL`** — inert since 2026-10-05, nothing reads it, but it is the variable that held the old domain. Refused because a write-only value cannot be inspected before deletion. The stale `NEXT_PUBLIC_SAP_NUMBER` (see the Resend entry) can go at the same time. | Darwin: `vercel domains add glvitrclean.com glvitrclean`, `vercel domains add www.glvitrclean.com glvitrclean`, `vercel env rm NEXT_PUBLIC_SITE_URL --yes` |
 | 18 | **How long we keep a quote request that goes nowhere** | Same page, same article. 12 months is a defensible default if you have no preference. | "Une demande restée sans suite, on la garde combien de temps ?" |
-| 11 | **RC Pro insurer and policy number** | `/mentions-legales` reads "À compléter". Required by LCEN art. 6-III. | "Quel assureur, et quel numéro de contrat ?" |
-| 12 | **Hosting provider for the hébergeur block** | Same page, same law. It is Vercel unless you move. | Darwin's call. |
+| 11 | **RC Pro insurer and policy number** | `/mentions-legales` reads "À compléter". Required by LCEN art. 6-III — **and the site is public now** (checked live 2026-10-05), so this is a live gap, not a launch blocker. | "Quel assureur, et quel numéro de contrat ?" |
+| 12 | **Hosting provider for the hébergeur block** | Same page, same law, same live gap: "Hébergeur — À compléter." In practice it is Vercel Inc.; it needs Vercel's legal name, address and phone as published by Vercel, not from memory. | Darwin's call. |
 | 6 | **Photo archive** | The most visible gap on the site. Every image is stock, marked "photo d'illustration" on screen. `/realisations` is a written page with no gallery because inventing one would break rule 4. Blocks all of phase 5. | "Le dossier Drive avec vos photos de chantier — on peut y accéder, et on a votre accord pour les publier ? Le plus utile : des paires avant / après du même endroit, avec le nom de la commune." |
 
 ### These change what the site is allowed to say
@@ -173,11 +173,80 @@ matchers — anchored regex, unanchored, `{re}`, `{suf}`, `.*` — all fire, a s
 `/zones/linas`, `/robots.txt`, `/caf%C3%A9/` and `?utm_source=flyer&x=1` through intact. Both
 catch-alls now use that form, and `check:host` fails on any source ending in `:param*`.
 
+**Production, via the Vercel CLI, at Darwin's explicit instruction** (rule 7 otherwise reserves
+deploys to the human). `vercel deploy --prod` from the committed tree, twice: `1a72b5a` (the move),
+then `d528541` (the catch-all fix), deployment `glvitrclean-pvg8feenn`, aliased to
+`www.glvitr-clean.com`, `glvitr-clean.com` and `glvitrclean.vercel.app`. `out/` was deleted before
+each upload — the CLI ignores `.gitignore` (checked in its source: only `.vercelignore` and a fixed
+list that does include `.env.local`), and would otherwise have shipped 33 MB of stale export. A
+scripted audit of the live site, run before and after:
+
+| | Before | After |
+|---|---|---|
+| Pages from the live sitemap answering 200, self-canonical, with the fr/en/x-default trio, og:url = canonical, og:image on host, no stray host, JSON-LD parsing | **0 / 224** — 223 were 404s on the old host | **224 / 224** |
+| `robots.txt` `Sitemap:` | old host | `https://www.glvitr-clean.com/sitemap.xml` |
+| Sitemap `<loc>` + alternates on the new host | 0 of 896 | 896 of 896 |
+| `glvitrclean.vercel.app` | full indexable copy | 301, path and query kept |
+| `/contact`, `/avantages`, `/services-1`, both slash forms | relative 301s | one 301 to the absolute new page |
+| apex, `http://` | 308 → www | unchanged |
+| `/api/submit/` — GET, foreign origin, same-origin empty payload | 405 / 403 / 400 | unchanged — no mail sent by the probe |
+
+**Not permitted from this session, left for Darwin (item 27):** attaching the two old hosts to the
+project, and deleting `NEXT_PUBLIC_SITE_URL`. The permission guard refused both — a domain change, and
+the deletion of a value that cannot be read first. Neither affects the live fix.
+
+**IndexNow: done.** The key file is live. The first submission answered 403
+`SiteVerificationNotCompleted` — the protocol checking a new key asynchronously, now explained by the
+script instead of dumped raw — and the retry a minute later answered **HTTP 200: 224 URLs submitted for
+`www.glvitr-clean.com`** (2026-10-05, 08:36 +08). Rerun `npm run indexnow` after any deploy that adds or
+changes pages.
+
+**Two throwaway preview deployments** (`glvitrclean-623rm1dpg`, `glvitrclean-1cm1tm082`) carry the
+probe rules described above. Both are behind Vercel SSO with `noindex`, so they are inert; they can be
+deleted from the dashboard.
+
 **Deliberately not changed.** `company.email` stays `contact@glvitrclean.com` until
 `contact@glvitr-clean.com` is known to exist (item 25) — switching to a dead mailbox would be worse
 than keeping one that still works; outbound SMTP is blocked from this machine, so it could not be
 probed. Search Console (item 26): the only Google account reachable from here is the developer's, with
 no access to either domain.
+
+**Third commit — what the research turned up.**
+
+- **The old site has more than four URLs.** Its sitemap lists four, but walking `/?page_id=1…330`
+  (its REST API is disabled) found six pages from a booking plugin nobody configured and 103 empty
+  image-attachment pages. `/book-appointment/` is live, indexable and means "I want to book": it now
+  301s to `/devis/` like `/contact/`. The rest are plumbing for the path-preserving catch-all, which is
+  correct for them (a 404 on the new host, never a soft-404 to the home page).
+- **Four social cards printed the old domain in the artwork** — `og-fr`, `og-en`, `og-brand`, and
+  `card-wide.png`, which nobody had flagged and which is the card handed over for the GBP and print.
+  All four repainted to `glvitr-clean.com` (method and numbers in `docs/09`). Accepted only after: the
+  old string re-rendered pixel-for-pixel before the new one was drawn; a skeptical second pass found no
+  defect; and an independent decode here shows **0 pixels changed outside each patch**. Viewed at 100%
+  and 3x.
+- **`.vercelignore`.** The CLI ignores `.gitignore`; `vercel deploy --dry --json` now uploads 144
+  files with `out/`, `.claude/` and every `.env*` excluded.
+- **`check:host` hardened after a hand review.** It skipped host conditions written in Vercel's object
+  form (`{inc}`, `{eq}`, `{suf}`, `{re}`…) and ignored `missing`, so a rule firing on the live host
+  could pass; a malformed `%` in a path crashed it; protocol-relative `//host` URLs went unscanned. It
+  now decides "does this rule fire on the live host?" from every host condition, failing closed on
+  anything it cannot read. Battery of eight injected faults: all eight fail the build, the legitimate
+  `missing` pattern passes. `indexnow` reports a network failure as one line, not a stack trace.
+- **Handed to the humans, in `docs/07`:** the exact IONOS records (A `216.198.79.1` + `64.29.17.1`,
+  CNAME `a1e12e7089ea9631.vercel-dns-017.com` — the project's own CNAME, already serving
+  `www.glvitr-clean.com`; both IPs confirmed Vercel's by WHOIS and by serving this site when pinned),
+  the two AAAA records that must go or IPv6 visitors stay on WordPress, the TTL drop, the
+  attach-before-DNS gate (an unattached host is a `404 DEPLOYMENT_NOT_FOUND`, measured), a `Host:`
+  header test that proves the old-host rules before DNS moves, and Change of Address filed for both
+  `glvitrclean.com` and `www.glvitrclean.com`.
+- **Noticed, not part of this change:** `/mentions-legales` is public now and still prints "À
+  compléter" for the hébergeur and the RC Pro (items 11, 12); `/confidentialite` still promises a
+  retention period "before the form goes live" (item 18). Those were launch blockers; they are live
+  gaps.
+
+An independent review workflow was launched on the whole change and produced nothing — all four
+reviewers hit the account's session limit before starting. The review was redone by hand instead:
+every guard negative-tested, every live claim re-measured.
 
 `npm run verify:full` passes — all seven steps, `check:host` included.
 

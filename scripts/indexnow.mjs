@@ -39,6 +39,15 @@ function die(msg) {
   process.exit(1);
 }
 
+/** fetch, with a network failure reported as one line instead of a trace. */
+async function get(url, init) {
+  try {
+    return await fetch(url, init);
+  } catch (error) {
+    die(`could not reach ${url}: ${error.cause?.code ?? error.message}`);
+  }
+}
+
 /* SITE_URL as text, the way scripts/check-host.mjs reads it. */
 const companySrc = readFileSync(join(root, 'src/data/company.ts'), 'utf8');
 const siteMatch = companySrc.match(/export const SITE_URL\s*=\s*'([^']+)';/);
@@ -54,12 +63,12 @@ if (readFileSync(join(root, 'public', keyFiles[0]), 'utf8').trim() !== key) {
 }
 const keyLocation = `${SITE_URL}/${key}.txt`;
 
-const liveKey = await fetch(keyLocation, { redirect: 'manual' });
+const liveKey = await get(keyLocation, { redirect: 'manual' });
 if (liveKey.status !== 200 || (await liveKey.text()).trim() !== key) {
   die(`${keyLocation} does not serve the key (HTTP ${liveKey.status}). Deploy first.`);
 }
 
-const sitemap = await fetch(`${SITE_URL}/sitemap.xml`, { redirect: 'manual' });
+const sitemap = await get(`${SITE_URL}/sitemap.xml`, { redirect: 'manual' });
 if (sitemap.status !== 200) die(`${SITE_URL}/sitemap.xml answered HTTP ${sitemap.status}.`);
 const urlList = [...(await sitemap.text()).matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1].trim());
 
@@ -76,7 +85,7 @@ if (dryRun) {
   process.exit(0);
 }
 
-const res = await fetch(ENDPOINT, {
+const res = await get(ENDPOINT, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json; charset=utf-8' },
   body: JSON.stringify({ host, key, keyLocation, urlList }),
@@ -88,5 +97,12 @@ const res = await fetch(ENDPOINT, {
 if (res.status === 200 || res.status === 202) {
   console.log(`indexnow OK — HTTP ${res.status}, ${urlList.length} URLs submitted for ${host}.`);
 } else {
-  die(`HTTP ${res.status} from ${ENDPOINT}: ${(await res.text()).slice(0, 300)}`);
+  const body = (await res.text()).slice(0, 300);
+  // A new key is checked asynchronously: the first POST answers 403
+  // SiteVerificationNotCompleted while the engine fetches the key file. Not a
+  // fault — the same command succeeds a few minutes later.
+  if (res.status === 403 && body.includes('SiteVerificationNotCompleted')) {
+    die(`the key is still being verified (first use of ${keyLocation}). Run this again in a few minutes.`);
+  }
+  die(`HTTP ${res.status} from ${ENDPOINT}: ${body}`);
 }

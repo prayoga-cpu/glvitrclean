@@ -3,6 +3,10 @@
 Local-search website for a cleaning business in the southern Essonne (91).
 Next.js 15, static export, bilingual French + English mirror, no database.
 
+Live at **https://www.glvitr-clean.com** (Vercel, deployed from `main`). The
+old `glvitrclean.com` is a redirect source only — see
+`docs/07-migration-plan.md`.
+
 ## Read these first, in order
 
 1. `CLAUDE.md` — fixed rules. Start here. The compliance section is not optional.
@@ -31,15 +35,15 @@ is a shared key, not copy.
 |---|---|---|
 | `/` | 1 | hand-written |
 | `/services` and `/zones` hubs | 2 | hand-written |
-| `/services/[slug]` | 6 | `src/data/services.ts` |
+| `/services/[slug]` | 7 | `src/data/services.ts` |
 | `/zones/[commune]` | 12 | `src/data/communes.ts` |
-| `/zones/[commune]/[service]` | 72 | cross product |
+| `/zones/[commune]/[service]` | 84 | cross product |
 | Fixed pages | 6 | hand-written |
-| **basePaths** | **99** | |
-| **Routes** (× 2 editions) | **198** | |
+| **basePaths** | **112** | |
+| **Routes** (× 2 editions) | **224** | |
 
-204 files are exported: the 198 routes plus `sitemap.xml`, `robots.txt` and
-`404.html`.
+Beyond the 224 routes the export carries `sitemap.xml`, `robots.txt`, the
+404, `llms.txt`, the web manifest and the IndexNow key file.
 
 Every route gets a unique title, description and H1, pooled across BOTH
 languages. Two guards enforce it: `npm run check:seo` before the build (titles,

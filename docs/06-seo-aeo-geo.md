@@ -56,7 +56,10 @@ human work. See `docs/08-non-code-checklist.md`.
   secondary categories for the other services. Service-area business, not a
   storefront, since there is no public-facing address.
 - NAP (name, address, phone) identical to the character across site, GBP,
-  Facebook, Instagram, PagesJaunes.
+  Facebook, Instagram, PagesJaunes — and the website URL with it,
+  `https://www.glvitr-clean.com/`. A listing still pointing at
+  `glvitrclean.com` should be edited, not left to the 301; the e-mail joins
+  the set once `contact@glvitr-clean.com` exists.
 - `LocalBusiness` schema with `areaServed` listing all twelve communes with
   geo coordinates.
 - Reviews are the ranking lever in the map pack. The client must ask for them

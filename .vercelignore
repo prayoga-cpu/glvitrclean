@@ -1,0 +1,13 @@
+# What `vercel deploy` (the CLI) must not upload. Git deploys build from the
+# repository, where none of these exist except .env.example, which no build
+# reads — so this file only changes CLI deploys.
+#
+# The CLI does NOT read .gitignore: without this file it uploads everything
+# except a short built-in list (.git, .next, node_modules, .env.local,
+# .env.*.local, ...). That would ship a stale `out/` export (33 MB) and any
+# `.env` or `.env.production` file someone creates later. Checked against the
+# CLI 58 source and `vercel deploy --dry --json`, 2026-10-05.
+out
+.claude
+.env*
+tsconfig.tsbuildinfo

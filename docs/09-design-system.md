@@ -149,6 +149,26 @@ so the derivation is reproducible:
   x 968..1102, y 80..240 on the flat `#1B3A9C` panel. That rectangle was
   painted out in the panel colour and `mark-512.png` composited back at 140px,
   centred on (1035, 160).
+- **The domain line, 2026-10-05** — `og-fr.png`, `og-en.png`, `og-brand.png`
+  and `card-wide.png` printed the abandoned `glvitrclean.com` in the artwork.
+  Each now reads `glvitr-clean.com`. Method, so it is reproducible: the face
+  was found by re-rendering the **old** string over a panel-colour patch in
+  headless Chromium and diffing it against the original until it matched,
+  then the new string was drawn with those exact settings. Every pixel outside
+  the patch is unchanged (checked by decoding both files), and the files were
+  re-encoded losslessly.
+
+  | File | Face | Size | Colour | Placement | Patch (x, y, w, h) |
+  |---|---|---|---|---|---|
+  | `og-fr.png`, `og-en.png` | Helvetica 400 (system face, not a brand face) | 22px | `rgba(255,255,255,.72)` | right edge x 1092, top 502 | 936, 501, 157, 26 |
+  | `og-brand.png` | Schibsted Grotesk 600 | 23.94px | `rgba(255,255,255,.62)` | whole line re-centred on x 600, top 553 | 306, 552, 588, 28 |
+  | `card-wide.png` | Schibsted Grotesk 600 | 22.8px | `rgba(255,255,255,.62)` | whole line re-centred on x 600, top 527 | 320, 526, 560, 27 |
+
+  Calibration error: zero pixels on the two Helvetica cards; on the two
+  Schibsted cards, one glyph (the `o` of `.com`) lands a quarter-pixel off, a
+  sub-pixel tie-break of the Chrome build — invisible at 100%.
+  `wordmark.webp` was cut from `card-wide.png` above this line (y 283–432) and
+  did not need re-cutting.
 
 - **`favicon.ico`** — the kit has no `.ico`. Built by hand as a three-image ICO
   (16/32/48) wrapping the supplied PNGs. It exists because Google's favicon

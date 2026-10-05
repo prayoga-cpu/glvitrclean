@@ -47,8 +47,11 @@ That arrangement is legal and common. But it changes who may say what:
   URSSAF Tiers de Prestation platform.
 
 Until the cooperative's name and number are known, **the site cannot legally
-display a 50% claim as fact.** The current live IONOS site does exactly that,
-with no number anywhere. That is a *pratique commerciale trompeuse* under
+display a 50% claim as fact.** The old IONOS site at `glvitrclean.com` does
+exactly that, with no number anywhere — and it is still live under the
+client's name and phone number (re-checked 2026-10-05 on `/` and
+`/avantages/`) until its domain is pointed at the redirects in
+`docs/07-migration-plan.md`. That is a *pratique commerciale trompeuse* under
 Art. L121-2 of the Code de la consommation.
 
 ## How the code handles it
@@ -78,7 +81,7 @@ Do not add a fourth state. Do not add an override.
 
 | Requirement | Status | Where |
 |---|---|---|
-| Mentions légales (LCEN art. 6-III) | **Missing on live site** | `/mentions-legales` |
+| Mentions légales (LCEN art. 6-III) | Live on `www.glvitr-clean.com`, but **hébergeur and RC Pro still read "À compléter"** (STATUS 11, 12); the old site has none | `/mentions-legales` |
 | SIRET displayed | to add | footer + mentions légales |
 | RC Pro insurance details | unknown | mentions légales, once known |
 | Privacy notice (RGPD) for the quote form | to add | `/confidentialite` |
