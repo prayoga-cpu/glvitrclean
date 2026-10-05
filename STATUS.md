@@ -174,9 +174,12 @@ matchers — anchored regex, unanchored, `{re}`, `{suf}`, `.*` — all fire, a s
 catch-alls now use that form, and `check:host` fails on any source ending in `:param*`.
 
 **Production, via the Vercel CLI, at Darwin's explicit instruction** (rule 7 otherwise reserves
-deploys to the human). `vercel deploy --prod` from the committed tree, twice: `1a72b5a` (the move),
-then `d528541` (the catch-all fix), deployment `glvitrclean-pvg8feenn`, aliased to
-`www.glvitr-clean.com`, `glvitr-clean.com` and `glvitrclean.vercel.app`. `out/` was deleted before
+deploys to the human). `vercel deploy --prod` from the committed tree, three times: `1a72b5a` (the
+move), `d528541` (the catch-all fix), `3cd5995` (cards, `/book-appointment`, guard), the last as
+deployment `glvitrclean-cwf3ynpxr`, aliased to `www.glvitr-clean.com`, `glvitr-clean.com` and
+`glvitrclean.vercel.app`. The audit below was re-run after each; after the third, the live cards are
+byte-identical to the repo and all eight legacy redirects answer one 301. Then pushed to `origin/main`
+so the Git-connected project cannot roll production back to the old canonicals on the next push. `out/` was deleted before
 each upload — the CLI ignores `.gitignore` (checked in its source: only `.vercelignore` and a fixed
 list that does include `.env.local`), and would otherwise have shipped 33 MB of stale export. A
 scripted audit of the live site, run before and after:
