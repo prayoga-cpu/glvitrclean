@@ -18,7 +18,9 @@ asks are written out in `docs/10-discovery-questionnaire.md`.
 - [x] Who issues the invoice and the annual attestation fiscale — `null`
 - [x] Final service area: Essonne only, or Essonne + 77 + 94 — provisionally
       `['91']`, `serviceArea.confirmed: false`
-- [x] Registrar / DNS access for `glvitrclean.com` — unknown, Phase 6 only
+- [x] Registrar / DNS access for `glvitrclean.com` — superseded 2026-09-20: the
+      site lives on `glvitr-clean.com`; the old domain only needs IONOS access
+      to become a redirect (Phase 6)
 - [x] Logo file, highest resolution available — absent, Phase 5 only
 - [x] Photo archive (client's Drive folder) — absent, Phase 5 only
 - [x] Facebook and Instagram URLs — `company.social: []`
@@ -160,24 +162,35 @@ come out. See `docs/09-design-system.md`, "Photography".
 
 ---
 
-## Phase 6 — Migration — code side DONE 2026-09-06, cutover blocked on human
+## Phase 6 — Migration — re-specified 2026-10-05: the site moved to glvitr-clean.com
 
-- [x] 301 map from the existing IONOS site — `vercel.json`, written but
-      **never exercised**: nothing has been deployed against it
-- [x] `/services-1/` → `/services/` — the hub was built in phase 2 for this
-- [x] `/avantages/` → `/credit-impot/`
-- [x] `/contact/` → `/devis/`
-- [x] apex → www 301, so the existing chain survives the move
-- [ ] DNS cutover — BLOCKED, STATUS item 4 (registrar access)
-- [ ] Search Console property verified, sitemap submitted — BLOCKED, human
-- [ ] IndexNow configured — BLOCKED, needs a key on the live host
+The 2026-09-06 plan kept `glvitrclean.com` and cut its DNS over. Superseded:
+the client registered `glvitr-clean.com` on 2026-09-20 and the site went live
+there — while every canonical, hreflang, og:url, sitemap entry and the robots
+`Sitemap:` line still named the old domain, where those pages 404. That
+blocked indexing for two weeks. See `docs/07-migration-plan.md`.
 
-**Done when:** old URLs redirect with 301, Search Console shows the sitemap
-accepted, and the live domain serves the new build.
+- [x] Live domain serves the new build — `www.glvitr-clean.com`, apex 308 → www
+- [x] `SITE_URL` = `https://www.glvitr-clean.com`, a literal; the
+      `NEXT_PUBLIC_SITE_URL` override that held the old domain is no longer read
+- [x] `npm run check:host` in `verify:full` — every URL the export emits, and
+      every `vercel.json` rule, checked against `SITE_URL`
+- [x] 301 map, old site → new: page-level rules for every known old URL, plus
+      a host-conditioned catch-all for both old hosts — `vercel.json`
+- [x] Old hosts attached to the Vercel project, so the map fires the moment
+      their DNS points here
+- [x] IndexNow configured — key file on the live host, `npm run indexnow`
+- [ ] Old domain's DNS pointed at Vercel — BLOCKED, human (IONOS access)
+- [ ] Search Console domain property for `glvitr-clean.com`, sitemap
+      submitted — BLOCKED, human
+- [ ] Change of Address `glvitrclean.com` → `glvitr-clean.com` — after the DNS
+      step, human
+- [ ] `contact@glvitr-clean.com` exists → `company.email` switched — BLOCKED,
+      human
 
-The old URL inventory is four indexable URLs, taken from the live IONOS site.
-It is an observation, not a guarantee: re-crawl the old site at cutover before
-trusting the map. See `docs/07-migration-plan.md`.
+**Done when:** every page on `glvitr-clean.com` is self-canonical (checked on
+every build), both old hosts answer 301 to their new equivalents, and Search
+Console shows the sitemap accepted.
 
 ---
 

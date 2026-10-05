@@ -14,8 +14,8 @@ Keep this file in sync with src/data/services.ts and src/data/communes.ts.
 Le site existe en deux éditions, avec le même contenu et les mêmes slugs :
 The site has two editions, same content and same slugs:
 
-- Français (principal / primary) : https://www.glvitrclean.com/
-- English : https://www.glvitrclean.com/en/
+- Français (principal / primary) : https://www.glvitr-clean.com/
+- English : https://www.glvitr-clean.com/en/
 
 Toute page française `/x/` a son équivalent anglais en `/en/x/`.
 Any French page `/x/` has its English counterpart at `/en/x/`.

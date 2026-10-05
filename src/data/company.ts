@@ -3,25 +3,25 @@
  * Anything shown in the footer, mentions légales, or JSON-LD comes from here.
  */
 
-const DEFAULT_SITE_URL = 'https://www.glvitrclean.com';
-
 /**
- * `??` only falls through on null/undefined, so a host that defines
- * NEXT_PUBLIC_SITE_URL but leaves it blank used to yield '' — which reached
- * `new URL('')` in layout.tsx and failed the production build with
- * ERR_INVALID_URL. Blank or unparseable is treated as absent.
+ * The production origin. No trailing slash.
+ *
+ * Every canonical, hreflang alternate, og:url, og:image, JSON-LD `@id`,
+ * sitemap `<loc>` and the robots.txt `Sitemap:` line is built from this one
+ * constant, so changing domain is this edit and nothing else in src/. It is the
+ * hyphenated domain the client registered on 2026-09-20; the old
+ * glvitrclean.com is abandoned and only ever appears as a 301 source in
+ * vercel.json. www is canonical: the apex 308s to it at the Vercel domain level.
+ *
+ * Deliberately NOT overridable by an environment variable. It used to read
+ * NEXT_PUBLIC_SITE_URL first, and that variable — set on the Vercel project,
+ * write-only, invisible from the repo — kept every page served from
+ * www.glvitr-clean.com declaring the old domain as its canonical host for two
+ * weeks after the move, which is what blocked indexing (STATUS.md,
+ * 2026-10-05). A value that decides what Google indexes belongs in reviewed
+ * code, where `npm run check:host` reads it.
  */
-function resolveSiteUrl(): string {
-  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, '');
-  if (!raw) return DEFAULT_SITE_URL;
-  try {
-    return new URL(raw).toString().replace(/\/$/, '');
-  } catch {
-    return DEFAULT_SITE_URL;
-  }
-}
-
-export const SITE_URL = resolveSiteUrl();
+export const SITE_URL = 'https://www.glvitr-clean.com';
 
 /** Tax credit rate as a fraction. Change here, changes everywhere. */
 export const TAX_CREDIT_RATE = 0.5;

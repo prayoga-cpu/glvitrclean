@@ -14,7 +14,9 @@
     "check:compliance": "node scripts/check-compliance.mjs",
     "check:metadata": "node scripts/check-exported-metadata.mjs",
     "check:proof": "node scripts/check-proof.mjs",
-    "verify:full": "npm run verify && npm run build && npm run check:compliance && npm run check:metadata && npm run check:proof"
+    "check:host": "node scripts/check-host.mjs",
+    "verify:full": "npm run verify && npm run build && npm run check:compliance && npm run check:metadata && npm run check:proof && npm run check:host",
+    "indexnow": "node scripts/indexnow.mjs"
   },
   "dependencies": {
     "next": "15.5.24",

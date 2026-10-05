@@ -13,7 +13,27 @@ depends on one of these, stop and log it in `STATUS.md`.
       available.
 - [ ] **Final service area.** 91 only, or 91 + 77 + 94. Drives 84 of the 97
       routes.
-- [ ] **Registrar and DNS access** for `glvitrclean.com`.
+- [x] ~~**Registrar and DNS access** for `glvitrclean.com`.~~ Superseded
+      2026-09-20: the client registered **`glvitr-clean.com`** (Squarespace)
+      and the site lives there. See `docs/07-migration-plan.md`.
+
+## Blocking the domain move (2026-10-05)
+
+- [ ] **IONOS access for the old `glvitrclean.com`.** Two DNS records there
+      (apex A, `www` CNAME) turn the old WordPress site into 301s to the new
+      one. Exact values in `docs/07-migration-plan.md`, "The old domain". Do
+      **not** touch its MX records — they carry `contact@glvitrclean.com`.
+- [ ] **Keep `glvitrclean.com` registered.** Paid at IONOS until 2028-02-06.
+      Cancelling the IONOS contract deletes it (and the mailbox) early, and a
+      lapsed domain with this name and phone-number history can be bought by
+      anyone.
+- [ ] **Create `contact@glvitr-clean.com`** in the Google Workspace that
+      already receives the new domain's mail, send it a test, then forward
+      `contact@glvitrclean.com` to it at IONOS for at least 12 months. Only
+      then does `company.email` change — one edit.
+- [ ] **Search Console domain property for `glvitr-clean.com`** (DNS TXT at
+      Squarespace — two `google-site-verification` records already exist, so
+      check first), then submit `https://www.glvitr-clean.com/sitemap.xml`.
 
 ## Blocking launch
 
@@ -33,7 +53,8 @@ depends on one of these, stop and log it in `STATUS.md`.
 - [ ] Service area: the twelve communes
 - [ ] Postal verification — **can take a week, start it early**
 - [ ] Upload ten photos of real work
-- [ ] Set hours, phone, and site URL
+- [ ] Set hours, phone, and site URL — `https://www.glvitr-clean.com/`, not
+      the old domain
 - [ ] Write the description using the same NAP wording as the site
 
 ## Reviews
@@ -50,8 +71,13 @@ depends on one of these, stop and log it in `STATUS.md`.
 
 ## Post-launch
 
-- [ ] Search Console verified, sitemap submitted
+- [ ] Search Console verified, sitemap submitted — for `glvitr-clean.com`; and,
+      once the old domain 301s, verify `glvitrclean.com` too and run Change of
+      Address from it
 - [ ] Baseline recorded: indexed count, impressions, brand position
 - [ ] Client walkthrough of how to edit content
-- [ ] Handover of domain, hosting, repository, and GBP ownership
-- [ ] 30-day IONOS retention for rollback
+- [ ] Handover of domain, hosting, repository, and GBP ownership — both domains
+- [x] IndexNow — key file and `npm run indexnow`, first submission 2026-10-05
+- [x] ~~30-day IONOS retention for rollback~~ — moot: the new site never ran on
+      the old domain, so there is nothing to roll back to. The old domain is
+      kept as a permanent redirect source instead (above).

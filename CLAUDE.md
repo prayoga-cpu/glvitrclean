@@ -155,6 +155,15 @@ exposure, not a design preference. See `docs/04-compliance-sap.md`.
 - `public/llms.txt` must stay in sync with the service and commune lists, and
   names both editions.
 - Canonical URLs are absolute and use `SITE_URL` from `src/data/company.ts`.
+  **`SITE_URL` is a string literal — `https://www.glvitr-clean.com` — and is
+  never read from the environment.** A write-only `NEXT_PUBLIC_SITE_URL` on the
+  Vercel project overrode it and kept every canonical on the abandoned
+  glvitrclean.com for two weeks after the domain move, which blocked indexing
+  (2026-10-05). `npm run check:host`, part of `verify:full`, fails the build if
+  any canonical, hreflang, og:url, sitemap or robots URL — or any URL anywhere
+  in the export — names another host. Nothing reads that variable any more; do
+  not reintroduce a read of it, and delete it from the Vercel project rather
+  than re-pointing it.
 - No page may be added without a target query. If you cannot name the search it
   is meant to win, do not create the page.
 

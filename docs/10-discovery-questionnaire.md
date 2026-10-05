@@ -62,12 +62,17 @@ Phase 3, not during it.
 
 ## 4. Le domaine
 
-> Chez quel prestataire le domaine `glvitrclean.com` est-il enregistré, et
-> avez-vous encore les identifiants ?
+**Superseded 2026-09-20.** The client did not keep `glvitrclean.com`: the site
+lives on the new **`glvitr-clean.com`** (Squarespace). The question that
+remains is about the old domain, which becomes a redirect:
+
+> Avez-vous encore accès au compte IONOS de `glvitrclean.com` ? Il faut y
+> modifier deux enregistrements DNS pour que l'ancien site renvoie vers le
+> nouveau — et surtout ne pas laisser expirer le domaine.
 
 **Fills:** nothing in code. Tracked in `STATUS.md` only.
-**Blocks:** the Phase 6 DNS cutover. If the registrar login is lost, recovery
-takes weeks — start this early even though it is the last phase.
+**Blocks:** the old domain's 301s, and the Search Console Change of Address.
+If the IONOS login is lost, recovery takes weeks.
 
 ---
 

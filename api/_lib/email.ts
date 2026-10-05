@@ -10,7 +10,7 @@
  * email HTML to travel to a visitor's device.
  */
 
-import { SITE_URL } from '../../src/data/company';
+import { SITE_URL, company } from '../../src/data/company';
 import { services } from '../../src/data/services';
 import { communes } from '../../src/data/communes';
 import type { Lang } from '../../src/i18n/config';
@@ -19,18 +19,24 @@ import type { FieldKey, SubmissionField } from '../../src/lib/submission';
 const RESEND_ENDPOINT = 'https://api.resend.com/emails';
 
 const BRAND_NAME = "GLVITR'CLEAN";
-const CONTACT_EMAIL = 'contact@glvitrclean.com';
-const PHONE_DISPLAY = '06 27 70 99 70';
-const PHONE_TEL = '+33627709970';
+/**
+ * Read from company.ts, not restated. These used to be literals here, so the
+ * address printed in the customer's confirmation could drift from the one on
+ * the site — and it is about to change: contact@glvitrclean.com dies with the
+ * old domain, and the switch to the glvitr-clean.com mailbox must be one edit.
+ */
+const CONTACT_EMAIL = company.email;
+const PHONE_DISPLAY = company.phoneDisplay;
+const PHONE_TEL = company.phone;
 
 /**
- * The envelope sender. glvitrclean.com is not verified in the shared Resend
- * account — only prionation.io is (checked directly against the Resend API).
- * Getting glvitrclean.com verified needs DNS records added at the registrar,
- * which is human-only work (CLAUDE.md rule 7). So mail goes out with the
- * client's brand as the display name over prionation.io, exactly like
- * serrurier-paris does for the same reason. Once glvitrclean.com is verified,
- * set MAIL_FROM and nothing else changes.
+ * The envelope sender. The client's domain, glvitr-clean.com, is not verified
+ * in the shared Resend account — only prionation.io is (checked against the
+ * Resend API on 2026-10-05). Getting it verified needs DNS records added at its
+ * registrar, Squarespace, which is human-only work (CLAUDE.md rule 7). So mail
+ * goes out with the client's brand as the display name over prionation.io,
+ * exactly like serrurier-paris does for the same reason. Once glvitr-clean.com
+ * is verified, set MAIL_FROM and nothing else changes.
  */
 const MAIL_FROM = process.env.MAIL_FROM ?? `${BRAND_NAME} <devis@prionation.io>`;
 

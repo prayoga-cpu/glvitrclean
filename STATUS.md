@@ -8,14 +8,18 @@ Resend 2026-09-14. Home page gets a draggable before/after slider, filled with
 the client's first real photos and video, 2026-09-14. Quote form gets a phone
 country-code field and a post-submit WhatsApp confirmation modal, 2026-09-14.
 The seven `public/assets/placeholder/` stock images were refreshed 2026-09-16
-— see "Done" below.
+— see "Done" below. **2026-10-05: the site's canonical host moved to
+`www.glvitr-clean.com`** — every canonical had been pointing at the abandoned
+old domain, which blocked indexing. See the first "Done" entry.
 **Everything still open is waiting on a human** — see "What we need from you".
-**Build status:** `npm run verify:full` passes — five checks now: typecheck, lint,
-`check:seo`, `check:compliance`, `check:metadata`, `check:proof`. 224 routes.
+**Build status:** `npm run verify:full` passes — typecheck, lint, `check:seo`,
+`check:compliance`, `check:metadata`, `check:proof`, `check:host`. 224 routes.
 Lighthouse mobile: performance 97–99, accessibility 100, best practices 100,
 SEO 100 on every route type measured.
-**Deployed:** yes — production deploy Ready. Not publicly reachable yet: Vercel
-Deployment Protection is on (every URL 302s to SSO) and no domain is attached.
+**Deployed:** yes — **https://www.glvitr-clean.com** (apex 308 → www), Vercel
+project `glvitrclean`, Git-connected: a push to `main` deploys production.
+Deployment Protection covers the preview and deployment URLs only, not the
+production domain.
 
 ---
 
@@ -32,7 +36,10 @@ visible gap on the page.
 
 | # | What we need | Why it matters | Ask |
 |---|---|---|---|
-| 4 | **Registrar / DNS access for `glvitrclean.com`** | The whole cutover. `vercel.json` holds the 301 map but nothing can point at it. If the login is lost, recovery takes weeks — start now even though it is the last phase. | Who is the domain registered with, and do you still have the login? |
+| 4 | **IONOS access for the old `glvitrclean.com`** — re-scoped 2026-10-05 | The site now lives on `glvitr-clean.com`, but the old WordPress site is still live with the same name and phone number and a different service area (91 + 94): it contradicts the new site to Google and to customers. Two DNS records at IONOS turn it into 301s — the map is deployed in `vercel.json`, waiting. Values and steps: `docs/07-migration-plan.md`, "The old domain". **Never let the domain lapse** (paid to 2028-02-06; cancelling the IONOS package can delete it). Do not touch its MX records. | "Vous avez encore accès au compte IONOS de glvitrclean.com ?" |
+| 25 | **Create `contact@glvitr-clean.com`** | `contact@glvitrclean.com` is on IONOS mail and dies with the old domain. The new domain's mail already goes to Google Workspace; the mailbox just has to exist. Then forward the old address to it for 12+ months, and `company.email` changes in one edit (the quote e-mails read it since 2026-10-05). Not switched yet because whether it exists could not be tested from here. | Thibaut, in Google Workspace — then tell us. |
+| 26 | **Search Console for `glvitr-clean.com`** | Google cannot be told about the new sitemap any other way — its ping endpoint is gone. Domain property, DNS TXT at Squarespace (two `google-site-verification` records already exist there: check whether a property is already verified), then submit `https://www.glvitr-clean.com/sitemap.xml` and request indexing on the home and service pages. The developer's Google account has no access to either domain (checked 2026-10-05). | Whoever owns the Squarespace account. |
+| 27 | **Delete `NEXT_PUBLIC_SITE_URL` from the Vercel project** | Inert since 2026-10-05 — nothing reads it — but it is the variable that held the old domain, and a future reader could re-wire it. Deleting it from this session was refused by the permission guard because a write-only value cannot be inspected first. Same for the stale `NEXT_PUBLIC_SAP_NUMBER` (see the Resend entry). | Darwin: `vercel env rm NEXT_PUBLIC_SITE_URL --yes` |
 | 18 | **How long we keep a quote request that goes nowhere** | Same page, same article. 12 months is a defensible default if you have no preference. | "Une demande restée sans suite, on la garde combien de temps ?" |
 | 11 | **RC Pro insurer and policy number** | `/mentions-legales` reads "À compléter". Required by LCEN art. 6-III. | "Quel assureur, et quel numéro de contrat ?" |
 | 12 | **Hosting provider for the hébergeur block** | Same page, same law. It is Vercel unless you move. | Darwin's call. |
@@ -60,7 +67,7 @@ visible gap on the page.
 | 23 | **Confirm the hard water** | `communes.ts` tells the Égly page the tap water is calcaire across the sector, which drives the "traces de calcaire" story on several pages. It is almost certainly right for the Beauce limestone, but the only thing in the repo permitting it is a comment written in the same pass as the claim. One sentence from you retires the question. | "L'eau est bien calcaire dans tout le secteur ?" |
 | 15 | **English legal wording** | The FR pages are the binding ones and the EN pages say so. Worth an accountant's eye before launch, not before. | Client's accountant. |
 | 17 | **Next.js 15 reaches EOL 2026-10-21** | `next@15.5.24` is pinned. After EOL the next CVE has no 15.x patch to move to. | Darwin — plan the 16 bump. |
-| 24 | **Redeploy production so the third quote recipient is live** | `MAIL_TEAM_RECIPIENTS` on the Vercel project was updated 2026-09-20 to add gaelgdu91@gmail.com, but Vercel applies an env change only to *new* deployments. Until one runs, the live `/api/submit` still notifies the old two addresses. Deploying to production is human-only (rule 7). | Redeploy `glvitrclean`, or push the commit that carries the `email.ts` change. |
+| ~~24~~ | ~~Redeploy production so the third quote recipient is live~~ — **resolved 2026-10-05**: production was redeployed, so it reads the current `MAIL_TEAM_RECIPIENTS`. (The push of `c7a392c` had very likely done it already — it deployed 10 s after that commit on 2026-09-20 — but the order against the variable's update cannot be proven from here.) | — |
 
 ### Verified as done, kept for the record
 
@@ -112,6 +119,55 @@ The questions to send the client are written out, in French, in
 ---
 
 ## Done
+
+### The canonical host moves to www.glvitr-clean.com — the indexing blocker (2026-10-05)
+
+Client feedback, relayed by Darwin: the site lives on `glvitr-clean.com` now, the old
+`glvitrclean.com` is abandoned, and "the canonical, og:url, og:image, sitemap.xml and hreflang all
+point to the old domain, which is what's blocking indexing." Darwin asked for the code side and the
+production side to be handled with the Vercel CLI, "and everything that's possible from here".
+
+**Confirmed on the live site before touching anything.** All 224 pages served from
+`www.glvitr-clean.com` declared canonical, hreflang, og:url, og:image, twitter:image and JSON-LD on
+`www.glvitrclean.com`. The live sitemap listed 224 URLs on that host; followed, **223 of them answered
+404** — the old host is still the IONOS WordPress site — and the 224th was its home page.
+`robots.txt` named the old host's sitemap, which IONOS 301s to its own `wp-sitemap.xml`. A crawler
+obeying the site's own instructions never reached a new page.
+
+**Root causes.**
+
+1. `SITE_URL` was declared twice and both said the old domain: `DEFAULT_SITE_URL` in `company.ts`, and
+   `NEXT_PUBLIC_SITE_URL` on the Vercel project (Production + Preview, write-only), which
+   `resolveSiteUrl()` preferred. Editing the code alone would have changed nothing in production.
+2. The domain changed outside the repo. `glvitr-clean.com` was registered at Squarespace on
+   2026-09-20, attached in Vercel and served the site from that day — and no file in the repo knew:
+   `docs/07` still said "preserve glvitrclean.com, do not register a new one", this file still said
+   "no domain is attached".
+3. No guard looked at the host. `check:seo` and `check:metadata` test uniqueness and presence;
+   `verify:full` was green throughout.
+
+**Code.**
+
+| Where | Change |
+|---|---|
+| `src/data/company.ts` | `SITE_URL` is the literal `https://www.glvitr-clean.com`. `resolveSiteUrl()` and the env read are gone: a value that decides indexing belongs in reviewed code. The comment says why. |
+| `scripts/check-host.mjs`, `check:host` in `verify:full` | New post-build guard. Every indexable page self-canonical on `SITE_URL`; og:url = canonical; fr/en/x-default hreflang present and pointing at the right edition (rule 3 had no check before); og:image and twitter:image on host and present in the export; sitemap `<loc>` set = canonical set; robots `Sitemap:`/`Host:` on host; no URL on any look-alike `glvitr` host in any of the ~500 text files in `./out` (HTML, RSC payloads, JS, llms.txt, manifest); `vercel.json` — no host condition matching the live host, no all-hosts rule on a real page, every absolute destination on host, every fixed destination a real page. Reads `SITE_URL` as text and refuses to run if it is not a literal. Proven both ways: against the stale export it failed with 3,143 findings (now summarised by kind, 93 lines); four faults injected into `vercel.json` were all caught. |
+| `vercel.json` | The 2026-09-06 map was right about its paths: the old site's `wp-sitemap.xml` lists exactly `/`, `/services-1/`, `/avantages/`, `/contact/`. Destinations are now absolute on the new host (one hop from either host); a host-conditioned catch-all sends `glvitrclean.com` and `www.glvitrclean.com` to the same path on the new host; another sends `glvitrclean.vercel.app` there — the project's public production alias served the whole site, indexable, with no `X-Robots-Tag` (every other alias is behind SSO with `noindex`). |
+| `public/<32-hex>.txt`, `scripts/indexnow.mjs`, `npm run indexnow` | IndexNow, ROADMAP phase 6's last code item. The key file names itself; the script finds it, fetches the **live** key file and the **live** sitemap, refuses off-host URLs, and POSTs to `api.indexnow.org`. `--dry-run` sends nothing. |
+| `api/_lib/email.ts` | `CONTACT_EMAIL`, `PHONE_DISPLAY`, `PHONE_TEL` read from `company` instead of restating it, so the coming mailbox switch is one edit. Resend comment updated: only `prionation.io` is verified there (checked against the Resend API today). |
+| `public/llms.txt` | Both edition URLs on the new host. Its e-mail line waits for item 25. |
+| `api/submit.ts`, `.env.example` | Comments. `.env.example` no longer offers `NEXT_PUBLIC_SITE_URL` and says why. |
+| `CLAUDE.md` rule 3 | One bullet: `SITE_URL` is a literal, never read from the environment, guarded by `check:host`. |
+| `docs/07-migration-plan.md` | Rewritten around the move: what went wrong, the two domains side by side, the map and how `vercel.json` expresses it, the IONOS steps, e-mail, search engines, verification, and a baseline. |
+| `docs/08`, `docs/10`, `ROADMAP.md` | Phase 6 re-specified; registrar items superseded; new human items. |
+
+**Deliberately not changed.** `company.email` stays `contact@glvitrclean.com` until
+`contact@glvitr-clean.com` is known to exist (item 25) — switching to a dead mailbox would be worse
+than keeping one that still works; outbound SMTP is blocked from this machine, so it could not be
+probed. Search Console (item 26): the only Google account reachable from here is the developer's, with
+no access to either domain.
+
+`npm run verify:full` passes — all seven steps, `check:host` included.
 
 ### Quote-form notifications go to a third recipient, gaelgdu91@gmail.com (2026-09-20)
 

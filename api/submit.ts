@@ -39,7 +39,7 @@ const MAX_BODY_BYTES = 16_000;
  * Deriving the allowed origin from the request's own Host header — rather
  * than pinning it to DOMAIN — is what keeps this from becoming a footgun: it
  * self-configures across localhost, Vercel preview URLs, the current
- * deployment host, and glvitrclean.com once DNS is cut over. It is a floor,
+ * deployment host, and www.glvitr-clean.com in production. It is a floor,
  * not a cure — a determined attacker can forge the header — which is why the
  * confirmation email below never echoes attacker-chosen prose.
  */

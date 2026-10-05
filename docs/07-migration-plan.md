@@ -1,288 +1,238 @@
-# 07 — Migration plan
+# 07 — Domain move and migration plan
 
-**This is not a greenfield build.** The original brief said "current website:
-none" and "check availability of glvitrclean.com". Both are wrong.
+**Rewritten 2026-10-05.** The first version of this file (2026-08-31, revised
+2026-09-06) planned to keep `glvitrclean.com`, preserve its history, and cut
+its DNS over to Vercel. The client chose otherwise: on 2026-09-20 a new domain,
+**`glvitr-clean.com`**, was registered and the site went live on it. The old
+plan's mechanics — the 301 map, the trailing-slash rule, 301 over 308 — still
+hold and are kept below. Its premise does not.
 
-## What exists today
+## What went wrong, so it is not repeated
 
-- `glvitrclean.com` is live, built on IONOS MyWebsite NOW
-- Roughly four pages, no page per service, no commune named anywhere
-- `contact@glvitrclean.com` already active, contrary to the brief
-- The 50% tax credit displayed with no declaration number
-- No mentions légales
-- Service area stated as Essonne (91) and Val-de-Marne (94)
+The domain changed outside the repository. `glvitr-clean.com` was attached to
+the Vercel project and the site went live on it, but nothing in the code was
+told: `SITE_URL` still named `https://www.glvitrclean.com`, and so did a
+`NEXT_PUBLIC_SITE_URL` variable on the Vercel project that `SITE_URL` preferred
+over its own default. For two weeks every one of the 224 pages served from
+`www.glvitr-clean.com` declared its canonical, its hreflang alternates, its
+og:url and its og:image on the **old** host — where every one of those paths is
+a 404 except `/`, which is the old WordPress home page. `robots.txt` named the
+old host's sitemap, which the old host answers with a 301 to its *own*
+`wp-sitemap.xml`. A crawler following the site's own instructions never reached
+a single new page. That is what blocked indexing. Every guard passed
+throughout, because none of them looked at the host.
 
-## Consequences
+Fixed 2026-10-05, in three layers:
 
-1. The domain has history. Preserve it. Do not register a new one.
-2. Existing URLs may be indexed. Every one needs a 301, not a 404.
-3. The client, or IONOS, controls DNS. Access is blocker #4.
-4. Any existing Search Console property should be claimed, not recreated.
+1. `SITE_URL` in `src/data/company.ts` is the string literal
+   `https://www.glvitr-clean.com`, and nothing reads the environment for it.
+   The Vercel variable is inert (and should be deleted, STATUS.md).
+2. `npm run check:host` (in `verify:full`) fails the build if any canonical,
+   hreflang, og:url, og:image, sitemap entry or robots line — or any URL in any
+   exported file — names a host other than `SITE_URL`'s, and checks
+   `vercel.json` against the same origin.
+3. This file, `CLAUDE.md` rule 3 and `STATUS.md` say where the site lives.
+   **If the domain ever changes again, `SITE_URL` changes in the same commit
+   that attaches the domain — not after.**
 
-## Redirect map
+## The two domains
 
-| Old | New | Code |
+| | `glvitr-clean.com` — the site | `glvitrclean.com` — the old one |
 |---|---|---|
-| `/` | `/` | — |
-| `/services-1/` | `/#services` — **interim, see below** | 301 |
-| `/avantages/` | `/credit-impot/` | 301 |
-| `/contact/` | `/devis/` | 301 |
-| anything else | 404 | 404 |
+| Role | canonical. `www` serves; the apex 308s to `www` (Vercel domain setting) | 301 source only — never canonical again |
+| Registrar | Squarespace Domains, created 2026-09-20, **expires 2027-09-20** — keep auto-renew on | IONOS, created 2026-02-06, paid to 2028-02-06 |
+| DNS | Squarespace | IONOS |
+| Web | Vercel, project `glvitrclean` | IONOS "MyWebsite Now" (WordPress), still live — four pages, titled "Laveur de Vitres 91 & 94"; apex A `217.160.0.239`, `www` A `212.227.172.249` |
+| Mail | Google Workspace (MX `aspmx.l.google.com`) | IONOS (MX `mx00/mx01.ionos.fr`) — `contact@glvitrclean.com` |
 
-Implemented in `vercel.json` at the repo root. Each old path is listed twice,
-once with a trailing slash and once without — see "Trailing slashes" below.
+The old site's history is small — the domain is eight months old — so the
+redirects are less about equity than about the two sites contradicting each
+other: same name, same phone number, different service area (the old site
+still says 91 and 94; the business is 91 and 77). Google and customers both
+get a single answer only once the old host stops serving its own pages.
 
-**The old "anything else → `/` 301" row is gone, on purpose.** It was wrong
-twice over. Mechanically: Vercel evaluates the `redirects` array *before* the
-filesystem, so a catch-all `/:path*` → `/` sitting in that array does not mean
-"if nothing else matched" — it means "every URL on this site", and it would
-redirect all 194 real pages to the home page. Expressing a true after-filesystem
-catch-all needs the low-level `routes` key, which cannot be combined with
-`redirects` at all. Editorially: mass-redirecting unknown URLs to the home page
-is the soft-404 pattern Google names explicitly, and it hides exactly the
-information the crawl is supposed to surface. An unknown old URL should return
-404 (Next's exported `404.html`); a *known* old URL earns its own line in the
-table above.
+## Redirect map: old site → new site
 
-## Is this inventory complete? No. It is assumed.
+The old site's `wp-sitemap.xml` lists exactly four URLs (read 2026-10-05):
+the home page, `/services-1/`, `/avantages/` and `/contact/` — the same four
+the 2026-09-06 map was built from, so that map was complete and survives with
+new, absolute destinations.
 
-Nobody has crawled the old site. The four paths above come from the brief and
-from the navigation, and the navigation is not the URL space. Before cutover,
-crawl it and reconcile against:
-
-- Search Console → Pages, and the old property's Performance report by page.
-  This is the only source that shows URLs Google actually has, including ones
-  the navigation dropped years ago.
-- IONOS's own page list in the site builder.
-- Any URL on the client's flyer, Facebook page, or e-mail signature.
-
-One thing to check specifically: **`/services-1/` is a builder-generated slug.**
-MyWebsite NOW appends `-1` when the slug it wanted was already taken, which
-suggests a `/services/` may also exist on the old site. That is a hypothesis,
-not a finding — but it is cheap to test with one request, and if it is true it
-is an indexed URL missing from this table.
-
-Until that crawl happens, treat this map as a floor, not a total.
-
-## `/services/` does not exist on the new site — read this before "fixing" it
-
-**This section is temporary. Delete it when the hub pages land.**
-
-The documented target for `/services-1/` was `/services/`. There is no such
-page. `src/lib/routes.ts` generates `/services/[slug]` × 6 and
-`/zones/[commune]` × 12 (plus the 72 crossings) and nothing at either parent
-path; the export confirms it — `out/services/` and `out/zones/` are directories
-of children with no `index.html` of their own. Redirecting a real, indexed old
-URL onto a 404 is worse than leaving it alone, so the map cannot ship as
-documented.
-
-Interim target: **`/#services`**. The home page carries
-`<section class="section" id="services">`, the block that links to all six
-service pages, so it is the only page today whose content is a superset of what
-the old services page held. The fragment is a courtesy to the human — Google
-ignores it and consolidates on `/` — but it puts a returning visitor on the
-service list rather than at the top of the hero.
-
-| Old URL | Interim target | Replace with, once built |
+| Old URL — either old host, with or without the slash | New | Code |
 |---|---|---|
-| `/services-1/` | `/#services` | `/services/` |
-| *(none — see below)* | — | `/zones/` |
+| `/` | `https://www.glvitr-clean.com/` (catch-all, path kept) | 301 |
+| `/services-1/` | `https://www.glvitr-clean.com/services/` | 301 |
+| `/avantages/` | `https://www.glvitr-clean.com/credit-impot/` | 301 |
+| `/contact/` | `https://www.glvitr-clean.com/devis/` | 301 |
+| anything else | the same path on `https://www.glvitr-clean.com` | 301 |
+| any path on `glvitrclean.vercel.app` | the same path on `https://www.glvitr-clean.com` | 301 |
 
-When a `/services/` hub is built, this is a one-line change in `vercel.json`
-(two lines — the slashed and unslashed sources) and this section comes out.
+The last row is not the old site. `glvitrclean.vercel.app` is the project's
+production alias on Vercel: it served the whole site publicly and indexably —
+no SSO, no `X-Robots-Tag`, unlike every other `*.vercel.app` alias of the
+project — and it was the homepage link of the GitHub repository. A second copy
+of 224 pages is the duplicate-content problem the canonical tags only soften,
+so it redirects like an old host.
 
-No old URL points at `/zones/`. The old site names no commune anywhere, so the
-missing zones hub is not a migration problem; it is an internal-linking one, and
-it belongs to whoever owns `routes.ts`, not to this document.
+Everything else on either old host goes to **the same path on the new host**,
+where it is a 404 if the new site has no such page. That is deliberate: a
+mass redirect of unknown URLs to the home page is the soft-404 pattern Google
+names explicitly, and it hides what the crawl should surface. An old URL that
+deserves a better landing earns its own line above.
 
-## Where the redirects live
+Old French URLs land on the **French** page, never on `/en` — the English
+mirror is deliberately built not to compete (`CLAUDE.md` rule 0).
 
-`vercel.json`, at the repo root. Not a Cloudflare Pages `_redirects` file — the
-deploy target is **Vercel** (see `STATUS.md`, phase 2c: the production deploy is
-Ready there). Nothing in this repo has ever been configured for Cloudflare —
-the reference dates from the initial import and nothing in the repo backs it.
+## How `vercel.json` expresses it
 
-Not `next.config.mjs` either, and this is the load-bearing reason: `redirects()`
-in the Next config is applied by the Next.js **server**. This build is
-`output: 'export'` — 194 HTML files and no server — and Next explicitly does not
-apply redirects, rewrites or headers in a static export. A static export has no
-place to put a 301 except the host. That makes redirects a hosting concern here,
-and `vercel.json` the version-controlled way to express one.
+`vercel.json` holds redirects and nothing else. Not `next.config.mjs`:
+`redirects()` there is applied by the Next.js server, and a static export has
+none, so a 301 can only live at the host.
 
-`vercel.json` holds redirects and nothing else. In particular it does **not**
-set `trailingSlash` — `next.config.mjs` already owns that, and the build output
-carries it.
+Two kinds of rule, in this order — Vercel takes the first match, and runs
+redirects before the filesystem:
 
-## 301, not 308
+1. **Known old paths, on any host, absolute destination.** One hop from the old
+   host, one hop from the new one, and a harmless courtesy on preview
+   deployments (they bounce to production). These may only use paths the new
+   site does not serve — a rule on a real path would hide that page on the live
+   site, and `check:host` fails the build if one does.
+2. **Catch-all, old hosts only.** `has: [{ type: "host", value:
+   "^(www\\.)?glvitrclean\\.com$" }]`, source `/:path*`, destination
+   `https://www.glvitr-clean.com/:path*`. Path and query string are carried
+   over.
 
-Vercel offers `"permanent": true` (which emits **308**) and
-`"statusCode": 301`. This file uses `301` on every rule. The reasoning, since
-the two are equivalent to Google and the difference is easy to wave away:
+Details that are load-bearing:
 
-- **308 preserves the request method and body. There is nothing here to
-  preserve.** Every URL in the map is a GET-only content page on a site being
-  retired. The one thing 308 buys over 301 is not applicable.
-- **301 is what the rest of the migration toolchain speaks.** Search Console,
-  Screaming Frog and similar crawlers, link checkers, and whoever audits this
-  site after handover all report on "301s". Older bots and link tools still
-  handle 308 unevenly. `ROADMAP.md` Phase 6's own Done criterion is worded
-  "old URLs redirect with 301", and so is the `curl` check below.
-- The classic cost of 301 — an old client downgrading a POST to a GET — cannot
-  bite: nothing POSTs to `/contact/` on a site that no longer exists.
+- **The host condition is an anchored, dot-escaped regular expression.** It
+  matches exactly `glvitrclean.com` and `www.glvitrclean.com`. It cannot match
+  `www.glvitr-clean.com` — and `check:host` proves that on every build, because
+  a host condition matching the live host would redirect the whole site.
+- **Each known path is listed twice, with and without its trailing slash.**
+  Redirects run before the trailing-slash normalisation that
+  `trailingSlash: true` gives the export, so a slash-less old link would
+  otherwise take two hops. Destinations always carry the slash, so a redirect
+  never lands on a URL that redirects again.
+- **301, not 308.** Equivalent to Google; 301 is what Search Console,
+  crawlers, link checkers and the Phase 6 "Done when" all speak, and 308's one
+  advantage — preserving a POST — has nothing to preserve on GET-only content
+  pages of a retired site.
+- **No domain-level redirect for the old hosts in the Vercel dashboard.** It
+  would fire before `vercel.json`, every old path would land on the same path
+  of the new host, and the page-level map above would never run. Both old
+  hosts are attached to the project as plain domains; `vercel.json` does the
+  rest.
 
-So: maximum compatibility, zero downside. If a future rule ever needs to survive
-a POST, that rule uses `"permanent": true` and says why.
+## The old domain: what has to happen (human, IONOS access)
 
-## Trailing slashes
+1. **Never let it lapse.** It is paid at IONOS until 2028-02-06. At IONOS a
+   domain is often bundled into a package, and cancelling the MyWebsite
+   contract can delete the domain with it — move it to a standalone domain
+   contract before cancelling anything. Keep it for as long as anyone might
+   still type it or follow an old link: in practice for good. Renewal is cheap;
+   a lapsed domain with this name and this phone number's history
+   is an impersonation risk.
+2. **IONOS → Domains & SSL → `glvitrclean.com` → DNS**, change exactly two
+   records:
+   {{DNS_RECORDS}}
+   Leave MX, the SPF TXT record and anything else mail-related alone: they
+   carry `contact@glvitrclean.com`. If IONOS refuses the `www` CNAME because an
+   A or AAAA record exists for `www`, delete that record first; delete any AAAA
+   record on `@` and `www` too.
+3. Both old hosts are already attached to the Vercel project, so Vercel issues
+   their certificates as soon as DNS resolves, usually within minutes. Do not
+   add a domain-level redirect for them in the dashboard (see above).
+4. Run the old-host block under "Verifying".
+5. Search Console: verify `glvitrclean.com` as a domain property (TXT record
+   at IONOS) and run **Change of Address** to `glvitr-clean.com`.
+6. Only then cancel the IONOS **website** product. Not the domain, and not the
+   mailbox until "Email" below is done.
 
-`next.config.mjs` sets `trailingSlash: true`, so every canonical URL on the new
-site ends in `/` (`/devis/`, not `/devis`). Every redirect **destination** in
-`vercel.json` matches that, so a redirect never lands on a URL that then has to
-redirect again to gain its slash.
+## Email
 
-Every redirect **source** is listed twice, `/contact` and `/contact/`. That is
-not sloppiness. Vercel's redirects are evaluated before Next's own
-trailing-slash normalisation, so an old link to `/contact` without the slash
-would otherwise take two hops — normalise to `/contact/`, then redirect to
-`/devis/`. Old links are copied by hand, from flyers and e-mail signatures, and
-arrive in both shapes. Two lines each is cheaper than a chain, and each line is
-one `curl` to verify.
+`contact@glvitrclean.com` is an IONOS mailbox on the old domain, and it is
+still what the site, the JSON-LD and the quote confirmation e-mails print. It
+keeps working as long as the IONOS mail service and the domain do — moving the
+web records does not touch it. The switch, in order:
 
-## Apex vs www
+1. Create `contact@glvitr-clean.com` in the Google Workspace that already
+   receives the new domain's mail, and send it a test.
+2. At IONOS, forward `contact@glvitrclean.com` to it, for at least 12 months.
+3. Then change `company.email` in `src/data/company.ts` — one edit: the quote
+   e-mails read it from there since 2026-10-05 — plus the contact line in
+   `public/llms.txt`, the Google Business Profile and the directory listings.
 
-**`www.glvitrclean.com` wins.** That is not a preference; it is declared in code:
-`DEFAULT_SITE_URL` in `src/data/company.ts` is `https://www.glvitrclean.com`,
-and every canonical, every `hreflang`, `sitemap.xml` and `robots.txt` is built
-from it. Serving the site on the apex as well would put two hosts in the index
-for the same 194 pages.
+Not before step 1: switching the site to a mailbox that does not exist would
+trade a working address for a dead one. (Whether it exists could not be tested
+from the build machine — outbound SMTP is blocked there.)
 
-So `glvitrclean.com` → `https://www.glvitrclean.com` must exist at cutover,
-permanently, for **every** path. The first rule in `vercel.json` does it, keyed
-on a `has` host condition. Three things about it:
+Separately, quote e-mails go out from `devis@prionation.io` because
+`glvitr-clean.com` is not a verified Resend domain (checked 2026-10-05). Adding
+it there and its DNS records at Squarespace, then setting `MAIL_FROM`, makes
+them come from the client's own domain.
 
-- **The host value is an anchored, dot-escaped regex — `^glvitrclean\.com$` —
-  and that is load-bearing.** `has` values are matched as regular expressions.
-  Written bare, `glvitrclean.com` would lean on the platform to anchor it: if it
-  ever matched as a substring, the rule would match `www.glvitrclean.com` too
-  and redirect www to itself, on every path, forever — the entire site down.
-  Anchoring it here removes the dependency instead of betting on it, and the
-  escaped dot stops `.` from matching any character. Either way the rule fires
-  on the apex and cannot fire on www. The `curl` on www below is still the
-  check for it, and it is the first one to run after the first deploy.
-- **It has to be recreated at cutover, not assumed to survive it.** The old
-  IONOS setup has its own apex/www arrangement, and that arrangement dies with
-  the DNS change. Both hosts must be attached to the Vercel project — the apex
-  as well as www, or the rule has no traffic to act on and a visitor typing the
-  bare domain gets nothing.
-- Vercel's dashboard can also redirect a domain at the project level. If someone
-  sets that too, it fires first and the rule in `vercel.json` is inert. Harmless
-  — but the two must not disagree. If the canonical host is ever changed, it
-  changes in four places: `company.ts`, `vercel.json`, the dashboard, and
-  `NEXT_PUBLIC_SITE_URL` if the Vercel project sets it. That variable is not
-  decoration: `resolveSiteUrl()` in `company.ts` prefers it over
-  `DEFAULT_SITE_URL`, so a stale value there emits every canonical and every
-  `hreflang` on the host this file redirects away from.
+## Search engines
 
-The path redirects use **relative** destinations (`/devis/`, not
-`https://www.glvitrclean.com/devis/`), so they work unchanged on a preview
-deployment and never drift from `SITE_URL`. The price: an old link to
-`glvitrclean.com/contact/` takes two hops — apex → www, then `/contact/` →
-`/devis/`. Both are 301s and Google consolidates through them. If the crawl
-shows the old site was canonicalised on the **apex** — i.e. essentially all
-legacy equity arrives there — switch those three destinations to absolute
-`https://www.glvitrclean.com/...` to collapse it to one hop, and accept the
-hard-coded host.
+- **Google** reads the sitemap named in `robots.txt`, now correct, and the one
+  submitted in Search Console. Its sitemap ping endpoint is retired; there is
+  no API shortcut. Human steps: a **domain property** for `glvitr-clean.com`,
+  verified by a DNS TXT record at Squarespace (two `google-site-verification`
+  records already exist there, so check first whether a property is already
+  verified), then submit `https://www.glvitr-clean.com/sitemap.xml`, and use URL
+  Inspection → Request indexing on `/` and the service pages. Once the old
+  domain 301s: verify `glvitrclean.com` too and run **Change of Address** from
+  it to `glvitr-clean.com`.
+- **IndexNow** (Bing, Yandex, Seznam, Naver and the rest of the protocol) is
+  configured: the key is `public/<key>.txt`, and `npm run indexnow` submits
+  every URL in the **live** sitemap after checking the live key file. Run it
+  after any deploy that adds or changes pages. First run: 2026-10-05.
 
-## Language: no `/en` redirects
-
-None are needed, and none are in `vercel.json`.
-
-Every old URL in the map is French — `/avantages/`, `/contact/` — and no `/en`
-tree has ever been observed on the old site. Be precise about how strong that
-evidence is: **it is not a crawl finding.** The only inspection on record is
-phase 2g in `STATUS.md`, which opened one page to take the logo. What we have is
-three French slugs, a French local business, and no sighting of an English
-version. That is enough to ship a French-only redirect map; it is not enough to
-call the question closed. If the crawl turns up an English tree, each of those
-URLs gets a line pointing at its `/en` counterpart.
-
-The direction of the rule matters more than the count: an old French URL lands
-on the **French** page, on the bare path, never on `/en`. The English mirror is
-the secondary edition (`CLAUDE.md` rule 0, and the 0.8× sitemap priority that
-enforces it). Redirecting inherited French equity into `/en` would point it at
-the page that is deliberately built not to compete.
-
-## Cutover sequence
-
-1. Build and deploy to a preview URL. Verify all 97 routes, in both editions
-   — 194 pages.
-2. Crawl the old site, finalise the redirect map. See "Is this inventory
-   complete?" above — this step is not a formality.
-3. Export any content worth keeping (photos, phone number, existing copy).
-4. Redirects are already configured in `vercel.json`; confirm the deploy that is
-   about to serve the domain contains it.
-5. Attach both `glvitrclean.com` and `www.glvitrclean.com` to the Vercel
-   project, with www as the production domain.
-6. Turn off Vercel Deployment Protection, or hold a protection-bypass token.
-   While it is on, every URL 302s to SSO and **no redirect below can be
-   verified** — `curl -I` shows the SSO hop, not ours. This is live today
-   (`STATUS.md`, "Deployed").
-7. Lower DNS TTL to 300s, 24h ahead.
-8. Point DNS at the new host.
-9. Verify HTTPS, verify redirects with `curl -I` — the block below.
-10. Claim or verify Search Console for `glvitrclean.com`. Both hosts are
-    separate properties; claim www and keep the apex.
-11. Submit `sitemap.xml`.
-12. Ping IndexNow.
-13. Restore DNS TTL.
-
-## Verifying the redirects
-
-One line per rule. Check the status code *and* the `location` header; a 200 here
-means the rule did not fire.
+## Verifying
 
 ```sh
-for u in /services-1 /services-1/ /avantages /avantages/ /contact /contact/; do
-  curl -sI "https://www.glvitrclean.com$u" | head -1
-  curl -sI "https://www.glvitrclean.com$u" | grep -i '^location:'
+# the live site: canonical host, sitemap, robots
+curl -s https://www.glvitr-clean.com/robots.txt            # Sitemap: https://www.glvitr-clean.com/sitemap.xml
+curl -s https://www.glvitr-clean.com/ | grep -o '<link rel="canonical"[^>]*>'
+curl -s https://www.glvitr-clean.com/sitemap.xml | grep -c 'glvitrclean.com'   # expect 0
+
+# the apex and plain http both land on https://www.glvitr-clean.com in one hop
+curl -sI https://glvitr-clean.com/devis/ | grep -iE '^(HTTP|location:)'
+curl -sI http://www.glvitr-clean.com/devis/ | grep -iE '^(HTTP|location:)'
+
+# unknown URL: a real 404, not a redirect to /
+curl -sI https://www.glvitr-clean.com/une-page-qui-nexiste-pas/ | head -1
+
+# the old hosts: one 301 to the new equivalent, never two
+for h in glvitrclean.com www.glvitrclean.com; do
+  for p in / /contact /contact/ /avantages/ /services-1/ /une-page-quelconque/; do
+    curl -sI "https://$h$p" | grep -iE '^(HTTP|location:)'
+  done
 done
+# Before the IONOS change the same rules can be exercised on Vercel directly:
+#   curl -skI --resolve glvitrclean.com:443:76.76.21.21 https://glvitrclean.com/contact/
 
-# apex → www, exactly one hop, on any path
-curl -sI https://glvitrclean.com/credit-impot/ | grep -iE '^(HTTP|location:)'
-
-# and www itself must NOT redirect — a loop here is the failure mode
-# of the host rule, and it would take the whole site down
-curl -sI https://www.glvitrclean.com/ | head -1        # expect 200
-
-# unknown old URL: 404, not a redirect to /
-curl -sI https://www.glvitrclean.com/une-page-qui-nexiste-pas/ | head -1
-
-# query strings survive, and the fragment on /services-1/ does not eat them
-curl -sI 'https://www.glvitrclean.com/contact/?utm_source=flyer' | grep -i '^location:'
-curl -sI 'https://www.glvitrclean.com/services-1/?utm_source=flyer' | grep -i '^location:'
+# the public Vercel alias is not a second copy of the site
+curl -sI https://glvitrclean.vercel.app/devis/ | grep -iE '^(HTTP|location:)'
 ```
 
-That last line is the one unproven detail in this file: the `/services-1/`
-destination carries a fragment, and Vercel appends any forwarded query string to
-the destination. If it appends after the `#`, the anchor swallows the query.
-Nothing breaks — the visitor still lands on the home page — but if the header
-comes back malformed, drop `#services` from the two `/services-1` rules and send
-them to `/`. It is a two-character edit and it is not worth a hop of its own.
-
-## Rollback
-
-Keep the IONOS site paid and intact for 30 days after cutover. If the new build
-regresses, DNS reverts in one change.
-
-## What to watch after cutover
+## What to watch after
 
 | Week | Expect |
 |---|---|
-| 1 | Old URLs redirecting, new sitemap accepted, first pages crawled |
-| 2–4 | Indexing count climbing toward 194 (97 routes × 2 editions). If it stalls below 30, check metadata uniqueness first, not backlinks. |
+| 1 | Sitemap accepted in Search Console; first pages crawled on `glvitr-clean.com` |
+| 2–4 | Indexed count climbing toward 224 (112 routes × 2 editions). If it stalls below 30, check metadata uniqueness first, not backlinks |
 | 4–8 | First impressions on `[service] [commune]` queries |
-| 8–12 | Map pack appearance, if GBP verification completed |
+| 8–12 | Map pack appearance, if the Google Business Profile is verified and points at the new domain |
 
-Record the baseline before cutover: current indexed page count, current
-impressions, current position for `glvitr clean`. Without a baseline there is
-nothing to report to the client at handover.
+## Baseline, 2026-10-05, just before the fix went live
+
+- **Google:** not measurable from here — there is no Search Console property
+  for either domain yet. Almost certainly zero pages of `glvitr-clean.com`
+  indexed: every page named another host as its canonical. Take the real
+  baseline from Search Console's Page indexing report once the property
+  exists, and report progress against that.
+- **Non-Google indexes** (a Bing-backed search tool, Exa): zero pages of either
+  domain.
+- **The site's own instructions:** 0 of 224 pages self-canonical. Following the
+  live sitemap, 223 of its 224 URLs answered 404 — they were on the old host —
+  and the 224th was the old WordPress home page.
